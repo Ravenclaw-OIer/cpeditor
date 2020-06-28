@@ -17,15 +17,16 @@
 
 #include "Core/Compiler.hpp"
 #include "Core/EventLogger.hpp"
+#include "Settings/SettingsManager.hpp"
+#include <QDir>
 #include <QFileInfo>
+#include <QProcess>
 
 namespace Core
 {
 
 Compiler::Compiler()
 {
-    Core::Log::i("compiler/Constructor", "Invoked");
-
     // create compiliation process and connect signals
     compileProcess = new QProcess();
     connect(compileProcess, SIGNAL(started()), this, SIGNAL(compilationStarted()));
@@ -34,101 +35,115 @@ Compiler::Compiler()
 
 Compiler::~Compiler()
 {
-    Core::Log::i("compiler/Destructor", "Invoked");
     if (compileProcess != nullptr)
     {
-        Core::Log::i("compiler/Destructor", "Compiler object destroyed");
         if (compileProcess->state() != QProcess::NotRunning)
         {
             // kill the compilation process if it's still running when the Compiler is being destructed
-            Core::Log::i("Compiler/destructor", "compileProcess is running, now kill it");
+            LOG_WARN("Compiler process was running and is being forcefully killed");
             compileProcess->kill();
             emit compilationKilled();
         }
         delete compileProcess;
     }
-    else
-    {
-        Core::Log::i("compiler/Destructor", "compileProcess is already null");
-    }
 }
 
-void Compiler::start(const QString &filePath, const QString &compileCommand, const QString &lang)
+void Compiler::start(const QString &tmpFilePath, const QString &sourceFilePath, const QString &compileCommand,
+                     const QString &lang)
 {
-    if (!QFile::exists(filePath))
+    if (!QFile::exists(tmpFilePath))
     {
         // quit with error if the source file is not found
-        Core::Log::i("compiler/start", "The source file [" + filePath + "] doesn't exist");
-        emit compilationErrorOccured("The source file [" + filePath + "] doesn't exist");
+        emit compilationErrorOccurred(tr("The source file [%1] doesn't exist").arg(tmpFilePath));
         return;
     }
 
-    // get the full compile command
-    // please remember to quote the file paths
-
-    QString command;
-
-    if (lang == "C++")
+    if (lang == "Python")
     {
-        Core::Log::i("Compiler/start", "lang branched into C++");
-        command = compileCommand + " \"" + QFileInfo(filePath).canonicalFilePath() + "\" -o \"" +
-                  QFileInfo(filePath).canonicalPath() + "/" + QFileInfo(filePath).completeBaseName() + "\"";
-    }
-    else if (lang == "Java")
-    {
-        Core::Log::i("Compiler/start", "lang branched into Java");
-        command = compileCommand + " \"" + QFileInfo(filePath).canonicalFilePath() + "\"";
-    }
-    else if (lang == "Python")
-    {
-        Core::Log::i("Compiler/start", "lang branched into Python");
         emit compilationFinished(""); // we don't actually compile Python
         return;
     }
-    else
+
+    // get the compile command
+
+    QStringList args = QProcess::splitCommand(compileCommand);
+
+    if (args.isEmpty())
     {
-        Core::Log::i("compiler/start", "lang is unsupported");
-        emit compilationErrorOccured("Unsupported programming language \"" + lang + "\"");
+        emit compilationErrorOccurred(tr("The compile command for %1 is empty").arg(lang));
         return;
     }
 
+    QString program = args.takeFirst();
+
+    if (lang == "C++")
+    {
+        args << QFileInfo(tmpFilePath).canonicalFilePath() << "-o" << outputPath(tmpFilePath, sourceFilePath, "C++");
+    }
+    else if (lang == "Java")
+    {
+        args << QFileInfo(tmpFilePath).canonicalFilePath() << "-d" << outputPath(tmpFilePath, sourceFilePath, "Java");
+    }
+    else
+    {
+        emit compilationErrorOccurred(tr("Unsupported programming language \"%1\"").arg(lang));
+        return;
+    }
+
+    LOG_INFO(INFO_OF(lang) << INFO_OF(args.join(" ")));
     // start compilation
-    compileProcess->start(command);
+    compileProcess->start(program, args);
 }
 
 bool Compiler::check(const QString &compileCommand)
 {
-    Core::Log::i("compiler/check", "Invoked");
+    if (compileCommand.isEmpty())
+    {
+        LOG_WARN("The compile command is empty");
+        return false;
+    }
+
     QProcess checkProcess;
 
     // check both "--version" and "-version", "-version" is mainly for Java
 
-    checkProcess.start(compileCommand.trimmed().split(' ').front() + " --version");
-    bool finished = checkProcess.waitForFinished(1000);
+    checkProcess.start(QProcess::splitCommand(compileCommand)[0], {"--version"});
+    bool finished = checkProcess.waitForFinished(2000);
     if (finished && checkProcess.exitCode() == 0)
         return true;
     checkProcess.kill(); // kill it if it's not finished, no harm if it's finished with non-zero exit code
 
-    checkProcess.start(compileCommand.trimmed().split(' ').front() + " -version");
-    finished = checkProcess.waitForFinished(1000);
+    checkProcess.start(QProcess::splitCommand(compileCommand)[0], {"-version"});
+    finished = checkProcess.waitForFinished(2000);
+
+    LOG_INFO(BOOL_INFO_OF(finished) << INFO_OF(checkProcess.exitCode()));
+
     return finished && checkProcess.exitCode() == 0;
+}
+
+QString Compiler::outputPath(const QString &tmpFilePath, const QString &sourceFilePath, const QString &lang)
+{
+    QFileInfo fileInfo(sourceFilePath.isEmpty() ? tmpFilePath : sourceFilePath);
+    QString res = fileInfo.dir().filePath(SettingsManager::get(lang + "/Output Path")
+                                              .toString()
+                                              .replace("${filename}", fileInfo.fileName())
+                                              .replace("${basename}", fileInfo.completeBaseName())
+                                              .replace("${tmpdir}", QFileInfo(tmpFilePath).absolutePath())
+                                              .replace("${tempdir}", QFileInfo(tmpFilePath).absolutePath()));
+    if (lang == "C++")
+        QDir().mkpath(QFileInfo(res).absolutePath());
+    else if (lang == "Java")
+        QDir().mkpath(res);
+    return res;
 }
 
 void Compiler::onProcessFinished(int exitCode)
 {
-    Core::Log::i("compiler/onProcessFinished", "Invoked");
-
     // emit different signals due to different exit codes
     if (exitCode == 0)
-    {
-        Core::Log::i("compiler/onProcessFinished", "Branched into exitCode 0");
         emit compilationFinished(compileProcess->readAllStandardError());
-    }
     else
-    {
-        Core::Log::i("compiler/onProcessFinished", "Branched into Not exitCode 0");
-        emit compilationErrorOccured(compileProcess->readAllStandardError());
-    }
+        emit compilationErrorOccurred(compileProcess->readAllStandardError());
 }
 
 } // namespace Core

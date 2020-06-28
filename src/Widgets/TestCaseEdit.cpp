@@ -17,32 +17,36 @@
 
 #include "Widgets/TestCaseEdit.hpp"
 #include "Core/EventLogger.hpp"
+#include "Core/MessageLogger.hpp"
+#include "Util/FileUtil.hpp"
+#include <QApplication>
+#include <QFileDialog>
+#include <QInputDialog>
+#include <QMenu>
 #include <QMimeData>
+#include <QPropertyAnimation>
+#include <QStyle>
+#include <generated/SettingsHelper.hpp>
 
-TestCaseEdit::TestCaseEdit(bool autoAnimation, const QString &text, QWidget *parent) : QPlainTextEdit(text, parent)
+namespace Widgets
 {
-    Core::Log::i("testcaseEdit/constructed") << "autoAnimate " << autoAnimation << " text " << text << endl;
+TestCaseEdit::TestCaseEdit(bool autoAnimation, MessageLogger *logger, const QString &text, QWidget *parent)
+    : QPlainTextEdit(text, parent), log(logger)
+{
+    setFont(SettingsHelper::getTestCasesFont());
     animation = new QPropertyAnimation(this, "minimumHeight", this);
     if (autoAnimation)
         connect(this, SIGNAL(textChanged()), this, SLOT(startAnimation()));
     startAnimation();
-}
-
-TestCaseEdit::TestCaseEdit(bool autoAnimation, QWidget *parent) : QPlainTextEdit(parent)
-{
-    Core::Log::i("testcaseEdit/constructed") << "autoAnimate " << autoAnimation << endl;
-    animation = new QPropertyAnimation(this, "minimumHeight", this);
-    if (autoAnimation)
-        connect(this, SIGNAL(textChanged()), this, SLOT(startAnimation()));
-    startAnimation();
+    setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(this, SIGNAL(customContextMenuRequested(const QPoint &)), this,
+            SLOT(onCustomContextMenuRequested(const QPoint &)));
 }
 
 void TestCaseEdit::dragEnterEvent(QDragEnterEvent *event)
 {
-    Core::Log::i("testCaseEdit/dragEnterEvent", "Something is being dropped into testcaseEdit");
     if (event->mimeData()->hasUrls())
     {
-        Core::Log::i("testCaseEdit/dragEnterEvent", "Accepting dropped object");
         event->accept();
         event->acceptProposedAction();
     }
@@ -50,11 +54,8 @@ void TestCaseEdit::dragEnterEvent(QDragEnterEvent *event)
 
 void TestCaseEdit::dragMoveEvent(QDragMoveEvent *event)
 {
-    Core::Log::i("testCaseEdit/dragMoveEvent", "Something is being Moved into testcaseEdit");
-
     if (event->mimeData()->hasUrls())
     {
-        Core::Log::i("testCaseEdit/dragMoveEvent", "Accepting moved object");
         event->accept();
         event->acceptProposedAction();
     }
@@ -62,22 +63,18 @@ void TestCaseEdit::dragMoveEvent(QDragMoveEvent *event)
 
 void TestCaseEdit::dropEvent(QDropEvent *event)
 {
-    Core::Log::i("testcaseEdit/dropEvent", "Something has been dropped");
+    LOG_INFO("Object dropped into testcase widget");
     auto urls = event->mimeData()->urls();
     if (!isReadOnly() && !urls.isEmpty())
     {
-        Core::Log::i("testcaseEdit/dropEvent", "Reading the dropped file to testcase");
-        QFile file(urls[0].toLocalFile());
-        if (file.open(QIODevice::ReadOnly | QIODevice::Text))
-            modifyText(file.readAll());
+        LOG_INFO("Dropped file is " << urls[0].toLocalFile());
+        loadFromFile(urls[0].toLocalFile());
         event->acceptProposedAction();
-        Core::Log::i("testcaseEdit/dropEvent") << "dropped file was " << file.fileName() << endl;
     }
 }
 
 void TestCaseEdit::modifyText(const QString &text)
 {
-    Core::Log::i("testcasesEdit/modifyText") << "text " << text << endl;
     auto cursor = textCursor();
     cursor.select(QTextCursor::Document);
     cursor.insertText(text);
@@ -85,14 +82,55 @@ void TestCaseEdit::modifyText(const QString &text)
 
 void TestCaseEdit::startAnimation()
 {
-    Core::Log::i("testcaseEdit/startAnimation", "started Animation");
-    int newHeight = qMin(fontMetrics().lineSpacing() * (document()->lineCount() + 2) + 5, 300);
+    int newHeight = qMin(fontMetrics().boundingRect("f").height() * (document()->lineCount() + 2),
+                         SettingsHelper::getTestCaseMaximumHeight());
     if (newHeight != minimumHeight())
     {
         animation->stop();
         animation->setStartValue(minimumHeight());
         animation->setEndValue(newHeight);
         animation->start();
-        Core::Log::i("testcaseEdit/startAnimation", "re-started Animation");
     }
 }
+
+void TestCaseEdit::onCustomContextMenuRequested(const QPoint &pos)
+{
+    auto menu = createStandardContextMenu();
+    if (!isReadOnly())
+    {
+        menu->addSeparator();
+        menu->addAction(QApplication::style()->standardIcon(QStyle::SP_DialogOpenButton), tr("Load From File"), [this] {
+            LOG_INFO("Opening file dialog to Load from file");
+            auto res = QFileDialog::getOpenFileName(this, tr("Load From File"));
+            loadFromFile(res);
+        });
+        menu->addAction(
+            QApplication::style()->standardIcon(QStyle::SP_TitleBarMaxButton), tr("Edit in Bigger Window"), [this] {
+                LOG_INFO("Opening for edit in big window");
+                bool ok = false;
+                auto res = QInputDialog::getMultiLineText(this, tr("Edit Testcase"), QString(), toPlainText(), &ok);
+                if (ok)
+                    modifyText(res);
+            });
+    }
+    menu->popup(mapToGlobal(pos));
+}
+
+void TestCaseEdit::loadFromFile(const QString &path)
+{
+    auto content = Util::readFile(path, "Load Testcase From File", log);
+    if (!content.isNull())
+    {
+        if (content.length() > SettingsHelper::getLoadTestCaseFileLengthLimit())
+        {
+            log->error(tr("Testcases"),
+                       tr("The testcase file [%1] contains more than %2 characters, so it's not loaded. You can change "
+                          "the length limit in Preferences->Advanced->Limits->Load Test Case File Length Limit")
+                           .arg(path)
+                           .arg(SettingsHelper::getLoadTestCaseFileLengthLimit()));
+        }
+        else
+            modifyText(content);
+    }
+}
+} // namespace Widgets

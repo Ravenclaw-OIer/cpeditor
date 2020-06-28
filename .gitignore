@@ -48,8 +48,13 @@ build/
 # Visual Studio
 .vs
 
+# Visual Studio CMake
+CMakeSettings.json
+
 # Visual Studio Code
 .vscode
 
 # Dependency directories
 node_modules/
+
+resources/translations/*.qm

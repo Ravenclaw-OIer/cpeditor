@@ -17,41 +17,43 @@
 
 #include "Widgets/DiffViewer.hpp"
 #include "Core/EventLogger.hpp"
-#include "Core/SettingsManager.hpp"
+#include "Core/MessageLogger.hpp"
 #include "diff_match_patch.h"
+#include <QHBoxLayout>
+#include <QLabel>
 #include <QScrollBar>
+#include <QTextEdit>
+#include <QVBoxLayout>
+#include <generated/SettingsHelper.hpp>
 
+namespace Widgets
+{
 DiffViewer::DiffViewer(QWidget *parent) : QMainWindow(parent)
 {
-    Core::Log::i("DiffViewer/constructor", "Invoked");
-
     widget = new QWidget(this);
     layout = new QHBoxLayout();
     widget->setLayout(layout);
     setCentralWidget(widget);
-    setWindowTitle("Diff Viewer");
+    setWindowTitle(tr("Diff Viewer"));
     resize(720, 480);
-    Core::Log::i("DiffViewer/constructor", "Main layout is set");
 
     leftLayout = new QVBoxLayout();
-    outputLabel = new QLabel("Output", widget);
+    outputLabel = new QLabel(tr("Output"), widget);
     leftLayout->addWidget(outputLabel);
     outputEdit = new QTextEdit(widget);
     outputEdit->setReadOnly(true);
     outputEdit->setWordWrapMode(QTextOption::NoWrap);
     leftLayout->addWidget(outputEdit);
     layout->addLayout(leftLayout);
-    Core::Log::i("DiffViewer/constructor", "Left layout is set");
 
     rightLayout = new QVBoxLayout();
-    expectedLabel = new QLabel("Expected", widget);
+    expectedLabel = new QLabel(tr("Expected"), widget);
     rightLayout->addWidget(expectedLabel);
     expectedEdit = new QTextEdit(widget);
     expectedEdit->setReadOnly(true);
     expectedEdit->setWordWrapMode(QTextOption::NoWrap);
     rightLayout->addWidget(expectedEdit);
     layout->addLayout(rightLayout);
-    Core::Log::i("DiffViewer/constructor", "Right layout is set");
 
     connect(expectedEdit->horizontalScrollBar(), SIGNAL(valueChanged(int)), outputEdit->horizontalScrollBar(),
             SLOT(setValue(int)));
@@ -61,14 +63,14 @@ DiffViewer::DiffViewer(QWidget *parent) : QMainWindow(parent)
             SLOT(setValue(int)));
     connect(outputEdit->verticalScrollBar(), SIGNAL(valueChanged(int)), expectedEdit->verticalScrollBar(),
             SLOT(setValue(int)));
-    Core::Log::i("DiffViewer/constructor", "Signals are connected");
 }
 
 void DiffViewer::setText(const QString &output, const QString &expected)
 {
-    if (output.length() <= MAX_CHARACTERS_FOR_HTML && expected.length() <= MAX_CHARACTERS_FOR_HTML)
+    if (output.length() <= SettingsHelper::getHTMLDiffViewerLengthLimit() &&
+        expected.length() <= SettingsHelper::getHTMLDiffViewerLengthLimit())
     {
-        Core::Log::i("DiffViewer/setText", "Use HTML");
+        LOG_INFO("Diff viewer is using HTML Text");
         diff_match_patch differ;
         differ.Diff_EditCost = 10;
         auto diffs = differ.diff_main(output, expected);
@@ -78,7 +80,7 @@ void DiffViewer::setText(const QString &output, const QString &expected)
         for (auto diff : diffs)
         {
             QString text = diff.text.toHtmlEscaped().replace(" ", "&nbsp;");
-            if (Settings::SettingsManager::isDisplayEolnInDiff())
+            if (SettingsHelper::isDisplayEOLNInDiff())
                 text.replace("\n", "&para;<br>");
             else
                 text.replace("\n", "<br>");
@@ -106,7 +108,7 @@ void DiffViewer::setText(const QString &output, const QString &expected)
     }
     else
     {
-        Core::Log::i("DiffViewer/setText", "Use plain text");
+        LOG_INFO("Diff viewer is using Plain Text");
         emit toLongForHtml();
         outputEdit->setPlainText(output);
         expectedEdit->setPlainText(expected);
@@ -119,3 +121,4 @@ void DiffViewer::setText(const QString &output, const QString &expected)
     resetScrollBar(expectedEdit->horizontalScrollBar());
     resetScrollBar(outputEdit->verticalScrollBar());
 }
+} // namespace Widgets

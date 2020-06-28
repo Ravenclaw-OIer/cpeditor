@@ -16,36 +16,40 @@
  */
 
 #include "Core/Checker.hpp"
+#include "Core/Compiler.hpp"
 #include "Core/EventLogger.hpp"
-#include "Util.hpp"
+#include "Core/MessageLogger.hpp"
+#include "Core/Runner.hpp"
+#include "Util/FileUtil.hpp"
 #include <QFile>
+#include <QTemporaryDir>
+#include <generated/SettingsHelper.hpp>
 
 namespace Core
 {
 
-Checker::Checker(CheckerType type, MessageLogger *logger, int timeLimit, QObject *parent) : QObject(parent)
+Checker::Checker(CheckerType type, MessageLogger *logger, QObject *parent) : QObject(parent)
 {
-    Log::i("Checker/constructor") << INFO_OF(type) << endl;
+    LOG_INFO("Checker of type " << type << "created");
     checkerType = type;
     log = logger;
-    this->timeLimit = timeLimit;
 }
 
-Checker::Checker(const QString &path, MessageLogger *logger, int timeLimit, QObject *parent)
-    : Checker(Custom, logger, timeLimit, parent)
+Checker::Checker(const QString &path, MessageLogger *logger, QObject *parent) : Checker(Custom, logger, parent)
 {
     checkerPath = path;
+    LOG_INFO("Updated checker path to " << path);
 }
 
 Checker::~Checker()
 {
-    Log::i("Checker/destructor", "Invoked");
     if (compiler)
         delete compiler;
     for (auto &t : runner)
         delete t;
     if (tmpDir)
         delete tmpDir;
+    LOG_INFO("Destroyed checker of type " << checkerType);
 }
 
 void Checker::prepare(const QString &compileCommand)
@@ -60,6 +64,7 @@ void Checker::prepare(const QString &compileCommand)
 
     if (!compiled)
     {
+        LOG_INFO("Compiling checker with command " << compileCommand);
         // compile the checker if it's not compiled
 
         QString checkerResource;
@@ -95,50 +100,43 @@ void Checker::prepare(const QString &compileCommand)
         }
 
         // get the code of the checker
-        QFile checkerResourceReader(checkerResource);
-        if (!checkerResourceReader.open(QIODevice::ReadOnly | QIODevice::Text))
-        {
-            log->error("Checker", "Failed to read the checker from [" + checkerResource + "]");
+        QString checkerCode = Util::readFile(checkerResource, tr("Read Checker"), log);
+        if (checkerCode.isNull())
             return;
-        }
-        QString checkerCode = checkerResourceReader.readAll();
 
         // create a temporary directory
         tmpDir = new QTemporaryDir();
         if (!tmpDir->isValid())
         {
-            log->error("Checker", "Failed to create temporary directory");
+            log->error(tr("Checker"), tr("Failed to create temporary directory"));
             return;
         }
 
         // save the checker source file on the disk
         checkerPath = tmpDir->filePath("checker.cpp");
-        if (!Util::saveFile(checkerPath, checkerCode, "Checker", false, log))
+        if (!Util::saveFile(checkerPath, checkerCode, tr("Checker"), false, log))
             return;
 
         // save testlib.h on the disk
-        QFile testlibReader(":/testlib/testlib.h");
-        if (!testlibReader.open(QIODevice::ReadOnly | QIODevice::Text))
-        {
-            log->error("Checker", "Failed to read testlib.h from resource");
+        auto testlib_h = Util::readFile(":/testlib/testlib.h", tr("Read testlib.h"), log);
+        if (testlib_h.isNull())
             return;
-        }
-        auto testlib_h = testlibReader.readAll();
-        if (!Util::saveFile(tmpDir->filePath("testlib.h"), testlib_h, "Checker", false, log))
+        if (!Util::saveFile(tmpDir->filePath("testlib.h"), testlib_h, tr("Save testlib.h"), false, log))
             return;
 
         // start the compilation of the checker
         compiler = new Compiler();
         connect(compiler, SIGNAL(compilationFinished(const QString &)), this, SLOT(onCompilationFinished()));
-        connect(compiler, SIGNAL(compilationErrorOccured(const QString &)), this,
-                SLOT(onCompilationErrorOccured(const QString &)));
+        connect(compiler, SIGNAL(compilationErrorOccurred(const QString &)), this,
+                SLOT(onCompilationErrorOccurred(const QString &)));
         connect(compiler, SIGNAL(compilationKilled()), this, SLOT(onCompilationKilled()));
-        compiler->start(checkerPath, compileCommand, "C++");
+        compiler->start(checkerPath, "", compileCommand, "C++");
     }
 }
 
 void Checker::reqeustCheck(int index, const QString &input, const QString &output, const QString &expected)
 {
+    LOG_INFO(BOOL_INFO_OF(compiled));
     if (compiled)
         check(index, input, output, expected); // check immediately if the checker is compiled
     else
@@ -147,16 +145,15 @@ void Checker::reqeustCheck(int index, const QString &input, const QString &outpu
 
 void Checker::onCompilationFinished()
 {
-    Log::i("Checker/onCompilationFinished", "Invoked");
     compiled = true; // mark that the checker is compiled
     for (auto t : pendingTasks)
         check(t.index, t.input, t.output, t.expected); // solve the pending tasks
     pendingTasks.clear();
 }
 
-void Checker::onCompilationErrorOccured(const QString &error)
+void Checker::onCompilationErrorOccurred(const QString &error)
 {
-    log->error("Checker", "Error occurred while compiling the checker:\n" + error);
+    log->error(tr("Checker"), tr("Error occurred while compiling the checker:\n%1").arg(error));
 }
 
 void Checker::onCompilationKilled()
@@ -164,8 +161,8 @@ void Checker::onCompilationKilled()
     // It will be confusing to show "the checker failed" when it's killed,
     // but the user is also unlikely willing to see the message "the checker compilation is killed",
     // so we can simply show nothing when the compilation is killed
-    disconnect(compiler, SIGNAL(compilationErrorOccured(const QString &)), this,
-               SLOT(onCompilationErrorOccured(const QString &)));
+    disconnect(compiler, SIGNAL(compilationErrorOccurred(const QString &)), this,
+               SLOT(onCompilationErrorOccurred(const QString &)));
 }
 
 void Checker::onRunFinished(int index, const QString &out, const QString &err, int exitCode)
@@ -173,47 +170,56 @@ void Checker::onRunFinished(int index, const QString &out, const QString &err, i
     if (exitCode == 0)
     {
         // the check process succeeded
+        if (!err.isEmpty())
+            log->message(tr("Checker[%1]").arg(index + 1), err, "green");
         emit checkFinished(index, AC);
     }
     else if (QList<int>({1, 2, 3, 4, 5, 8, 16}).contains(exitCode)) // this list is from testlib.h::TResult
     {
         // This exit code is a normal exit code of a testlib checker, means WA or something else
         if (err.isEmpty())
-            log->error("Checker[" + QString::number(index + 1) + "]",
-                       "Checker exited with exit code " + QString::number(exitCode));
+            log->error(tr("Checker[%1]").arg(index + 1), tr("Checker exited with exit code %1").arg(exitCode));
         else
-            log->error("Checker[" + QString::number(index + 1) + "]", err);
+            log->error(QString("Checker[%1]").arg(index + 1), err);
         emit checkFinished(index, WA);
     }
     else
     {
         // This exit code is not one of the normal exit codes of a testlib checker, maybe the checker crashed
-        log->error("Checker[" + QString::number(index + 1) + "]",
-                   "Checker exited with unknown exit code " + QString::number(exitCode));
+        log->error(tr("Checker[%1]").arg(index + 1), tr("Checker exited with unknown exit code %1").arg(exitCode));
         if (!err.isEmpty())
-            log->error("Checker[" + QString::number(index + 1) + "]", err);
+            log->error(QString("Checker[%1]").arg(index + 1), err);
     }
 }
 
 void Checker::onFailedToStartRun(int index, const QString &error)
 {
-    log->error("Checker[" + QString::number(index + 1) + "]", error);
+    log->error(tr("Checker[%1]").arg(index + 1), error);
 }
 
 void Checker::onRunTimeout(int index)
 {
-    log->warn("Checker[" + QString::number(index + 1) + "]", "Time Limit Exceeded");
+    log->warn(tr("Checker[%1]").arg(index + 1), tr("Time Limit Exceeded"));
+}
+
+void Checker::onRunOutputLimitExceeded(int index, const QString &type)
+{
+    log->warn(tr("Checker[%1]").arg(index + 1),
+              tr("The %1 of the process running on the testcase #%2 contains more than %3 characters, which is longer "
+                 "than the output length limit, so the process is killed. You can change the output length limit "
+                 "in Preferences->Advanced->Limits->Output Length Limit")
+                  .arg(type)
+                  .arg(index + 1)
+                  .arg(SettingsHelper::getOutputLengthLimit()));
 }
 
 void Checker::onRunKilled(int index)
 {
-    log->error("Checker[" + QString::number(index + 1) + "]", "Killed");
+    log->error(QString("Checker[%1]").arg(index + 1), tr("Killed"));
 }
 
 bool Checker::checkIgnoreTrailingSpaces(const QString &output, const QString &expected)
 {
-    Core::Log::i("Checker/checkIgnoreTrailingSpaces", "Invoked");
-
     // first, replace \r\n and \r by \n
     auto out = output;
     out.replace("\r\n", "\n").replace("\r", "\n");
@@ -256,7 +262,6 @@ bool Checker::checkIgnoreTrailingSpaces(const QString &output, const QString &ex
 
 bool Checker::checkStrict(const QString &output, const QString &expected)
 {
-    Log::i("Checker/checkStrict", "Invoked");
     auto a = output;
     auto b = expected;
     // replace \r\n and \r with \n, then directly compare them
@@ -265,7 +270,7 @@ bool Checker::checkStrict(const QString &output, const QString &expected)
 
 void Checker::check(int index, const QString &input, const QString &output, const QString &expected)
 {
-    Log::i("Checker/check") << "Invoked. " << INFO_OF(index) << endl;
+    LOG_INFO(INFO_OF(index));
     switch (checkerType)
     {
     // check directly if it's a built-in checker
@@ -280,9 +285,9 @@ void Checker::check(int index, const QString &input, const QString &output, cons
         auto inputPath = tmpDir->filePath(QString::number(index) + ".in");
         auto outputPath = tmpDir->filePath(QString::number(index) + ".out");
         auto expectedPath = tmpDir->filePath(QString::number(index) + ".ans");
-        if (Util::saveFile(inputPath, input, "Checker", false, log) &&
-            Util::saveFile(outputPath, output, "Checker", false, log) &&
-            Util::saveFile(expectedPath, expected, "Checker", false, log))
+        if (Util::saveFile(inputPath, input, tr("Checker"), false, log) &&
+            Util::saveFile(outputPath, output, tr("Checker"), false, log) &&
+            Util::saveFile(expectedPath, expected, tr("Checker"), false, log))
         {
             // if files are successfully saved, run the checker
             auto tmp = new Runner(index);
@@ -292,9 +297,12 @@ void Checker::check(int index, const QString &input, const QString &output, cons
             connect(tmp, SIGNAL(failedToStartRun(int, const QString &)), this,
                     SLOT(onFailedToStartRun(int, const QString &)));
             connect(tmp, SIGNAL(runTimeout(int)), this, SLOT(onRunTimeout(int)));
+            connect(tmp, SIGNAL(runOutputLimitExceeded(int, const QString &)), this,
+                    SLOT(onRunOutputLimitExceeded(int, const QString &)));
             connect(tmp, SIGNAL(runKilled(int)), this, SLOT(onRunKilled(int)));
-            tmp->run(checkerPath, "C++", "", "\"" + inputPath + "\" \"" + outputPath + "\" \"" + expectedPath + "\"",
-                     "", timeLimit);
+            tmp->run(checkerPath, "", "C++", "",
+                     "\"" + inputPath + "\" \"" + outputPath + "\" \"" + expectedPath + "\"", "",
+                     SettingsHelper::getTimeLimit());
         }
         break;
     }

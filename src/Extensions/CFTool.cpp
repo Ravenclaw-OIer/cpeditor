@@ -17,26 +17,25 @@
 
 #include "Extensions/CFTool.hpp"
 #include "Core/EventLogger.hpp"
+#include "Core/MessageLogger.hpp"
 #include <QFileInfo>
+#include <QProcess>
+#include <QRegularExpression>
 #include <QUrl>
 
-namespace Network
+namespace Extensions
 {
 
 CFTool::CFTool(const QString &path, MessageLogger *logger) : CFToolPath(path)
 {
-    Core::Log::i("cftool/constructed") << "path is : " << path << " is logger null " << (logger == nullptr) << endl;
+    LOG_INFO(INFO_OF(path))
     log = logger;
 }
 
 CFTool::~CFTool()
 {
-    Core::Log::i("cftool/destructed", "Invoking destructor");
     if (CFToolProcess != nullptr)
-    {
-        Core::Log::i("cftool/destructed", "deleting process pointer");
         delete CFToolProcess;
-    }
 }
 
 void CFTool::submit(const QString &filePath, const QString &url)
@@ -45,72 +44,86 @@ void CFTool::submit(const QString &filePath, const QString &url)
     {
         if (CFToolProcess->state() == QProcess::Running)
         {
-            Core::Log::w("cftool/submit", "There is already a CF Tool running, kill it now");
+            LOG_WARN("CF Tool was already running, forcefully killing it now");
             CFToolProcess->kill();
             delete CFToolProcess;
-            log->error("CF Tool", "CF Tool was killed");
+            log->error(tr("CF Tool"), tr("CF Tool was killed"));
         }
         else
             delete CFToolProcess;
         CFToolProcess = nullptr;
     }
 
-    Core::Log::i("cftool/submit") << INFO_OF(filePath) << ", " << INFO_OF(url) << endl;
+    LOG_INFO(INFO_OF(filePath) << INFO_OF(url));
 
     if (parseCfUrl(url, problemContestId, problemCode))
     {
         if (problemCode == "0")
         {
             problemCode = "A";
-            log->warn("CF Tool", "The problem code is 0, now use A automatically. If the actual problem code is not A, "
-                                 "please set the problem code manually in the right-click menu of the current tab.");
+            log->warn(tr("CF Tool"),
+                      tr("The problem code is 0, now use A automatically. If the actual problem code is not A, "
+                         "please set the problem code manually in the right-click menu of the current tab."));
         }
-        lastStatus = "Unknown";
+        lastStatus = "Unknown"; // No tr here. We don't know what we'll get from network. Maybe a array for mapping.
         CFToolProcess = new QProcess();
         CFToolProcess->setProgram(CFToolPath);
-        CFToolProcess->setArguments({"submit", problemContestId, problemCode, filePath});
+        auto version = getCFToolVersion();
+        if (version.isEmpty())
+        {
+            log->error(
+                tr("CF Tool"),
+                tr("Failed to get the version of CF Tool. Have you set the correct path to CF Tool in Preferences?"));
+            return;
+        }
+        if (version.split('.')[0] == "0")
+            CFToolProcess->setArguments({"submit", problemContestId, problemCode, filePath});
+        else
+            CFToolProcess->setArguments({"submit", "-f", filePath, url});
+
+        LOG_INFO(INFO_OF(CFToolProcess->arguments().join(' ')));
+
         connect(CFToolProcess, SIGNAL(readyReadStandardOutput()), this, SLOT(onReadReady()));
         connect(CFToolProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(onFinished(int)));
         CFToolProcess->start();
         bool started = CFToolProcess->waitForStarted(2000);
         if (started)
         {
-            log->info("CF Tool", "CF Tool has started");
+            log->info(tr("CF Tool"), tr("CF Tool has started"));
         }
         else
         {
             CFToolProcess->kill();
             log->error(
-                "CF Tool",
-                "Failed to start CF Tool in 2 seconds. Have you set the correct path to CF Tool in Preferences?");
+                tr("CF Tool"),
+                tr("Failed to start CF Tool in 2 seconds. Have you set the correct path to CF Tool in Preferences?"));
         }
     }
     else
     {
-        log->error("CF Tool", "Failed to parse the URL [" + url + "]");
+        log->error(tr("CF Tool"), tr("Failed to parse the URL [%1]").arg(url));
     }
 }
 
 bool CFTool::check(const QString &path)
 {
-    Core::Log::i("cftool/check") << "checking for path " << path << endl;
+    LOG_INFO(INFO_OF(path));
     QProcess checkProcess;
     checkProcess.start(path, {"--version"});
-    Core::Log::i("cftool/check", "process started to fetch version");
     bool finished = checkProcess.waitForFinished(2000);
-    Core::Log::i("cftool/check") << "finished ? " << finished << " exitcode " << checkProcess.exitCode() << endl;
+    LOG_INFO(BOOL_INFO_OF(finished) << INFO_OF(checkProcess.exitCode()) << INFO_OF(checkProcess.exitStatus()));
     return finished && checkProcess.exitCode() == 0;
 }
 
 void CFTool::updatePath(const QString &p)
 {
-    Core::Log::i("cftool/updatePath") << "new path is : " << p << endl;
+    LOG_INFO(INFO_OF(p));
     CFToolPath = p;
 }
 
 bool CFTool::parseCfUrl(const QString &url, QString &contestId, QString &problemCode)
 {
-    Core::Log::i("CF Tool/parseCfUrl") << INFO_OF(url) << endl;
+    LOG_INFO(INFO_OF(url));
     auto match = QRegularExpression(".*://codeforces.com/contest/([1-9][0-9]*)/problem/(0|[A-Z][1-9]?)").match(url);
     if (match.hasMatch())
     {
@@ -131,30 +144,24 @@ bool CFTool::parseCfUrl(const QString &url, QString &contestId, QString &problem
 void CFTool::onReadReady()
 {
     QString response = CFToolProcess->readAll();
-    Core::Log::i("cftool/onReadReady") << "\n" << INFO_OF(response) << endl;
     response.remove(QRegularExpression("\x1b\\[.. "));
     if (response.contains("status: "))
     {
-        auto shortStatus = response.mid(response.indexOf("status: ") + 8);
+        auto shortStatus = response.mid(response.indexOf("status: ") + 8); // Maybe need some tricks to translate
         lastStatus = shortStatus.contains('\n') ? shortStatus.left(shortStatus.indexOf('\n')) : shortStatus;
-        Core::Log::i("cftool/showResponse") << INFO_OF(shortStatus) << endl;
+
         if (response.contains("status: Happy New Year") || response.contains("status: Accepted") ||
             response.contains("status: Pretests passed"))
-            log->message("CF Tool", shortStatus, "green");
+            log->message(tr("CF Tool"), shortStatus, "green");
         else if (response.contains("status: Running"))
-            log->info("CF Tool", shortStatus);
+            log->info(tr("CF Tool"), shortStatus);
         else
-            log->error("CF Tool", shortStatus);
+            log->error(tr("CF Tool"), shortStatus);
     }
     else if (!response.trimmed().isEmpty())
-    {
-        Core::Log::i("CF Tool/showResponse") << "no status, " << INFO_OF(response) << endl;
-        log->info("CF Tool", response);
-    }
+        log->info(tr("CF Tool"), response);
     else
-    {
-        Core::Log::i("CF Tool/showResponse", "Response is empty");
-    }
+        LOG_INFO("Response is empty");
 }
 
 void CFTool::onFinished(int exitCode)
@@ -165,17 +172,31 @@ void CFTool::onFinished(int exitCode)
     }
     else
     {
-        showToastMessage("CF Tool failed");
-        log->error("CF Tool", "CF Tool finished with non-zero exit code " + QString::number(exitCode));
+        showToastMessage(tr("CF Tool failed"));
+        log->error(tr("CF Tool"), tr("CF Tool finished with non-zero exit code %1").arg(exitCode));
     }
     QString err = CFToolProcess->readAllStandardError();
     if (!err.trimmed().isEmpty())
-        log->error("CF Tool", err);
+        log->error(tr("CF Tool"), err);
 }
 
 void CFTool::showToastMessage(const QString &message)
 {
-    emit requestToastMessage("Contest " + problemContestId + " Problem " + problemCode, message);
+    emit requestToastMessage(tr("Contest %1 Problem %2").arg(problemContestId).arg(problemCode), message);
 }
 
-} // namespace Network
+QString CFTool::getCFToolVersion() const
+{
+    QProcess process;
+    process.start(CFToolPath, {"--version"});
+    if (!process.waitForFinished(2000))
+    {
+        LOG_WARN("CF Tool didn't finish after 2 second");
+        return "";
+    }
+    QString version = QRegularExpression(R"((?<=v)\d+\.\d+\.\d+)").match(process.readAll()).captured();
+    LOG_INFO(INFO_OF(version));
+    return version;
+}
+
+} // namespace Extensions

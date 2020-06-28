@@ -17,33 +17,47 @@
 
 #include "Widgets/TestCase.hpp"
 #include "Core/EventLogger.hpp"
-#include <QFileDialog>
+#include "Core/MessageLogger.hpp"
+#include "Util/Util.hpp"
+#include "Widgets/DiffViewer.hpp"
+#include "Widgets/TestCaseEdit.hpp"
+#include <QCheckBox>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QMenu>
 #include <QMessageBox>
-#include <Util.hpp>
+#include <QPushButton>
+#include <QSplitter>
+#include <QVBoxLayout>
+#include <generated/SettingsHelper.hpp>
 
+namespace Widgets
+{
 TestCase::TestCase(int index, MessageLogger *logger, QWidget *parent, const QString &in, const QString &exp)
     : QWidget(parent), log(logger)
 {
-    Core::Log::i("testcase/constructed") << "index " << index << " input " << in << " expected " << exp << endl;
+    LOG_INFO("Testcase " << index << " is being created");
     mainLayout = new QHBoxLayout(this);
     inputUpLayout = new QHBoxLayout();
     outputUpLayout = new QHBoxLayout();
     expectedUpLayout = new QHBoxLayout();
-    inputLayout = new QVBoxLayout();
-    outputLayout = new QVBoxLayout();
-    expectedLayout = new QVBoxLayout();
-    showCheckBox = new QCheckBox();
-    inputLabel = new QLabel("Input");
-    outputLabel = new QLabel("Output");
-    expectedLabel = new QLabel("Expected");
-    moreButton = new QPushButton("More");
-    loadInputButton = new QPushButton("Load");
-    diffButton = new QPushButton("**");
-    loadExpectedButton = new QPushButton("Load");
-    inputEdit = new TestCaseEdit(true, in);
-    outputEdit = new TestCaseEdit(false);
-    expectedEdit = new TestCaseEdit(true, exp);
-    moreMenu = new QMenu();
+    splitter = new QSplitter(this);
+    inputWidget = new QWidget(this);
+    outputWidget = new QWidget(this);
+    expectedWidget = new QWidget(this);
+    inputLayout = new QVBoxLayout(inputWidget);
+    outputLayout = new QVBoxLayout(outputWidget);
+    expectedLayout = new QVBoxLayout(expectedWidget);
+    showCheckBox = new QCheckBox(this);
+    inputLabel = new QLabel(tr("Input"), this);
+    outputLabel = new QLabel(tr("Output"), this);
+    expectedLabel = new QLabel(tr("Expected"), this);
+    runButton = new QPushButton(tr("Run"), this);
+    diffButton = new QPushButton("**", this);
+    delButton = new QPushButton(tr("Del"), this);
+    inputEdit = new TestCaseEdit(true, log, in, this);
+    outputEdit = new TestCaseEdit(false, log, QString(), this);
+    expectedEdit = new TestCaseEdit(true, log, exp, this);
     diffViewer = new DiffViewer(this);
 
     setID(index);
@@ -56,92 +70,73 @@ TestCase::TestCase(int index, MessageLogger *logger, QWidget *parent, const QStr
     showCheckBox->setChecked(true);
     showCheckBox->setSizePolicy({QSizePolicy::Fixed, QSizePolicy::Fixed});
 
-    loadExpectedButton->setMinimumWidth(
-        loadExpectedButton->fontMetrics().boundingRect(loadExpectedButton->text()).width() + 10);
-
-    moreButton->setMinimumWidth(moreButton->fontMetrics().boundingRect(moreButton->text()).width() + 30);
-
-    moreMenu->addAction("Delete", [this] {
-        Core::Log::i("TestCases/moreMenu/Delete", "Invoked");
-
-        if (input().isEmpty() && expected().isEmpty())
-        {
-            Core::Log::i("TestCases/moreMenu/Delete", "Deleted Directly because it's empty");
-            emit deleted(this);
-        }
-        else
-        {
-            Core::Log::i("TestCases/moreMenu/Delete", "Asking confirmation for delete");
-            auto res = QMessageBox::question(this, "Delete Testcase",
-                                             "Do you want to delete test case #" + QString::number(id + 1));
-            if (res == QMessageBox::Yes)
-                emit deleted(this);
-        }
-    });
-
-    moreMenu->addAction("Run", [this] {
-        showCheckBox->setChecked(true);
-        emit requestRun(id);
-    });
-
-    moreButton->setMenu(moreMenu);
-
     inputUpLayout->addWidget(showCheckBox);
     inputUpLayout->addWidget(inputLabel);
-    inputUpLayout->addWidget(loadInputButton);
+    inputUpLayout->addWidget(runButton);
     outputUpLayout->addWidget(outputLabel);
     outputUpLayout->addWidget(diffButton);
     expectedUpLayout->addWidget(expectedLabel);
-    expectedUpLayout->addWidget(loadExpectedButton);
-    expectedUpLayout->addWidget(moreButton);
+    expectedUpLayout->addWidget(delButton);
     inputLayout->addLayout(inputUpLayout);
     inputLayout->addWidget(inputEdit);
     outputLayout->addLayout(outputUpLayout);
     outputLayout->addWidget(outputEdit);
-
     expectedLayout->addLayout(expectedUpLayout);
     expectedLayout->addWidget(expectedEdit);
-    mainLayout->addLayout(inputLayout);
-    mainLayout->addLayout(outputLayout);
-    mainLayout->addLayout(expectedLayout);
+    splitter->addWidget(inputWidget);
+    splitter->addWidget(outputWidget);
+    splitter->addWidget(expectedWidget);
+    mainLayout->addWidget(splitter);
 
-    Core::Log::i("testcase/constructed", "UI has been built");
+    inputLayout->setContentsMargins(3, 0, 3, 0);
+    outputLayout->setContentsMargins(3, 0, 3, 0);
+    expectedLayout->setContentsMargins(3, 0, 3, 0);
 
-    connect(showCheckBox, SIGNAL(toggled(bool)), this, SLOT(on_showCheckBox_toggled(bool)));
-    connect(loadInputButton, SIGNAL(clicked()), this, SLOT(on_loadInputButton_clicked()));
-    connect(diffButton, SIGNAL(clicked()), SLOT(on_diffButton_clicked()));
-    connect(loadExpectedButton, SIGNAL(clicked()), this, SLOT(on_loadExpectedButton_clicked()));
+    splitter->setChildrenCollapsible(false);
+
+    runButton->setToolTip(tr("Test on a single testcase"));
+    diffButton->setToolTip(tr("Open the Diff Viewer"));
+
+    connect(showCheckBox, SIGNAL(toggled(bool)), this, SLOT(onShowCheckBoxToggled(bool)));
+    connect(runButton, SIGNAL(clicked()), this, SLOT(onRunButtonClicked()));
+    connect(diffButton, SIGNAL(clicked()), SLOT(onDiffButtonClicked()));
+    connect(delButton, SIGNAL(clicked()), this, SLOT(onDelButtonClicked()));
     connect(diffViewer, SIGNAL(toLongForHtml()), this, SLOT(onToLongForHtml()));
-
-    Core::Log::i("testcase/constructed", "signals have been attached");
 }
 
 void TestCase::setInput(const QString &text)
 {
-    Core::Log::i("testcase/setInput") << "text \n" << text << endl;
     inputEdit->modifyText(text);
 }
 
 void TestCase::setOutput(const QString &text)
 {
-    Core::Log::i("testcase/setOutput") << "text \n" << text << endl;
+    auto newOutput = text;
 
-    outputEdit->modifyText(text);
+    if (text.length() > SettingsHelper::getOutputLengthLimit())
+    {
+        newOutput = tr("Output Length Limit Exceeded");
+        log->error(tr("Testcases"),
+                   tr("The output #%1 contains more than %2 characters, so it's not displayed. You can set the "
+                      "output length limit in Preferences->Advanced->Limits->Output Length Limit")
+                       .arg(id + 1)
+                       .arg(SettingsHelper::getOutputLengthLimit()));
+    }
+
+    outputEdit->modifyText(newOutput);
     outputEdit->startAnimation();
 
     if (!diffViewer->isHidden())
-        diffViewer->setText(output(), expected());
+        diffViewer->setText(newOutput, expected());
 }
 
 void TestCase::setExpected(const QString &text)
 {
-    Core::Log::i("testcase/setExpected") << "text \n" << text << endl;
     expectedEdit->modifyText(text);
 }
 
 void TestCase::clearOutput()
 {
-    Core::Log::i("testcase/clearOutput", "Cleared output");
     outputEdit->modifyText(QString());
     currentVerdict = Core::Checker::UNKNOWN;
     diffButton->setStyleSheet("");
@@ -150,75 +145,33 @@ void TestCase::clearOutput()
 
 QString TestCase::input() const
 {
-    Core::Log::i("testcase/input", "Invoked");
     return inputEdit->toPlainText();
 }
 
 QString TestCase::output() const
 {
-    Core::Log::i("testcase/output", "Invoked");
     return outputEdit->toPlainText();
 }
 
 QString TestCase::expected() const
 {
-    Core::Log::i("testcase/expected", "Invoked");
     return expectedEdit->toPlainText();
-}
-
-void TestCase::loadFromFile(const QString &pathPrefix)
-{
-    Core::Log::i("testcase/loadFromFile") << "pathPrefix " << pathPrefix << endl;
-    QFile inputFile(pathPrefix + ".in");
-    if (inputFile.exists())
-    {
-        Core::Log::i("testcase/loadFromFile", "Okay, Input file exists");
-        if (inputFile.open(QIODevice::ReadOnly | QIODevice::Text))
-            setInput(inputFile.readAll());
-        else
-            log->warn("Tests", "Failed to load Input #" + QString::number(id + 1) + ". Do I have read permission?");
-    }
-    QFile expectedFile(pathPrefix + ".ans");
-    if (expectedFile.exists())
-    {
-        Core::Log::i("testcase/loadFromFile", "Okay, Expected file exists");
-        if (expectedFile.open(QIODevice::ReadOnly | QIODevice::Text))
-            setExpected(expectedFile.readAll());
-        else
-            log->warn("Tests", "Failed to load Expected #" + QString::number(id + 1) + ". Do I have read permission?");
-    }
-}
-
-void TestCase::save(const QString &pathPrefix, bool safe)
-{
-    Core::Log::i("testcase/save") << "pathPrefix " << pathPrefix << endl;
-
-    if (!input().isEmpty() || QFile::exists(pathPrefix + ".in"))
-    {
-        Core::Log::i("testcase/save", "Okay, Input file exists and should be saved");
-        Util::saveFile(pathPrefix + ".in", input(), "Testcase Input #" + QString::number(id + 1), safe, log);
-    }
-    if (!expected().isEmpty() || QFile::exists(pathPrefix + ".ans"))
-    {
-        Core::Log::i("testcase/save", "Okay, Expected file exists and should be saved");
-        Util::saveFile(pathPrefix + ".ans", expected(), "Testcase Expected #" + QString::number(id + 1), safe, log);
-    }
 }
 
 void TestCase::setID(int index)
 {
-    Core::Log::i("testcase/setID") << "index " << index << endl;
+    LOG_INFO("Changed testcase ID to " << index);
     id = index;
-    inputLabel->setText("Input #" + QString::number(id + 1));
-    outputLabel->setText("Output #" + QString::number(id + 1));
-    expectedLabel->setText("Expected #" + QString::number(id + 1));
+    inputLabel->setText(tr("Input #%1").arg(id + 1));
+    outputLabel->setText(tr("Output #%1").arg(id + 1));
+    expectedLabel->setText(tr("Expected #%1").arg(id + 1));
 }
 
 void TestCase::setVerdict(Core::Checker::Verdict verdict)
 {
     currentVerdict = verdict;
 
-    Core::Log::i("testcase/setVerdict") << INFO_OF(verdict) << endl;
+    LOG_INFO("Changed verdict to " << INFO_OF(verdict));
 
     switch (currentVerdict)
     {
@@ -239,7 +192,6 @@ void TestCase::setVerdict(Core::Checker::Verdict verdict)
 
 Core::Checker::Verdict TestCase::verdict() const
 {
-    Core::Log::i("testcase/verdict", "Invoked");
     return currentVerdict;
 }
 
@@ -253,7 +205,31 @@ bool TestCase::isShow() const
     return showCheckBox->isChecked();
 }
 
-void TestCase::on_showCheckBox_toggled(bool checked)
+void TestCase::setTestCaseEditFont(const QFont &font)
+{
+    inputEdit->setFont(font);
+    outputEdit->setFont(font);
+    expectedEdit->setFont(font);
+}
+
+void TestCase::updateHeight()
+{
+    inputEdit->startAnimation();
+    outputEdit->startAnimation();
+    expectedEdit->startAnimation();
+}
+
+QList<int> TestCase::splitterSizes() const
+{
+    return splitter->sizes();
+}
+
+void TestCase::restoreSplitterSizes(const QList<int> &sizes)
+{
+    splitter->setSizes(sizes);
+}
+
+void TestCase::onShowCheckBoxToggled(bool checked)
 {
     if (checked)
     {
@@ -269,39 +245,42 @@ void TestCase::on_showCheckBox_toggled(bool checked)
     }
 }
 
-void TestCase::on_loadInputButton_clicked()
+void TestCase::onRunButtonClicked()
 {
-    Core::Log::i("testcase/on_loadInputButton_clicked", "invoked");
-    auto res = QFileDialog::getOpenFileName(this, "Load Input");
-    QFile file(res);
-    if (file.open(QIODevice::ReadOnly | QIODevice::Text))
-        setInput(file.readAll());
-    else
-        log->warn("Tests", "Failed to load input file " + res);
+    LOG_INFO("Run button clicked for " << INFO_OF(id));
+    showCheckBox->setChecked(true);
+    emit requestRun(id);
 }
 
-void TestCase::on_diffButton_clicked()
+void TestCase::onDiffButtonClicked()
 {
-    Core::Log::i("testcase/on_diffButton_clicked", "invoked");
+    LOG_INFO("Diff button clicked for " << INFO_OF(id));
     diffViewer->setText(output(), expected());
-    diffViewer->show();
-    diffViewer->raise();
+    Util::showWidgetOnTop(diffViewer);
 }
 
-void TestCase::on_loadExpectedButton_clicked()
+void TestCase::onDelButtonClicked()
 {
-    Core::Log::i("settingmanager/on_loadExpectedButton_clicked", "invoked");
-    auto res = QFileDialog::getOpenFileName(this, "Load Expected");
-    QFile file(res);
-    if (file.open(QIODevice::ReadOnly | QIODevice::Text))
-        setExpected(file.readAll());
+    LOG_INFO("Del button clicked for " << INFO_OF(id));
+    if (input().isEmpty() && expected().isEmpty())
+    {
+        emit deleted(this);
+    }
     else
-        log->warn("Tests", "Failed to load expected file " + res);
+    {
+        auto res = QMessageBox::question(this, tr("Delete Testcase"),
+                                         tr("Are you sure you want to delete test case #%1?").arg(id + 1));
+        if (res == QMessageBox::Yes)
+            emit deleted(this);
+    }
 }
 
 void TestCase::onToLongForHtml()
 {
-    log->warn("Diff Viewer[" + QString::number(id + 1) + "]", "The output/expected is longer than " +
-                                                                  QString::number(DiffViewer::MAX_CHARACTERS_FOR_HTML) +
-                                                                  " characters, use plain text diff");
+    log->warn(tr("Diff Viewer[%1]").arg(id + 1),
+              tr("The output/expected contains more than %1 characters, HTML diff viewer is disabled. You can change "
+                 "the length limit in Preferences->Advanced->Limits->HTML Diff Viewer Length Limit")
+                  .arg(SettingsHelper::getHTMLDiffViewerLengthLimit()));
 }
+
+} // namespace Widgets

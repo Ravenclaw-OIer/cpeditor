@@ -18,13 +18,17 @@
 #include "Core/MessageLogger.hpp"
 #include "Core/EventLogger.hpp"
 #include <QDateTime>
+#include <QTextBrowser>
+#include <generated/SettingsHelper.hpp>
 
-const int MAX_NUMBER_OF_CHARACTERS_TO_DISPLAY = 20000;
+MessageLogger::MessageLogger(QObject *parent) : QObject(parent)
+{
+}
 
 void MessageLogger::setContainer(QTextBrowser *container)
 {
-    MessageLogger::box = container;
-    Core::Log::i("messagelogger/setContainer", "Container set and updated to open links");
+    box = container;
+    LOG_INFO("MessageLogger container has been initialized");
     box->setOpenExternalLinks(true);
 }
 
@@ -35,14 +39,13 @@ void MessageLogger::message(const QString &head, const QString &body, const QStr
     auto newBody = body.toHtmlEscaped().replace(" ", "&nbsp;");
 
     // don't display too long messages, otherwise the application may stuck
-    if (newBody.length() > MAX_NUMBER_OF_CHARACTERS_TO_DISPLAY)
-        newBody = newBody.left(MAX_NUMBER_OF_CHARACTERS_TO_DISPLAY) + "\n... The message is too long";
+    if (newBody.length() > SettingsHelper::getMessageLengthLimit())
+        newBody = newBody.left(SettingsHelper::getMessageLengthLimit()) + tr("\n... The message is too long");
 
     // get the HTML of the message
     // use monospace for the message body, it's important for compilation errors
     // "monospace" might not work on Windows, but "Consolas,Courier,monospace" works
-    QString res = "<b>[" + QTime::currentTime().toString() + "] [" + newHead +
-                  "] </b><span style=\"font-family:Consolas,Courier,monospace;";
+    QString res = QString("<b>[%1] [%2] </b><span style=\"").arg(QTime::currentTime().toString(), newHead);
     if (!color.isEmpty())
         res += "color:" + color;
     res += "\">[";
@@ -50,31 +53,31 @@ void MessageLogger::message(const QString &head, const QString &body, const QStr
         res += "<br>" + newBody.replace("\n", "<br>");
     else
         res += newBody;
-    res += "]</font>";
+    res += "]</span>";
 
     box->append(res);
 }
 
 void MessageLogger::info(const QString &head, const QString &body)
 {
-    Core::Log::i("messagelogger/message/" + head, body);
+    LOG_INFO("MessageLogger Information " << INFO_OF(head) << INFO_OF(body));
     message(head, body, "");
 }
 
 void MessageLogger::warn(const QString &head, const QString &body)
 {
-    Core::Log::w("messagelogger/message/" + head, body);
+    LOG_INFO("MessageLogger Warning " << INFO_OF(head) << INFO_OF(body));
     message(head, body, "green");
 }
 
 void MessageLogger::error(const QString &head, const QString &body)
 {
-    Core::Log::e("messagelogger/message/" + head, body);
+    LOG_INFO("MessageLogger Error " << INFO_OF(head) << INFO_OF(body));
     message(head, body, "red");
 }
 
 void MessageLogger::clear()
 {
-    Core::Log::i("messagelogger/clear", "Cleared the message box");
+    LOG_INFO("MessageLogger box has been cleared");
     box->clear();
 }
