@@ -26,6 +26,7 @@
 #include <QComboBox>
 #include <QLineEdit>
 #include <QPlainTextEdit>
+#include <QTextCodec>
 
 // int
 #include <QScrollBar>
@@ -124,8 +125,7 @@ void ComboBoxWrapper::set(QString s)
 
 void PathItemWrapper::init(QWidget *parent, QVariant param)
 {
-    int id = param.toInt();
-    PathItem *item = new PathItem(id, id, parent); // TODO: split to two param
+    PathItem *item = new PathItem(PathItem::Type(param.toInt()), parent);
     connect(item->getLineEdit(), &QLineEdit::textChanged, this, &ValueWidget::emitSignal);
     widget = item;
 }
@@ -155,6 +155,18 @@ QString ShortcutItemWrapper::get()
 void ShortcutItemWrapper::set(QString s)
 {
     qobject_cast<ShortcutItem *>(widget)->setShortcut(s);
+}
+
+void CodecBoxWrapper::init(QWidget *parent, QVariant)
+{
+    QStringList names;
+    for (auto mib : QTextCodec::availableMibs())
+    {
+        names.push_back(QString::fromLocal8Bit(QTextCodec::codecForMib(mib)->name()));
+    }
+    names.sort(Qt::CaseInsensitive);
+    names.removeDuplicates();
+    ComboBoxWrapper::init(parent, names);
 }
 
 void SpinBoxWrapper::init(QWidget *parent, QVariant param)
@@ -223,9 +235,9 @@ void SliderWrapper::set(int i)
     qobject_cast<QSlider *>(widget)->setValue(i);
 }
 
-void FontItemWrapper::init(QWidget *parent, QVariant)
+void FontItemWrapper::init(QWidget *parent, QVariant param)
 {
-    FontItem *item = new FontItem(parent);
+    FontItem *item = new FontItem(parent, param);
     connect(item, &FontItem::fontChanged, this, &ValueWidget::emitSignal);
     widget = item;
 }
@@ -280,6 +292,8 @@ Wrapper<QString> *createStringWrapper(QString type)
         return new PathItemWrapper();
     else if (type == "ShortcutItem")
         return new ShortcutItemWrapper();
+    else if (type == "CodecBox")
+        return new CodecBoxWrapper();
     return nullptr;
 }
 

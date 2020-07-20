@@ -32,11 +32,13 @@ class SettingsManager
     static void init();
     static void deinit();
 
+    static void generateDefaultSettings();
+
     static void loadSettings(const QString &path);
     static void saveSettings(const QString &path);
 
     static QVariant get(QString key, bool alwaysDefault = false);
-    static bool contains(const QString &key);
+    static bool contains(const QString &key, bool includingDefault = false);
     static void set(const QString &key, QVariant value);
     static void remove(QStringList keys);
     static void reset();

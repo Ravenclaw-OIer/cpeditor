@@ -28,8 +28,7 @@
 #define COMPILER_HPP
 
 #include <QObject>
-
-class QProcess;
+#include <QProcess>
 
 namespace Core
 {
@@ -109,8 +108,11 @@ class Compiler : public QObject
      */
     void onProcessFinished(int exitCode);
 
+    void onProcessErrorOccurred(QProcess::ProcessError error);
+
   private:
     QProcess *compileProcess = nullptr; // the compilation process
+    QString lang;
 };
 
 } // namespace Core

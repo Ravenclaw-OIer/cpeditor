@@ -14,7 +14,25 @@
         "name": "Editor Font",
         "type": "QFont",
         "default": "[](){ QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont); font.setStyleHint(QFont::TypeWriter); return font; }()",
+        "param": "true",
         "tip": "The font of the code editor"
+    },
+    {
+        "name": "Use Custom Application Font",
+        "type": "bool",
+        "tip": "Use a custom font for the whole application instead of the default system font."
+    },
+    {
+        "name": "Custom Application Font",
+        "type": "QFont",
+        "default": "QFontDatabase::systemFont(QFontDatabase::GeneralFont)",
+        "param": "false",
+        "depends": [
+            {
+                "name": "Use Custom Application Font"
+            }
+        ],
+        "tip": "The custom font for the whole application"
     },
     {
         "name": "Default Language",
@@ -30,7 +48,7 @@
         "type": "QString",
         "default": "clang-format",
         "ui": "PathItem",
-        "param": "0",
+        "param": "PathItem::Executable",
         "tip": "The path to the Clang Format executable file"
     },
     {
@@ -42,16 +60,34 @@
         "tip": "The Clang Format style options, which are often saved in a .clang-format configuration file.\nYou can learn about it at <https://clang.llvm.org/docs/ClangFormatStyleOptions.html>."
     },
     {
+        "name": "Clang Format/Format On Manual Save",
+        "desc": "Format code on manual save",
+        "type": "bool",
+        "tip": "Use Clang Format to format the code when saving it manually."
+    },
+    {
+        "name": "Clang Format/Format On Auto Save",
+        "desc": "Format code on auto-save",
+        "type": "bool",
+        "tip": "Use Clang Format to format the code when auto-saving it."
+    },
+    {
         "name": "C++/Template Path",
         "type": "QString",
         "ui": "PathItem",
-        "param": "1",
+        "param": "PathItem::CppSource",
         "tip": "The template used when creating a new C++ file"
     },
     {
         "name": "C++/Template Cursor Position Regex",
         "type": "QString",
         "default": "main\\(\\)",
+        "depends": [
+            {
+                "name": "C++/Template Path",
+                "check": "return !var.toString().isEmpty();"
+            }
+        ],
         "tip": "The regular expression which matches a part of the code template.\nWhen opening a template, the position of the cursor is the position of the regex with an offset.\nThe cursor will be at the end of the template if there's no match of the regex."
     },
     {
@@ -60,6 +96,12 @@
         "default": "end",
         "ui": "QComboBox",
         "param": "QStringList {\"start\", \"end\"}",
+        "depends": [
+            {
+                "name": "C++/Template Path",
+                "check": "return !var.toString().isEmpty();"
+            }
+        ],
         "tip": "Whether the offset is relative to the start of the regex or the end of the regex."
     },
     {
@@ -67,6 +109,12 @@
         "type": "int",
         "default": 4,
         "param": "QVariantList {-1000000, 1000000}",
+        "depends": [
+            {
+                "name": "C++/Template Path",
+                "check": "return !var.toString().isEmpty();"
+            }
+        ],
         "tip": "The offset relative to the match of the regex in the number of characters, including white spaces."
     },
     {
@@ -96,7 +144,7 @@
         "name": "Java/Template Path",
         "type": "QString",
         "ui": "PathItem",
-        "param": "2",
+        "param": "PathItem::JavaSource",
         "tip": "The template used when creating a new Java file"
     },
     {
@@ -120,8 +168,8 @@
     {
         "name": "Java/Class Name",
         "type": "QString",
-        "default": "a",
-        "tip": "The name of the non-public main class of your solution."
+        "default": "Main",
+        "tip": "The name of the main class of your solution."
     },
     {
         "name": "Java/Output Path",
@@ -133,6 +181,12 @@
     {
         "name": "Java/Template Cursor Position Regex",
         "type": "QString",
+        "depends": [
+            {
+                "name": "Java/Template Path",
+                "check": "return !var.toString().isEmpty();"
+            }
+        ],
         "tip": "The regular expression which matches a part of the code template.\nWhen opening a template, the position of the cursor is the position of the regex with an offset.\nThe cursor will be at the end of the template if there's no match of the regex."
     },
     {
@@ -141,12 +195,24 @@
         "default": "end",
         "ui": "QComboBox",
         "param": "QStringList {\"start\", \"end\"}",
+        "depends": [
+            {
+                "name": "Java/Template Path",
+                "check": "return !var.toString().isEmpty();"
+            }
+        ],
         "tip": "Whether the offset is relative to the start of the regex or the end of the regex."
     },
     {
         "name": "Java/Template Cursor Position Offset Characters",
         "type": "int",
         "param": "QVariantList {-1000000, 1000000}",
+        "depends": [
+            {
+                "name": "Java/Template Path",
+                "check": "return !var.toString().isEmpty();"
+            }
+        ],
         "tip": "The offset relative to the match of the regex in the number of characters, including white spaces."
     },
     {
@@ -158,12 +224,18 @@
         "name": "Python/Template Path",
         "type": "QString",
         "ui": "PathItem",
-        "param": "3",
+        "param": "PathItem::PythonSource",
         "tip": "The template used when creating a new Python file"
     },
     {
         "name": "Python/Template Cursor Position Regex",
         "type": "QString",
+        "depends": [
+            {
+                "name": "Python/Template Path",
+                "check": "return !var.toString().isEmpty();"
+            }
+        ],
         "tip": "The regular expression which matches a part of the code template.\nWhen opening a template, the position of the cursor is the position of the regex with an offset.\nThe cursor will be at the end of the template if there's no match of the regex."
     },
     {
@@ -172,12 +244,24 @@
         "default": "end",
         "ui": "QComboBox",
         "param": "QStringList {\"start\", \"end\"}",
+        "depends": [
+            {
+                "name": "Python/Template Path",
+                "check": "return !var.toString().isEmpty();"
+            }
+        ],
         "tip": "Whether the offset is relative to the start of the regex or the end of the regex."
     },
     {
         "name": "Python/Template Cursor Position Offset Characters",
         "type": "int",
         "param": "QVariantList {-1000000, 1000000}",
+        "depends": [
+            {
+                "name": "Python/Template Path",
+                "check": "return !var.toString().isEmpty();"
+            }
+        ],
         "tip": "The offset relative to the match of the regex in the number of characters, including white spaces."
     },
     {
@@ -220,7 +304,6 @@
         "name": "Tab Jump Out Parentheses",
         "desc": "Jump out of a parenthesis by pressing Tab",
         "type": "bool",
-        "default": true,
         "tip": "When this is enabled, you can use Tab instead of the\nclosing parenthesis to jump out of a parenthesis.\nThis can be overridden for each parenthesis in each language."
     },
     {
@@ -294,12 +377,6 @@
         "type": "bool",
         "default": true,
         "tip": "Check whether there's a new version of CP Editor when starting CP Editor."
-    },
-    {
-        "name": "Auto Format",
-        "desc": "Format Codes on Save",
-        "type": "bool",
-        "tip": "Use Clang Format to format the codes when saving it."
     },
     {
         "name": "Opacity",
@@ -440,12 +517,15 @@
         "type": "QString",
         "default": "cf",
         "ui": "PathItem",
-        "param": "0",
+        "param": "PathItem::Executable",
         "tip": "The path to the CF Tool executable file"
     },
     {
-        "name": "Save Path",
-        "type": "QString"
+        "name": "CF/Show Toast Messages",
+        "desc": "Show toast messages for submission verdicts",
+        "type": "bool",
+        "default": "true",
+        "tip": "Show a toast message when the verdict of a submission is known. You can see the message outside of CP Editor."
     },
     {
         "name": "Show Compile And Run Only",
@@ -479,6 +559,13 @@
         "tip": "The maximum number of characters in the output of the program.\nThe program will be killed if either of its stdout or stderr is too long."
     },
     {
+        "name": "Output Display Length Limit",
+        "type": "int",
+        "default": 50000,
+        "param": "QVariantList {2,100000000}",
+        "tip": "The maximum number of characters to be displayed for the output of the program.\nIf the output is too long, it will be elided."
+    },
+    {
         "name": "Message Length Limit",
         "type": "int",
         "default": 20000,
@@ -500,11 +587,11 @@
         "tip": "The maximum number of characters in a source file to open.\nA source file won't be opened if it's too long."
     },
     {
-        "name": "Load Test Case File Length Limit",
+        "name": "Load Test Case Length Limit",
         "type": "int",
         "default": 500000,
         "param": "QVariantList {2,1000000000}",
-        "tip": "The maximum number of characters in a testcase file to load.\nA testcase file won't be loaded if it's too long."
+        "tip": "The maximum number of characters in a test case to be loaded.\nA loaded test case will be elided and read-only if it's too long."
     },
     {
         "name": "LSP/Path C++",
@@ -512,7 +599,7 @@
         "desc": "Path to LSP executable",
         "default": "clangd",
         "type": "QString",
-        "param": "0",
+        "param": "PathItem::Executable",
         "requireAllDepends": false,
         "depends": [
             {
@@ -526,7 +613,7 @@
         "ui": "PathItem",
         "desc": "Path to LSP executable",
         "type": "QString",
-        "param": "0",
+        "param": "PathItem::Executable",
         "requireAllDepends": false,
         "depends": [
             {
@@ -541,7 +628,7 @@
         "desc": "Path to LSP executable",
         "default": "python",
         "type": "QString",
-        "param": "0",
+        "param": "PathItem::Executable",
         "requireAllDepends": false,
         "depends": [
             {
@@ -692,6 +779,7 @@
         "name": "Test Cases Font",
         "type": "QFont",
         "default": "[](){ QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont); font.setStyleHint(QFont::TypeWriter); return font; }()",
+        "param": "true",
         "tip": "The font of test cases"
     },
     {
@@ -704,6 +792,7 @@
         "name": "Message Logger Font",
         "type": "QFont",
         "default": "[](){ QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont); font.setStyleHint(QFont::TypeWriter); return font; }()",
+        "param": "true",
         "tip": "The font of the message logger"
     },
     {
@@ -735,7 +824,7 @@
         "type": "QString",
         "ui": "QComboBox",
         "default": "system",
-        "param": "QStringList { \"system\", \"English\", \"简体中文\" }",
+        "param": "QStringList { \"system\", \"English\", \"Русский\", \"简体中文\" }",
         "tip": "The language displayed in the UI."
     },
     {
@@ -860,5 +949,39 @@
             }
         ],
         "tip": "The password of the proxy server. It can be empty if the proxy server doesn't require authentication."
+    },
+    {
+        "name": "C++/Compiler Output Codec",
+        "type": "QString",
+        "default": "UTF-8",
+        "ui": "CodecBox",
+        "tip": "Text codec of the compiler output (errors, warnings, etc.)"
+    },
+    {
+        "name": "Java/Compiler Output Codec",
+        "type": "QString",
+        "default": "UTF-8",
+        "ui": "CodecBox",
+        "tip": "Text codec of the compiler output (errors, warnings, etc.)"
+    },
+    {
+        "name": "Default Path/Names And Paths",
+        "type": "QVariantList",
+        "param": "QVariantList { QStringList { tr(\"Name\"), tr(\"The name of a default path\") }, QStringList { tr(\"Path\"), tr(\"The path of a default path\") } }",
+        "tip": "A list of default paths.\nThey can be used in actions' corresponding default paths by using ${<default path name>} as a place holder.\nThey can be either manually set or automatically changed after choosing a path for an action."
+    },
+    {
+        "name": "Auto Load External Changes If No Unsaved Modification",
+        "desc": "Auto-load external file changes if there's no unsaved modification",
+        "type": "bool",
+        "default": "true",
+        "tip": "Automatically load file changes that are not made in CP Editor if there's no unsaved modification in CP Editor."
+    },
+    {
+        "name": "Ask For Loading External Changes",
+        "desc": "Ask whether to load external file changes",
+        "type": "bool",
+        "default": "true",
+        "trtip": "tr(\"When there are file changes that are not made in CP Editor and is not automatically loaded by\\n\\\"%1\\\", ask for whether to load the changes.\\nIf this is disabled, external file changes will be ignored unless they are loaded by\\n\\\"%1\\\".\").arg(tr(\"Auto-load external file changes if there's no unsaved modification\"))"
     }
 ]

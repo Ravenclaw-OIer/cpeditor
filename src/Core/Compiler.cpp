@@ -17,10 +17,10 @@
 
 #include "Core/Compiler.hpp"
 #include "Core/EventLogger.hpp"
-#include "Settings/SettingsManager.hpp"
+#include "generated/SettingsHelper.hpp"
 #include <QDir>
 #include <QFileInfo>
-#include <QProcess>
+#include <QTextCodec>
 
 namespace Core
 {
@@ -31,6 +31,8 @@ Compiler::Compiler()
     compileProcess = new QProcess();
     connect(compileProcess, SIGNAL(started()), this, SIGNAL(compilationStarted()));
     connect(compileProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(onProcessFinished(int)));
+    connect(compileProcess, SIGNAL(errorOccurred(QProcess::ProcessError)), this,
+            SLOT(onProcessErrorOccurred(QProcess::ProcessError)));
 }
 
 Compiler::~Compiler()
@@ -51,6 +53,7 @@ Compiler::~Compiler()
 void Compiler::start(const QString &tmpFilePath, const QString &sourceFilePath, const QString &compileCommand,
                      const QString &lang)
 {
+    this->lang = lang;
     if (!QFile::exists(tmpFilePath))
     {
         // quit with error if the source file is not found
@@ -90,7 +93,7 @@ void Compiler::start(const QString &tmpFilePath, const QString &sourceFilePath, 
         return;
     }
 
-    LOG_INFO(INFO_OF(lang) << INFO_OF(args.join(" ")));
+    LOG_INFO(INFO_OF(lang) << INFO_OF(program) << INFO_OF(args.join(" ")));
     // start compilation
     compileProcess->start(program, args);
 }
@@ -139,11 +142,30 @@ QString Compiler::outputPath(const QString &tmpFilePath, const QString &sourceFi
 
 void Compiler::onProcessFinished(int exitCode)
 {
+    QString codecName = "UTF-8";
+    if (lang == "C++")
+        codecName = SettingsHelper::getCppCompilerOutputCodec();
+    else if (lang == "Java")
+        codecName = SettingsHelper::getJavaCompilerOutputCodec();
+    QTextCodec *codec = QTextCodec::codecForName(codecName.toUtf8());
+    if (!codec)
+        codec = QTextCodec::codecForName("UTF-8");
+    QString output = codec->toUnicode(compileProcess->readAllStandardError());
     // emit different signals due to different exit codes
     if (exitCode == 0)
-        emit compilationFinished(compileProcess->readAllStandardError());
+        emit compilationFinished(output);
     else
-        emit compilationErrorOccurred(compileProcess->readAllStandardError());
+        emit compilationErrorOccurred(output);
+}
+
+void Compiler::onProcessErrorOccurred(QProcess::ProcessError error)
+{
+    LOG_WARN(INFO_OF(error));
+    if (error == QProcess::FailedToStart)
+    {
+        emit compilationErrorOccurred(
+            tr("Failed to start compilation. Please check the compile command in the settings."));
+    }
 }
 
 } // namespace Core

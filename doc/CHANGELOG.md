@@ -2,7 +2,7 @@
 
 ### The Portable Version
 
-The portable version saves the config file in the same directory as the executable file of CP Editor, instead of the system config directory. And you can run it without installtion on Windows (on Linux and macOS, the normal version can also be run without installation).
+Now we provide the portable version on Windows. The portable version saves the config file in the same directory as the executable file of CP Editor, instead of the system config directory, and you can run it without installtion.
 
 With the portable version, you can easily store it in something like a USB disk, and the configs are always with you no matter you run it on which machine. However, the file paths in the settings can be broken when you change the machine.
 
@@ -12,11 +12,24 @@ With the portable version, you can easily store it in something like a USB disk,
 - Now you can use `${tempdir}` as an alternative of `${tmpdir}` in C++ executable file path setting and Java class file path setting.
 - Add the translation system and Simplified Chinese translation. (#377 and #384)
 - In-application UI style setting and built-in light/dark style. (#265 and #404)
+- Now you can choose to run on empty test cases. (#408, #420, #426 and #427)
 - Now testcases with empty outputs can also be checked. (#208 and #430)
 - Auto-save time interval.
 - Now you can auto-save the current session, besides saving it when the application exists. (#437 and #442)
 - Now the width of the input/output/expected of each test case is adjustable, and the maximum height of a test case can be set in the preferences. (#414 and #444)
 - Now you can use proxy to check for updates. (#448)
+- Now you can set a custom font for the whole application. (#169 and #453)
+- Now Java programmers can use a public class as your main class. (#459 and #461)
+- A warning when it failed to start compilation. (#463)
+- Now you can change the text codec of the compiler output. (#469)
+- Now you can use the mouse wheel to change the font of the code editor. (#475)
+- A flexible system to set and change default paths for several path choosing actions. (#483)
+- Settings to control whether to load external file changes. (#486)
+- Separated settings for format on manual save and format on auto-save. (#488)
+- An option to disable toast messages of CF Tool. (#489)
+- Add Russian translations. (#494)
+- Now the test cases will be elided if they are too long. (#491)
+- Duplicate Tab (in the context menu of tabs). (#481 and #505)
 
 ### Fixed
 
@@ -26,10 +39,18 @@ With the portable version, you can easily store it in something like a USB disk,
 
 ### Changed
 
-- Now the lengths of the files added by "Add Pairs of Testcases From Files" are limited by Preferences->Advanced->Limits->Load Test Case File Length Limit. (#405)
 - The default font is set to the system fixed-width font instead of the font named "Monospace". (#422)
 - Now the session is stored in a separate file, which was stored along with the settings. So now when exporting/importing settings, the session won't be included, but you can export/load the session separately. (#437 and #442)
 - Now the hidden (not in the search result) pages are skipped when navigating pages in the preferences window via Ctrl+Tab and Ctrl+Shift+Tab. (#447)
+- Now when you open the Find/Replace dialog with some text selected in the code editor and the text-to-find changes, the undo history of the text-to-find won't be cleared. (#460)
+- Now the default main class name of Java is `Main` instead of `a`. (#461)
+- Now the version displayed in `cpeditor --version` is `X.Y.Z.rXX.gGITHASH` if the current commit (HEAD) has no tag, otherwise, it is the actual version. (#468)
+- Now the manual URL contains the commit hash instead of the version number, so that it works on the master branch. (#468)
+- Now Tab Jump Out Parentheses is disabled by default. (#499)
+
+### Improved
+
+- Now restoring the last session is faster. (#509)
 
 ## v6.5
 

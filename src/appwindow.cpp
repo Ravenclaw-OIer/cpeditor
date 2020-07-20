@@ -25,18 +25,19 @@
 #include "Extensions/CompanionServer.hpp"
 #include "Extensions/EditorTheme.hpp"
 #include "Extensions/LanguageServer.hpp"
+#include "Settings/DefaultPathManager.hpp"
 #include "Settings/FileProblemBinder.hpp"
 #include "Settings/PreferencesWindow.hpp"
 #include "Telemetry/UpdateChecker.hpp"
 #include "Util/FileUtil.hpp"
 #include "Util/Util.hpp"
 #include "generated/SettingsHelper.hpp"
+#include "generated/portable.hpp"
 #include "generated/version.hpp"
-#include "mainwindow.hpp"
 #include <QClipboard>
 #include <QDesktopServices>
 #include <QDragEnterEvent>
-#include <QFileDialog>
+#include <QFontDatabase>
 #include <QInputDialog>
 #include <QJsonDocument>
 #include <QMessageBox>
@@ -259,11 +260,11 @@ void AppWindow::applySettings()
     QString mode = SettingsHelper::getViewMode();
 
     if (mode == "code")
-        on_actionEditor_Mode_triggered();
+        on_actionEditorMode_triggered();
     else if (mode == "io")
-        on_actionIO_Mode_triggered();
+        on_actionIOMode_triggered();
     else
-        on_actionSplit_Mode_triggered();
+        on_actionSplitMode_triggered();
 
     if (!SettingsHelper::getGeometry().isEmpty() && !SettingsHelper::getGeometry().isNull() &&
         SettingsHelper::getGeometry().isValid() && !SettingsHelper::isMaximizedWindow())
@@ -299,17 +300,17 @@ void AppWindow::maybeSetHotkeys()
     if (!SettingsHelper::getHotkeyCompileRun().isEmpty())
     {
         hotkeyObjects.push_back(
-            new QShortcut(SettingsHelper::getHotkeyCompileRun(), this, SLOT(on_actionCompile_Run_triggered())));
+            new QShortcut(SettingsHelper::getHotkeyCompileRun(), this, SLOT(on_actionCompileRun_triggered())));
     }
     if (!SettingsHelper::getHotkeyFormat().isEmpty())
     {
         hotkeyObjects.push_back(
-            new QShortcut(SettingsHelper::getHotkeyFormat(), this, SLOT(on_actionFormat_code_triggered())));
+            new QShortcut(SettingsHelper::getHotkeyFormat(), this, SLOT(on_actionFormatCode_triggered())));
     }
     if (!SettingsHelper::getHotkeyKill().isEmpty())
     {
         hotkeyObjects.push_back(
-            new QShortcut(SettingsHelper::getHotkeyKill(), this, SLOT(on_actionKill_Processes_triggered())));
+            new QShortcut(SettingsHelper::getHotkeyKill(), this, SLOT(on_actionKillProcesses_triggered())));
     }
     if (!SettingsHelper::getHotkeyChangeViewMode().isEmpty())
     {
@@ -319,7 +320,7 @@ void AppWindow::maybeSetHotkeys()
     if (!SettingsHelper::getHotkeySnippets().isEmpty())
     {
         hotkeyObjects.push_back(
-            new QShortcut(SettingsHelper::getHotkeySnippets(), this, SLOT(on_actionUse_Snippets_triggered())));
+            new QShortcut(SettingsHelper::getHotkeySnippets(), this, SLOT(on_actionUseSnippets_triggered())));
     }
 }
 
@@ -345,6 +346,25 @@ void AppWindow::saveSettings()
     // findReplaceDialog->writeSettings(*SettingsHelper::settings()); FIX IT!!!
 }
 
+void AppWindow::openTab(MainWindow *window)
+{
+    connect(window, SIGNAL(confirmTriggered(MainWindow *)), this, SLOT(onConfirmTriggered(MainWindow *)));
+    connect(window, SIGNAL(editorFileChanged()), this, SLOT(onEditorFileChanged()));
+    connect(window, SIGNAL(editorTmpPathChanged(MainWindow *, const QString &)), this,
+            SLOT(onEditorTmpPathChanged(MainWindow *, const QString &)));
+    connect(window, SIGNAL(editorLanguageChanged(MainWindow *)), this, SLOT(onEditorLanguageChanged(MainWindow *)));
+    connect(window, SIGNAL(editorTextChanged(MainWindow *)), this, SLOT(onEditorTextChanged(MainWindow *)));
+    connect(window, &MainWindow::editorFontChanged, this, [this] { onSettingsApplied("Appearance"); });
+    connect(window, SIGNAL(requestToastMessage(const QString &, const QString &)), trayIcon,
+            SLOT(showMessage(const QString &, const QString &)));
+    connect(window, SIGNAL(compileOrRunTriggered()), this, SLOT(onCompileOrRunTriggered()));
+
+    ui->tabWidget->setCurrentIndex(ui->tabWidget->addTab(window, window->getTabTitle(false, true)));
+
+    window->getEditor()->setFocus();
+    onEditorFileChanged();
+}
+
 void AppWindow::openTab(const QString &path)
 {
     LOG_INFO("OpenTab Path is " << path);
@@ -362,16 +382,7 @@ void AppWindow::openTab(const QString &path)
         }
     }
 
-    auto fsp = new MainWindow(path, getNewUntitledIndex(), this);
-    connect(fsp, SIGNAL(confirmTriggered(MainWindow *)), this, SLOT(on_confirmTriggered(MainWindow *)));
-    connect(fsp, SIGNAL(editorFileChanged()), this, SLOT(onEditorFileChanged()));
-    connect(fsp, SIGNAL(editorTmpPathChanged(MainWindow *, const QString &)), this,
-            SLOT(onEditorTmpPathChanged(MainWindow *, const QString &)));
-    connect(fsp, SIGNAL(editorLanguageChanged(MainWindow *)), this, SLOT(onEditorLanguageChanged(MainWindow *)));
-    connect(fsp, SIGNAL(editorTextChanged(MainWindow *)), this, SLOT(onEditorTextChanged(MainWindow *)));
-    connect(fsp, SIGNAL(requestToastMessage(const QString &, const QString &)), trayIcon,
-            SLOT(showMessage(const QString &, const QString &)));
-    connect(fsp, SIGNAL(compileOrRunTriggered()), this, SLOT(onCompileOrRunTriggered()));
+    auto newWindow = new MainWindow(path, getNewUntitledIndex(), this);
 
     QString lang = SettingsHelper::getDefaultLanguage();
 
@@ -384,11 +395,15 @@ void AppWindow::openTab(const QString &path)
     else if (Util::pythonSuffix.contains(suffix))
         lang = "Python";
 
-    ui->tabWidget->setCurrentIndex(ui->tabWidget->addTab(fsp, fsp->getTabTitle(false, true)));
-    fsp->setLanguage(lang);
+    newWindow->setLanguage(lang);
 
-    currentWindow()->getEditor()->setFocus();
-    onEditorFileChanged();
+    openTab(newWindow);
+}
+
+void AppWindow::openTab(const MainWindow::EditorStatus &status, bool duplicate)
+{
+    auto newWindow = new MainWindow(status, duplicate, getNewUntitledIndex(), this);
+    openTab(newWindow);
 }
 
 void AppWindow::openTabs(const QStringList &paths)
@@ -498,7 +513,7 @@ bool AppWindow::quit()
     else
     {
         LOG_INFO("quit() called without hotExit");
-        on_actionClose_All_triggered();
+        on_actionCloseAll_triggered();
         if (ui->tabWidget->count() >= 1)
         {
             LOG_INFO("Closing is cancelled");
@@ -532,15 +547,20 @@ int AppWindow::getNewUntitledIndex()
 
 /***************** ABOUT SECTION ***************************/
 
-void AppWindow::on_actionSupport_me_triggered()
+void AppWindow::on_actionSupportMe_triggered()
 {
     QDesktopServices::openUrl(QUrl("https://paypal.me/coder3101", QUrl::TolerantMode));
 }
 
 void AppWindow::on_actionManual_triggered()
 {
-    QDesktopServices::openUrl(
-        QUrl(tr("https://github.com/cpeditor/cpeditor/blob/%1/doc/MANUAL.md").arg(APP_VERSION), QUrl::TolerantMode));
+    QDesktopServices::openUrl(QUrl(
+        tr("https://github.com/cpeditor/cpeditor/blob/%1/doc/MANUAL.md").arg(GIT_COMMIT_HASH), QUrl::TolerantMode));
+}
+
+void AppWindow::on_actionReportIssues_triggered()
+{
+    QDesktopServices::openUrl(QUrl("https://github.com/cpeditor/cpeditor/issues", QUrl::TolerantMode));
 }
 
 void AppWindow::on_actionAbout_triggered()
@@ -565,18 +585,24 @@ void AppWindow::on_actionAboutQt_triggered()
 
 void AppWindow::on_actionBuildInfo_triggered()
 {
-    QMessageBox::about(this, "Build Info",
-                       "App version: " APP_VERSION "\n"
-                       "Git commit hash: " GIT_COMMIT_HASH "\n"
-                       "Build time: " __DATE__ " " __TIME__ "\n"
-#if defined(Q_OS_UNIX)
-                       "OS: Linux\n"
-#elif defined(Q_OS_WIN)
-                       "OS: Windows\n"
-#elif defined(Q_OS_MACOS)
-                       "OS: MacOS\n"
+    QMessageBox::about(this, tr("Build Info"),
+                       tr("App version: %1\nBuild type: %2\nGit commit hash: %3\nBuild time: %4\nOS: %5")
+                           .arg(APP_VERSION)
+#ifdef PORTABLE_VERSION
+                           .arg(tr("Portable Version"))
 #else
-                       "OS: Unknown\n"
+                           .arg(tr("Setup Version"))
+#endif
+                           .arg(GIT_COMMIT_HASH)
+                           .arg(__DATE__ " " __TIME__)
+#if defined(Q_OS_UNIX)
+                           .arg("Linux")
+#elif defined(Q_OS_WIN)
+                           .arg("Windows")
+#elif defined(Q_OS_MACOS)
+                           .arg("macOS")
+#else
+                           .arg("Unknown")
 #endif
     );
 }
@@ -592,22 +618,22 @@ void AppWindow::on_actionQuit_triggered()
     }
 }
 
-void AppWindow::on_actionNew_Tab_triggered()
+void AppWindow::on_actionNewTab_triggered()
 {
     openTab("");
 }
 
 void AppWindow::on_actionOpen_triggered()
 {
-    auto fileNames = QFileDialog::getOpenFileNames(this, tr("Open Files"), SettingsHelper::getSavePath(),
-                                                   Util::fileNameFilter(true, true, true));
+    auto fileNames = DefaultPathManager::getOpenFileNames("Open File", this, tr("Open Files"),
+                                                          Util::fileNameFilter(true, true, true));
     LOG_INFO("Filename " << fileNames.join(", "));
     openTabs(fileNames);
 }
 
 void AppWindow::on_actionOpenContest_triggered()
 {
-    auto path = QFileDialog::getExistingDirectory(this, tr("Open Contest"));
+    auto path = DefaultPathManager::getExistingDirectory("Open Contest", this, tr("Open Contest"));
     if (QFile::exists(path) && QFileInfo(path).isDir())
     {
         bool ok = false;
@@ -637,13 +663,13 @@ void AppWindow::on_actionSave_triggered()
         currentWindow()->save(true, tr("Save"));
 }
 
-void AppWindow::on_actionSave_As_triggered()
+void AppWindow::on_actionSaveAs_triggered()
 {
     if (currentWindow() != nullptr)
         currentWindow()->saveAs();
 }
 
-void AppWindow::on_actionSave_All_triggered()
+void AppWindow::on_actionSaveAll_triggered()
 {
     for (int t = 0; t < ui->tabWidget->count(); ++t)
     {
@@ -653,14 +679,14 @@ void AppWindow::on_actionSave_All_triggered()
     }
 }
 
-void AppWindow::on_actionClose_Current_triggered()
+void AppWindow::on_actionCloseCurrent_triggered()
 {
     int index = ui->tabWidget->currentIndex();
     if (index != -1)
         closeTab(index);
 }
 
-void AppWindow::on_actionClose_All_triggered()
+void AppWindow::on_actionCloseAll_triggered()
 {
     for (int t = 0; t < ui->tabWidget->count(); t++)
     {
@@ -671,7 +697,7 @@ void AppWindow::on_actionClose_All_triggered()
     }
 }
 
-void AppWindow::on_actionClose_Saved_triggered()
+void AppWindow::on_actionCloseSaved_triggered()
 {
     for (int t = 0; t < ui->tabWidget->count(); t++)
         if (!windowAt(t)->isTextChanged() && closeTab(t))
@@ -680,7 +706,7 @@ void AppWindow::on_actionClose_Saved_triggered()
 
 /************************ PREFERENCES SECTION **********************/
 
-void AppWindow::on_action_reset_settings_triggered()
+void AppWindow::on_actionResetSettings_triggered()
 {
     auto res = QMessageBox::question(this, tr("Reset preferences"),
                                      tr("Are you sure you want to reset the"
@@ -694,18 +720,26 @@ void AppWindow::on_action_reset_settings_triggered()
     }
 }
 
-void AppWindow::on_action_export_settings_triggered()
+void AppWindow::on_actionExportSettings_triggered()
 {
-    auto path = QFileDialog::getSaveFileName(this, tr("Export settings to a file"), QString(),
-                                             tr("CP Editor Settings File") + " (*.cpeditor)");
+    auto path = DefaultPathManager::getSaveFileName("Export And Import Settings", this, tr("Export settings to a file"),
+                                                    tr("CP Editor Settings File") + " (*.cpeditor)");
     if (!path.isEmpty())
         SettingsManager::saveSettings(path);
 }
 
-void AppWindow::on_action_import_settings_triggered()
+void AppWindow::on_actionImportSettings_triggered()
 {
-    auto path = QFileDialog::getOpenFileName(this, tr("Import settings from a file"), QString(),
-                                             tr("CP Editor Settings File") + " (*.cpeditor)");
+    auto res = QMessageBox::question(
+        this, tr("Import Settings"),
+        tr("All current settings will lose after importing settings from a file. Are you sure to continue?"),
+        QMessageBox::Yes | QMessageBox::No);
+    if (res == QMessageBox::No)
+        return;
+
+    auto path =
+        DefaultPathManager::getOpenFileName("Export And Import Settings", this, tr("Import settings from a file"),
+                                            tr("CP Editor Settings File") + " (*.cpeditor)");
     if (!path.isEmpty())
     {
         SettingsManager::loadSettings(path);
@@ -713,10 +747,11 @@ void AppWindow::on_action_import_settings_triggered()
     }
 }
 
-void AppWindow::on_action_export_session_triggered()
+void AppWindow::on_actionExportSession_triggered()
 {
-    auto path = QFileDialog::getSaveFileName(this, tr("Export current session to a file"), QString(),
-                                             tr("CP Editor Session File") + " (*.json)");
+    auto path =
+        DefaultPathManager::getSaveFileName("Export And Load Session", this, tr("Export current session to a file"),
+                                            tr("CP Editor Session File") + " (*.json)");
     if (!path.isEmpty())
     {
         if (!Util::saveFile(path, sessionManager->currentSessionText(), "Export Session"))
@@ -727,16 +762,17 @@ void AppWindow::on_action_export_session_triggered()
     }
 }
 
-void AppWindow::on_action_load_session_triggered()
+void AppWindow::on_actionLoadSession_triggered()
 {
     auto res = QMessageBox::question(this, tr("Load Session"),
-                                     tr("Load a session from a file will close all tabs in the current session without "
-                                        "saving the files. Are you sure to continue?"),
+                                     tr("Loading a session from a file will close all tabs in the current session "
+                                        "without saving the files. Are you sure to continue?"),
                                      QMessageBox::Yes | QMessageBox::No);
     if (res == QMessageBox::No)
         return;
-    auto path = QFileDialog::getOpenFileName(this, tr("Load session from a file"), QString(),
-                                             tr("CP Editor Session File") + " (*.json)");
+
+    auto path = DefaultPathManager::getOpenFileName("Export And Load Session", this, tr("Load session from a file"),
+                                                    tr("CP Editor Session File") + " (*.json)");
     if (!path.isEmpty())
         sessionManager->restoreSession(path);
 }
@@ -830,12 +866,12 @@ void AppWindow::onTabChanged(int index)
     activeLogger = tmp->getLogger();
     server->setMessageLogger(activeLogger);
 
-    if (ui->actionEditor_Mode->isChecked())
-        on_actionEditor_Mode_triggered();
-    else if (ui->actionIO_Mode->isChecked())
-        on_actionIO_Mode_triggered();
-    else if (ui->actionSplit_Mode->isChecked())
-        on_actionSplit_Mode_triggered();
+    if (ui->actionEditorMode->isChecked())
+        on_actionEditorMode_triggered();
+    else if (ui->actionIOMode->isChecked())
+        on_actionIOMode_triggered();
+    else if (ui->actionSplitMode->isChecked())
+        on_actionSplitMode_triggered();
 
     tmp->getRightSplitter()->restoreState(SettingsHelper::getRightSplitterSize());
 
@@ -974,10 +1010,12 @@ void AppWindow::onSettingsApplied(const QString &pagePath)
         onEditorTextChanged(windowAt(i));
     }
 
-    if (pagePath.isEmpty() || pagePath == "Key Bindings")
+    auto pageChanged = [pagePath](const QString &page) { return pagePath.isEmpty() || pagePath == page; };
+
+    if (pageChanged("Key Bindings"))
         maybeSetHotkeys();
 
-    if (pagePath.isEmpty() || pagePath == "Extensions/Competitive Companion")
+    if (pageChanged("Extensions/Competitive Companion"))
     {
         if (SettingsHelper::isCompetitiveCompanionEnable())
             server->updatePort(SettingsHelper::getCompetitiveCompanionConnectionPort());
@@ -985,34 +1023,43 @@ void AppWindow::onSettingsApplied(const QString &pagePath)
             server->updatePort(0);
     }
 
-    if (pagePath.isEmpty() || pagePath == "Appearance")
+    if (pageChanged("Appearance"))
     {
         setWindowOpacity(SettingsHelper::getOpacity() / 100.0);
         Core::StyleManager::setStyle(SettingsHelper::getUIStyle());
+        if (SettingsHelper::isUseCustomApplicationFont())
+            qApp->setFont(SettingsHelper::getCustomApplicationFont());
+        else
+            qApp->setFont(QFontDatabase::systemFont(QFontDatabase::GeneralFont));
     }
 
-    if (pagePath.isEmpty() || pagePath == "Extensions/Language Server/C++ Server")
+    if (pageChanged("Extensions/Language Server/C++ Server"))
     {
         cppServer->updateSettings();
         lspTimerCpp->setInterval(SettingsHelper::getLSPDelayCpp());
     }
 
-    if (pagePath.isEmpty() || pagePath == "Extensions/Language Server/Java Server")
+    if (pageChanged("Extensions/Language Server/Java Server"))
     {
         javaServer->updateSettings();
         lspTimerJava->setInterval(SettingsHelper::getLSPDelayJava());
     }
 
-    if (pagePath.isEmpty() || pagePath == "Extensions/Language Server/Python Server")
+    if (pageChanged("Extensions/Language Server/Python Server"))
     {
         pythonServer->updateSettings();
         lspTimerPython->setInterval(SettingsHelper::getLSPDelayPython());
     }
 
-    if (pagePath.isEmpty() || pagePath == "Actions/Save Session")
+    if (pageChanged("Actions/Save Session"))
     {
         sessionManager->setAutoUpdateDuration(SettingsHelper::getHotExitAutoSaveInterval());
         sessionManager->setAutoUpdateSession(SettingsHelper::isHotExitEnable() && SettingsHelper::isHotExitAutoSave());
+    }
+
+    if (pageChanged("File Path/Default Paths"))
+    {
+        DefaultPathManager::fromVariantList(SettingsHelper::getDefaultPathNamesAndPaths());
     }
 }
 
@@ -1051,19 +1098,19 @@ void AppWindow::onIncomingCompanionRequest(const Extensions::CompanionData &data
 void AppWindow::onViewModeToggle()
 {
     LOG_INFO("Switching view mode");
-    if (ui->actionEditor_Mode->isChecked())
+    if (ui->actionEditorMode->isChecked())
     {
-        on_actionIO_Mode_triggered();
+        on_actionIOMode_triggered();
         return;
     }
-    if (ui->actionSplit_Mode->isChecked())
+    if (ui->actionSplitMode->isChecked())
     {
-        on_actionEditor_Mode_triggered();
+        on_actionEditorMode_triggered();
         return;
     }
-    if (ui->actionIO_Mode->isChecked())
+    if (ui->actionIOMode->isChecked())
     {
-        on_actionSplit_Mode_triggered();
+        on_actionSplitMode_triggered();
         return;
     }
 }
@@ -1081,7 +1128,7 @@ void AppWindow::onRightSplitterMoved(int _, int __)
 }
 
 /************************* ACTIONS ************************/
-void AppWindow::on_actionCheck_for_updates_triggered()
+void AppWindow::on_actionCheckForUpdates_triggered()
 {
     updateChecker->checkUpdate(false);
 }
@@ -1092,7 +1139,7 @@ void AppWindow::on_actionCompile_triggered()
         currentWindow()->compileOnly();
 }
 
-void AppWindow::on_actionCompile_Run_triggered()
+void AppWindow::on_actionCompileRun_triggered()
 {
     if (currentWindow() != nullptr)
         currentWindow()->compileAndRun();
@@ -1104,14 +1151,14 @@ void AppWindow::on_actionRun_triggered()
         currentWindow()->runOnly();
 }
 
-void AppWindow::on_action_find_replace_triggered()
+void AppWindow::on_actionFindReplace_triggered()
 {
     auto tmp = currentWindow();
     if (tmp != nullptr)
         findReplaceDialog->showDialog(tmp->getEditor()->textCursor().selectedText());
 }
 
-void AppWindow::on_actionFormat_code_triggered()
+void AppWindow::on_actionFormatCode_triggered()
 {
     if (currentWindow() != nullptr)
     {
@@ -1119,7 +1166,7 @@ void AppWindow::on_actionFormat_code_triggered()
     }
 }
 
-void AppWindow::on_actionRun_Detached_triggered()
+void AppWindow::on_actionRunDetached_triggered()
 {
     if (currentWindow() != nullptr)
     {
@@ -1127,7 +1174,7 @@ void AppWindow::on_actionRun_Detached_triggered()
     }
 }
 
-void AppWindow::on_actionKill_Processes_triggered()
+void AppWindow::on_actionKillProcesses_triggered()
 {
     if (currentWindow() != nullptr)
     {
@@ -1135,7 +1182,7 @@ void AppWindow::on_actionKill_Processes_triggered()
     }
 }
 
-void AppWindow::on_actionUse_Snippets_triggered()
+void AppWindow::on_actionUseSnippets_triggered()
 {
     LOG_INFO("Use snippets trigerred");
     auto current = currentWindow();
@@ -1172,12 +1219,12 @@ void AppWindow::on_actionUse_Snippets_triggered()
     }
 }
 
-void AppWindow::on_actionEditor_Mode_triggered()
+void AppWindow::on_actionEditorMode_triggered()
 {
     SettingsHelper::setViewMode("code");
-    ui->actionEditor_Mode->setChecked(true);
-    ui->actionIO_Mode->setChecked(false);
-    ui->actionSplit_Mode->setChecked(false);
+    ui->actionEditorMode->setChecked(true);
+    ui->actionIOMode->setChecked(false);
+    ui->actionSplitMode->setChecked(false);
     if (currentWindow() != nullptr)
     {
         LOG_INFO("Switched to code mode");
@@ -1185,12 +1232,12 @@ void AppWindow::on_actionEditor_Mode_triggered()
     }
 }
 
-void AppWindow::on_actionIO_Mode_triggered()
+void AppWindow::on_actionIOMode_triggered()
 {
     SettingsHelper::setViewMode("io");
-    ui->actionEditor_Mode->setChecked(false);
-    ui->actionIO_Mode->setChecked(true);
-    ui->actionSplit_Mode->setChecked(false);
+    ui->actionEditorMode->setChecked(false);
+    ui->actionIOMode->setChecked(true);
+    ui->actionSplitMode->setChecked(false);
     if (currentWindow() != nullptr)
     {
         LOG_INFO("Switched to IO Mode");
@@ -1198,12 +1245,12 @@ void AppWindow::on_actionIO_Mode_triggered()
     }
 }
 
-void AppWindow::on_actionSplit_Mode_triggered()
+void AppWindow::on_actionSplitMode_triggered()
 {
     SettingsHelper::setViewMode("split");
-    ui->actionEditor_Mode->setChecked(false);
-    ui->actionIO_Mode->setChecked(false);
-    ui->actionSplit_Mode->setChecked(true);
+    ui->actionEditorMode->setChecked(false);
+    ui->actionIOMode->setChecked(false);
+    ui->actionSplitMode->setChecked(true);
     LOG_INFO("Entered split mode");
     if (currentWindow() != nullptr)
     {
@@ -1212,63 +1259,63 @@ void AppWindow::on_actionSplit_Mode_triggered()
     }
 }
 
-void AppWindow::on_action_indent_triggered()
+void AppWindow::on_actionIndent_triggered()
 {
     auto tmp = currentWindow();
     if (tmp != nullptr)
         tmp->getEditor()->indent();
 }
 
-void AppWindow::on_action_unindent_triggered()
+void AppWindow::on_actionUnindent_triggered()
 {
     auto tmp = currentWindow();
     if (tmp != nullptr)
         tmp->getEditor()->unindent();
 }
 
-void AppWindow::on_action_swap_line_up_triggered()
+void AppWindow::on_actionSwapLineUp_triggered()
 {
     auto tmp = currentWindow();
     if (tmp != nullptr)
         tmp->getEditor()->swapLineUp();
 }
 
-void AppWindow::on_action_swap_line_down_triggered()
+void AppWindow::on_actionSwapLineDown_triggered()
 {
     auto tmp = currentWindow();
     if (tmp != nullptr)
         tmp->getEditor()->swapLineDown();
 }
 
-void AppWindow::on_action_duplicate_line_triggered()
+void AppWindow::on_actionDuplicateLine_triggered()
 {
     auto tmp = currentWindow();
     if (tmp != nullptr)
         tmp->getEditor()->duplicate();
 }
 
-void AppWindow::on_action_delete_line_triggered()
+void AppWindow::on_actionDeleteLine_triggered()
 {
     auto tmp = currentWindow();
     if (tmp != nullptr)
         tmp->getEditor()->deleteLine();
 }
 
-void AppWindow::on_action_toggle_comment_triggered()
+void AppWindow::on_actionToggleComment_triggered()
 {
     auto tmp = currentWindow();
     if (tmp != nullptr)
         tmp->getEditor()->toggleComment();
 }
 
-void AppWindow::on_action_toggle_block_comment_triggered()
+void AppWindow::on_actionToggleBlockComment_triggered()
 {
     auto tmp = currentWindow();
     if (tmp != nullptr)
         tmp->getEditor()->toggleBlockComment();
 }
 
-void AppWindow::on_confirmTriggered(MainWindow *widget)
+void AppWindow::onConfirmTriggered(MainWindow *widget)
 {
     int index = ui->tabWidget->indexOf(widget);
     if (index != -1)
@@ -1307,10 +1354,14 @@ void AppWindow::onTabContextMenuRequested(const QPoint &pos)
                 if (closeTab(i))
                     --i;
         });
-        tabMenu->addAction(tr("Close Saved"), [this] { on_actionClose_Saved_triggered(); });
+        tabMenu->addAction(tr("Close Saved"), [this] { on_actionCloseSaved_triggered(); });
 
-        tabMenu->addAction(tr("Close All"), [this] { on_actionClose_All_triggered(); });
+        tabMenu->addAction(tr("Close All"), [this] { on_actionCloseAll_triggered(); });
         QString filePath = widget->getFilePath();
+
+        tabMenu->addSeparator();
+
+        tabMenu->addAction(tr("Duplicate Tab"), [widget, this] { openTab(widget->toStatus(), true); });
 
         LOG_INFO(INFO_OF(filePath));
 
@@ -1508,12 +1559,12 @@ MainWindow *AppWindow::windowAt(int index)
     return qobject_cast<MainWindow *>(ui->tabWidget->widget(index));
 }
 
-void AppWindow::on_actionShow_Logs_triggered()
+void AppWindow::on_actionShowLogs_triggered()
 {
     Core::Log::revealInFileManager();
 }
 
-void AppWindow::on_actionClear_Logs_triggered()
+void AppWindow::on_actionClearLogs_triggered()
 {
     Core::Log::clearOldLogs();
     if (currentWindow() != nullptr)
@@ -1541,6 +1592,6 @@ void AppWindow::onTrayIconActivated(QSystemTrayIcon::ActivationReason reason)
 
 void AppWindow::onCompileOrRunTriggered()
 {
-    if (ui->actionEditor_Mode->isChecked())
-        on_actionSplit_Mode_triggered();
+    if (ui->actionEditorMode->isChecked())
+        on_actionSplitMode_triggered();
 }

@@ -25,12 +25,12 @@
 #include "Extensions/CFTool.hpp"
 #include "Extensions/ClangFormatter.hpp"
 #include "Extensions/CompanionServer.hpp"
+#include "Settings/DefaultPathManager.hpp"
 #include "Settings/FileProblemBinder.hpp"
 #include "Util/FileUtil.hpp"
 #include "Util/QCodeEditorUtil.hpp"
 #include "Widgets/TestCases.hpp"
 #include <QCodeEditor>
-#include <QFileDialog>
 #include <QFileSystemWatcher>
 #include <QFontDialog>
 #include <QInputDialog>
@@ -51,25 +51,36 @@
 
 // ***************************** RAII  ****************************
 
-MainWindow::MainWindow(const QString &fileOpen, int index, QWidget *parent)
+MainWindow::MainWindow(int index, QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), untitledIndex(index), fileWatcher(new QFileSystemWatcher(this)),
       autoSaveTimer(new QTimer(this))
 {
-    LOG_INFO(INFO_OF(fileOpen) << INFO_OF(index));
-
+    LOG_INFO(INFO_OF(index));
     ui->setupUi(this);
     setupCore();
     setTestCases();
     setEditor();
     connect(fileWatcher, SIGNAL(fileChanged(const QString &)), this, SLOT(onFileWatcherChanged(const QString &)));
     connect(
-        autoSaveTimer, &QTimer::timeout, autoSaveTimer, [this] { saveFile(IgnoreUntitled, tr("Auto Save"), false); },
+        autoSaveTimer, &QTimer::timeout, autoSaveTimer, [this] { saveFile(AutoSave, tr("Auto Save"), false); },
         Qt::DirectConnection);
     applySettings("", true);
+    QTimer::singleShot(0, [this] { setLanguage(language); }); // See issue #187 for more information
+}
+
+MainWindow::MainWindow(const QString &fileOpen, int index, QWidget *parent) : MainWindow(index, parent)
+{
+    LOG_INFO(INFO_OF(fileOpen));
     loadFile(fileOpen);
     if (testcases->count() == 0)
         testcases->addTestCase();
-    QTimer::singleShot(0, [this] { setLanguage(language); }); // See issue #187 for more information
+}
+
+MainWindow::MainWindow(const EditorStatus &status, bool duplicate, int index, QWidget *parent)
+    : MainWindow(index, parent)
+{
+    LOG_INFO(INFO_OF(duplicate));
+    loadStatus(status, duplicate);
 }
 
 MainWindow::~MainWindow()
@@ -95,7 +106,7 @@ MainWindow::~MainWindow()
 void MainWindow::setTestCases()
 {
     testcases = new Widgets::TestCases(log, this);
-    ui->test_cases_layout->addWidget(testcases);
+    ui->testCasesLayout->addWidget(testcases);
     connect(testcases, SIGNAL(checkerChanged()), this, SLOT(updateChecker()));
     connect(testcases, SIGNAL(requestRun(int)), this, SLOT(runTestCase(int)));
 }
@@ -106,9 +117,10 @@ void MainWindow::setEditor()
     editor->setSizePolicy(QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Expanding);
     editor->setAcceptDrops(false);
 
-    ui->verticalLayout_8->addWidget(editor);
+    ui->editorArea->addWidget(editor);
 
     connect(editor, SIGNAL(textChanged()), this, SLOT(onTextChanged()));
+    connect(editor, SIGNAL(fontChanged(const QFont &)), this, SLOT(onEditorFontChanged(const QFont &)));
 
     // cursorPositionChanged() does not imply selectionChanged() if you press Left with
     // a selection (and the cursor is at the begin of the selection)
@@ -119,7 +131,7 @@ void MainWindow::setEditor()
 void MainWindow::setupCore()
 {
     log = new MessageLogger();
-    log->setContainer(ui->compiler_edit);
+    log->setContainer(ui->compilerEdit);
     formatter = new Extensions::ClangFormatter(SettingsHelper::getClangFormatPath(),
                                                SettingsHelper::getClangFormatStyle(), log);
 }
@@ -237,7 +249,7 @@ void MainWindow::setCFToolUI()
         cftool = new Extensions::CFTool(cftoolPath, log);
         connect(cftool, SIGNAL(requestToastMessage(const QString &, const QString &)), this,
                 SIGNAL(requestToastMessage(const QString &, const QString &)));
-        ui->compile_and_run_buttons->addWidget(submitToCodeforces);
+        ui->compileAndRunButtons->addWidget(submitToCodeforces);
         connect(submitToCodeforces, &QPushButton::clicked, this, [this] {
             emit confirmTriggered(this);
             auto response = QMessageBox::warning(
@@ -437,16 +449,19 @@ MainWindow::EditorStatus MainWindow::toStatus() const
     return status;
 }
 
-void MainWindow::loadStatus(const EditorStatus &status)
+void MainWindow::loadStatus(const EditorStatus &status, bool duplicate)
 {
     LOG_INFO("Requesting loadStatus");
     setProblemURL(status.problemURL);
     if (status.isLanguageSet)
         setLanguage(status.language);
-    untitledIndex = status.untitledIndex;
+    if (!duplicate)
+    {
+        untitledIndex = status.untitledIndex;
+        setFilePath(status.filePath);
+    }
     testcases->addCustomCheckers(status.customCheckers);
     testcases->setCheckerIndex(status.checkerIndex);
-    setFilePath(status.filePath);
     savedText = status.savedText;
     editor->setPlainText(status.editorText);
     auto cursor = editor->textCursor();
@@ -531,7 +546,7 @@ void MainWindow::applySettings(const QString &pagePath, bool shouldPerformDigoni
 
     if (pagePath.isEmpty() || pagePath == "Appearance")
     {
-        ui->compiler_edit->setFont(SettingsHelper::getMessageLoggerFont());
+        ui->compilerEdit->setFont(SettingsHelper::getMessageLoggerFont());
         testcases->setTestCaseEditFont(SettingsHelper::getTestCasesFont());
         testcases->updateHeights();
         if (SettingsHelper::isShowCompileAndRunOnly())
@@ -621,7 +636,7 @@ void MainWindow::compileAndRun()
 void MainWindow::formatSource()
 {
     LOG_INFO("Requested code format");
-    formatter->format(editor, filePath, language, true);
+    formatter->format(editor, filePath, language, true, true);
 }
 
 void MainWindow::setLanguage(const QString &lang)
@@ -668,18 +683,18 @@ void MainWindow::setViewMode(const QString &mode)
 {
     if (mode == "code")
     {
-        ui->left_widget->show();
-        ui->right_widget->hide();
+        ui->leftWidget->show();
+        ui->rightWidget->hide();
     }
     else if (mode == "io")
     {
-        ui->left_widget->hide();
-        ui->right_widget->show();
+        ui->leftWidget->hide();
+        ui->rightWidget->show();
     }
     else
     {
-        ui->left_widget->show();
-        ui->right_widget->show();
+        ui->leftWidget->show();
+        ui->rightWidget->show();
         ui->splitter->restoreState(SettingsHelper::getSplitterSize());
     }
 }
@@ -725,10 +740,10 @@ void MainWindow::setText(const QString &text, bool keep)
     if (keep)
     {
         auto cursor = editor->textCursor();
-        int old_pos = cursor.position();
+        int oldPos = cursor.position();
         cursor.select(QTextCursor::Document);
         cursor.insertText(text);
-        cursor.setPosition(old_pos);
+        cursor.setPosition(oldPos);
         editor->setTextCursor(cursor);
     }
     else
@@ -825,8 +840,10 @@ void MainWindow::loadFile(const QString &loadPath)
 bool MainWindow::saveFile(SaveMode mode, const QString &head, bool safe)
 {
     LOG_INFO(INFO_OF(mode) << INFO_OF(head) << BOOL_INFO_OF(safe));
-    if (SettingsHelper::isAutoFormat())
-        formatter->format(editor, filePath, language, false);
+
+    if ((mode != AutoSave && SettingsHelper::isClangFormatFormatOnManualSave()) ||
+        (mode == AutoSave && SettingsHelper::isClangFormatFormatOnAutoSave()))
+        formatter->format(editor, filePath, language, false, false);
 
     if (mode == SaveAs || (isUntitled() && mode == AlwaysSave))
     {
@@ -855,7 +872,8 @@ bool MainWindow::saveFile(SaveMode mode, const QString &head, bool safe)
                 }
             }
             if (defaultPath.isEmpty())
-                defaultPath = QDir(SettingsHelper::getSavePath()).filePath(getTabTitle(false, false));
+                defaultPath =
+                    QDir(DefaultPathManager::defaultPathForAction("Save File")).filePath(getTabTitle(false, false));
             if (language == "C++")
                 defaultPath += ".cpp";
             else if (language == "Java")
@@ -898,7 +916,7 @@ bool MainWindow::saveFile(SaveMode mode, const QString &head, bool safe)
 
         setFilePath(newFilePath);
 
-        SettingsHelper::setSavePath(QFileInfo(filePath).canonicalPath());
+        DefaultPathManager::changeDefaultPathForAction("Save File", QFileInfo(filePath).canonicalPath());
 
         auto suffix = QFileInfo(filePath).suffix();
         if (Util::cppSuffix.contains(suffix))
@@ -946,13 +964,13 @@ QString MainWindow::tmpPath()
         }
         created = true;
     }
-    QString name = "sol.";
+    QString name;
     if (language == "C++")
-        name += Util::cppSuffix.first();
+        name = "sol." + Util::cppSuffix.first();
     else if (language == "Java")
-        name += Util::javaSuffix.first();
+        name = SettingsHelper::getJavaClassName() + "." + Util::javaSuffix.first();
     else if (language == "Python")
-        name += Util::pythonSuffix.first();
+        name = "sol." + Util::pythonSuffix.first();
     else
     {
         log->error(tr("Temp File"), tr("Please set the language"));
@@ -1008,7 +1026,7 @@ bool MainWindow::closeConfirm()
     return confirmed;
 }
 
-void MainWindow::on_clear_messages_button_clicked()
+void MainWindow::on_clearMessagesButton_clicked()
 {
     log->clear();
 }
@@ -1054,13 +1072,13 @@ void MainWindow::onFileWatcherChanged(const QString &path)
             return;
         }
 
-        if (savedText == currentText)
+        if (savedText == currentText && SettingsHelper::isAutoLoadExternalChangesIfNoUnsavedModification())
         {
             loadFile(path);
             return;
         }
 
-        if (!reloading)
+        if (!reloading && SettingsHelper::isAskForLoadingExternalChanges())
         {
             reloading = true;
 
@@ -1087,6 +1105,12 @@ void MainWindow::onTextChanged()
         autoSaveTimer->start();
     }
     emit editorTextChanged(this);
+}
+
+void MainWindow::onEditorFontChanged(const QFont &newFont)
+{
+    SettingsHelper::setEditorFont(newFont);
+    emit editorFontChanged();
 }
 
 void MainWindow::updateCursorInfo()
@@ -1122,7 +1146,7 @@ void MainWindow::updateCursorInfo()
         else
             info = tr("%1 characters selected").arg(selection.length());
     }
-    ui->cursor_info->setText(info);
+    ui->cursorInfo->setText(info);
 }
 
 void MainWindow::updateChecker()
@@ -1144,7 +1168,7 @@ QSplitter *MainWindow::getSplitter()
 
 QSplitter *MainWindow::getRightSplitter()
 {
-    return ui->right_splitter;
+    return ui->rightSplitter;
 }
 
 void MainWindow::performCompileAndRunDiagonistics()
@@ -1218,7 +1242,15 @@ void MainWindow::onCompilationErrorOccurred(const QString &error)
 {
     log->error(tr("Compiler"), tr("Error occurred while compiling"));
     if (!error.trimmed().isEmpty())
+    {
         log->error(tr("Compile Errors"), error);
+        if (language == "Java" && error.contains("public class"))
+        {
+            log->warn(tr("Compile Errors"),
+                      tr("Have you set a proper name for the main class in your solution? If not, you can set it in "
+                         "Preferences->Lanugages->Java->Java Commands->Java Class Name."));
+        }
+    }
 }
 
 void MainWindow::onCompilationKilled()

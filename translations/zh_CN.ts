@@ -520,7 +520,7 @@
         <translation>加载会话</translation>
     </message>
     <message>
-        <source>Load a session from a file will close all tabs in the current session without saving the files. Are you sure to continue?</source>
+        <source>Loading a session from a file will close all tabs in the current session without saving the files. Are you sure to continue?</source>
         <translation>从文件中加载会话会关闭当前的所有标签页并且不会保存文件。你确定要继续吗？</translation>
     </message>
     <message>
@@ -542,6 +542,42 @@
     <message>
         <source>CP Editor Session File</source>
         <translation>CP Editor 会话文件</translation>
+    </message>
+    <message>
+        <source>Report issues</source>
+        <translation>报告问题</translation>
+    </message>
+    <message>
+        <source>App version: %1
+Build type: %2
+Git commit hash: %3
+Build time: %4
+OS: %5</source>
+        <translation>应用版本: %1
+构建类型: %2
+git 提交编号: %3
+构建时间: %4
+操作系统: %5</translation>
+    </message>
+    <message>
+        <source>Import Settings</source>
+        <translation>导入设置</translation>
+    </message>
+    <message>
+        <source>All current settings will lose after importing settings from a file. Are you sure to continue?</source>
+        <translation>当前所有设置都会在从文件中导入设置后丢失。你确定要继续吗？</translation>
+    </message>
+    <message>
+        <source>Duplicate Tab</source>
+        <translation>复制标签页</translation>
+    </message>
+    <message>
+        <source>Portable Version</source>
+        <translation>绿色版</translation>
+    </message>
+    <message>
+        <source>Setup Version</source>
+        <translation>安装版</translation>
     </message>
 </context>
 <context>
@@ -720,6 +756,10 @@
     <message>
         <source>Unsupported programming language &quot;%1&quot;</source>
         <translation>编程语言“%1”不受支持</translation>
+    </message>
+    <message>
+        <source>Failed to start compilation. Please check the compile command in the settings.</source>
+        <translation>未能成功启动编译。请在设置中检查编译命令。</translation>
     </message>
 </context>
 <context>
@@ -1228,6 +1268,10 @@ Do you want to reload it?</source>
         <source>Auto Save</source>
         <translation>自动保存</translation>
     </message>
+    <message>
+        <source>Have you set a proper name for the main class in your solution? If not, you can set it in Preferences-&gt;Lanugages-&gt;Java-&gt;Java Commands-&gt;Java Class Name.</source>
+        <translation>你设置了你代码中主类的名字吗？如果没有，你可以在 设置-&gt;语言-&gt;Java-&gt;Java 命令-&gt;Java 类名称 中进行设置。</translation>
+    </message>
 </context>
 <context>
     <name>MessageLogger</name>
@@ -1301,16 +1345,20 @@ If it&apos;s partially checked, the global setting in Code Edit will be used.</s
 <context>
     <name>PathItem</name>
     <message>
-        <source>Excutable</source>
+        <source>Choose a file</source>
+        <translation>选择一个文件</translation>
+    </message>
+    <message>
+        <source>Excutable Files</source>
         <translation>可执行文件</translation>
     </message>
     <message>
-        <source>Choose Excutable</source>
-        <translation>选择可执行文件</translation>
+        <source>Choose a %1 source file</source>
+        <translation>选择一个 %1 源文件</translation>
     </message>
     <message>
-        <source>Choose %1 Sources</source>
-        <translation>选择 %1 源代码</translation>
+        <source>Choose an excutable file</source>
+        <translation>选择一个可执行文件</translation>
     </message>
 </context>
 <context>
@@ -1520,6 +1568,14 @@ If it&apos;s partially checked, the global setting in Code Edit will be used.</s
     <message>
         <source>Network Proxy</source>
         <translation>网络代理</translation>
+    </message>
+    <message>
+        <source>Default Paths</source>
+        <translation>默认路径</translation>
+    </message>
+    <message>
+        <source>Load External File Changes</source>
+        <translation>加载外部文件修改</translation>
     </message>
 </context>
 <context>
@@ -1759,7 +1815,7 @@ You can use &quot;${filename}&quot; for the complete file name,
         <translation>%1 括号</translation>
     </message>
     <message>
-        <source>The name of the non-public main class of your solution.</source>
+        <source>The name of the main class of your solution.</source>
         <translation>你的代码中非 public 主类的名称。</translation>
     </message>
     <message>
@@ -1807,14 +1863,6 @@ This can be overridden for each parenthesis in each language.</source>
     <message>
         <source>Check whether there&apos;s a new version of CP Editor when starting CP Editor.</source>
         <translation>在启动程序时检查有无新版本。</translation>
-    </message>
-    <message>
-        <source>Format Codes on Save</source>
-        <translation>保存时自动格式化代码</translation>
-    </message>
-    <message>
-        <source>Use Clang Format to format the codes when saving it.</source>
-        <translation>在保存文件时使用 Clang Format 格式化代码。</translation>
     </message>
     <message>
         <source>Opacity</source>
@@ -1897,10 +1945,6 @@ This can be overridden for each parenthesis in each language.</source>
         <translation>CF Tool 可执行文件路径</translation>
     </message>
     <message>
-        <source>Save Path</source>
-        <translation></translation>
-    </message>
-    <message>
         <source>Show Compile And Run Only</source>
         <translation>只显示编译并运行</translation>
     </message>
@@ -1954,7 +1998,7 @@ stdout 或 stderr 过长的程序将会被终止。</translation>
         <source>The maximum number of characters in each message in the top-right corner of the main window.
 The message will be elided if it&apos;s too long.</source>
         <translation>主窗口右上角内每条信息的最大长度。
-超出部分将会被省略。</translation>
+超长部分将会被省略。</translation>
     </message>
     <message>
         <source>HTML Diff Viewer Length Limit</source>
@@ -1977,14 +2021,8 @@ A source file won&apos;t be opened if it&apos;s too long.</source>
 如果超长，将不会打开。</translation>
     </message>
     <message>
-        <source>Load Test Case File Length Limit</source>
-        <translation>加载测试用例文件最大长度</translation>
-    </message>
-    <message>
-        <source>The maximum number of characters in a testcase file to load.
-A testcase file won&apos;t be loaded if it&apos;s too long.</source>
-        <translation>允许加载的测试文件的最大字符数。
-如果超长，将不会加载。</translation>
+        <source>Load Test Case Length Limit</source>
+        <translation>加载测试用例长度限制</translation>
     </message>
     <message>
         <source>Path to LSP executable</source>
@@ -2336,6 +2374,172 @@ kill the application with SIGKILL which could not be handled by the application.
         <source>The type of the proxy. &quot;System&quot; for using the system proxy.</source>
         <translation>代理的类型。类型 &quot;System&quot; 会使用系统代理设置。</translation>
     </message>
+    <message>
+        <source>Use Custom Application Font</source>
+        <translation>使用自定义的全局字体</translation>
+    </message>
+    <message>
+        <source>Use a custom font for the whole application instead of the default system font.</source>
+        <translation>使用一个自定义的字体作为整个 CP Editor 的字体，而非使用默认的系统字体。</translation>
+    </message>
+    <message>
+        <source>Custom Application Font</source>
+        <translation>自定义全局字体</translation>
+    </message>
+    <message>
+        <source>The custom font for the whole application</source>
+        <translation>整个 CP Editor 使用的自定义字体</translation>
+    </message>
+    <message>
+        <source>%1 Compiler Output Codec</source>
+        <translation>%1 编译器输出编码</translation>
+    </message>
+    <message>
+        <source>Text codec of the compiler output (errors, warnings, etc.)</source>
+        <translation>编译器输出（错误，警告等）的文字编码</translation>
+    </message>
+    <message>
+        <source>Default Path Names And Paths</source>
+        <translation>默认路径的名称和路径</translation>
+    </message>
+    <message>
+        <source>A list of default paths.
+They can be used in actions&apos; corresponding default paths by using ${&lt;default path name&gt;} as a place holder.
+They can be either manually set or automatically changed after choosing a path for an action.</source>
+        <translation>默认路径的列表。
+它们以占位符的形式（${&lt;默认路径名称&gt;}）用于一些动作对应的默认路径中。
+它们可以被手动设置，也可以在为一个动作选择路径后被自动设置。</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation>名称</translation>
+    </message>
+    <message>
+        <source>The name of a default path</source>
+        <translation>一个默认路径的名称</translation>
+    </message>
+    <message>
+        <source>The path of a default path</source>
+        <translation>一个默认路径的路径</translation>
+    </message>
+    <message>
+        <source>Default path used for %1</source>
+        <translation>用于 %1 的默认路径</translation>
+    </message>
+    <message>
+        <source>Open File</source>
+        <translation>打开文件</translation>
+    </message>
+    <message>
+        <source>The default path used when choosing a path for %1.
+You can use ${&lt;default path name&gt;} as a place holder.</source>
+        <translation>选择 %1 的路径时使用的默认路径。
+你可以使用 ${&lt;默认路径名称&gt;} 来作为占位符。</translation>
+    </message>
+    <message>
+        <source>Default paths changed by %1</source>
+        <translation>被 %1 改变的默认路径</translation>
+    </message>
+    <message>
+        <source>The default paths changed after choosing a path for %1.
+It is a list of &lt;default path name&gt;s, separated by commas, and can be empty.</source>
+        <translation>为 %1 选择一个路径后被改变的默认路径。
+它是一个 &lt;默认路径名称&gt; 的列表，相邻两项之间用半角逗号隔开，可以为空。</translation>
+    </message>
+    <message>
+        <source>Save File</source>
+        <translation>保存文件</translation>
+    </message>
+    <message>
+        <source>Open Contest</source>
+        <translation>打开比赛</translation>
+    </message>
+    <message>
+        <source>Load Single Test Case</source>
+        <translation>加载单个测试用例</translation>
+    </message>
+    <message>
+        <source>Add Pairs Of Test Cases</source>
+        <translation>添加多对测试用例</translation>
+    </message>
+    <message>
+        <source>Custom Checker</source>
+        <translation>自定义评测器</translation>
+    </message>
+    <message>
+        <source>Export And Import Settings</source>
+        <translation>导出和导入设置</translation>
+    </message>
+    <message>
+        <source>Export And Load Session</source>
+        <translation>导出和加载会话</translation>
+    </message>
+    <message>
+        <source>Extract And Load Snippets</source>
+        <translation>导出和加载代码片段</translation>
+    </message>
+    <message>
+        <source>It can be overridden by %1.</source>
+        <translation>它可以被 %1 覆盖。</translation>
+    </message>
+    <message>
+        <source>Use Clang Format to format the code when auto-saving it.</source>
+        <translation>自动保存代码时使用 Clang Format 进行格式化。</translation>
+    </message>
+    <message>
+        <source>Format code on manual save</source>
+        <translation>手动保存时格式化代码</translation>
+    </message>
+    <message>
+        <source>Use Clang Format to format the code when saving it manually.</source>
+        <translation>手动保存代码时使用 Clang Format 进行格式化。</translation>
+    </message>
+    <message>
+        <source>Format code on auto-save</source>
+        <translation>自动保存时格式化代码</translation>
+    </message>
+    <message>
+        <source>Auto-load external file changes if there&apos;s no unsaved modification</source>
+        <translation>若没有未保存的修改，自动加载外部文件修改</translation>
+    </message>
+    <message>
+        <source>Automatically load file changes that are not made in CP Editor if there&apos;s no unsaved modification in CP Editor.</source>
+        <translation>如果 CP Editor 内部没有未保存的修改，自动加载不是在 CP Editor 内进行的文件修改。</translation>
+    </message>
+    <message>
+        <source>Ask whether to load external file changes</source>
+        <translation>询问是否加载外部文件修改</translation>
+    </message>
+    <message>
+        <source>When there are file changes that are not made in CP Editor and is not automatically loaded by
+&quot;%1&quot;, ask for whether to load the changes.
+If this is disabled, external file changes will be ignored unless they are loaded by
+&quot;%1&quot;.</source>
+        <translation>当 CP Editor 外部的文件修改发生且没有被“%1”自动加载时，询问是否加载修改。
+如果这个选项被禁用，那么除非被“%1”自动加载，外部文件修改会被忽略。</translation>
+    </message>
+    <message>
+        <source>Output Display Length Limit</source>
+        <translation>输出显示长度限制</translation>
+    </message>
+    <message>
+        <source>The maximum number of characters to be displayed for the output of the program.
+If the output is too long, it will be elided.</source>
+        <translation>会显示出来的程序输出的最大字符数。如果输出过长，超长部分会被省略。</translation>
+    </message>
+    <message>
+        <source>The maximum number of characters in a test case to be loaded.
+A loaded test case will be elided and read-only if it&apos;s too long.</source>
+        <translation>一个被加载的测试用例中最大的字符数量。一个被加载的测试用例如果过长，超长部分会被省略。</translation>
+    </message>
+    <message>
+        <source>Show toast messages for submission verdicts</source>
+        <translation>为评测结果显示气泡消息</translation>
+    </message>
+    <message>
+        <source>Show a toast message when the verdict of a submission is known. You can see the message outside of CP Editor.</source>
+        <translation>当获知了一个提交的评测结果时，显示一条气泡消息。你可以在 CP Editor 外看到这条消息。</translation>
+    </message>
 </context>
 <context>
     <name>ShortcutItem</name>
@@ -2399,7 +2603,7 @@ kill the application with SIGKILL which could not be handled by the application.
     </message>
     <message>
         <source>This error is probably caused by the lack of the OpenSSL library. You can visit &lt;a href=&quot;https://wiki.openssl.org/index.php/Binaries&quot;&gt;the OpenSSLWiki&lt;/a&gt; to find a binary to install, or install it via your favourite package manager. You have to install a version compatible with this version: [%1]</source>
-        <translation>这个错误很可能是缺失 OpenSSL 库导致的。你可以访问 &amp;lt;a href=&amp;quot;https://wiki.openssl.org/index.php/Binaries&amp;quot;&amp;gt;OpenSSLWiki&amp;lt;/a&amp;gt; 来获取 OpenSSL 的下载地址，或使用你喜欢的包管理器来安装。你需要安装一个和此版本兼容的版本：[%1]</translation>
+        <translation>这个错误很可能是缺失 OpenSSL 库导致的。你可以访问 &lt;a href=&quot;https://wiki.openssl.org/index.php/Binaries&quot;&gt;OpenSSLWiki&lt;/a&gt; 来获取 OpenSSL 的下载地址，或使用你喜欢的包管理器来安装。你需要安装一个和此版本兼容的版本：[%1]</translation>
     </message>
 </context>
 <context>
@@ -2471,18 +2675,6 @@ kill the application with SIGKILL which could not be handled by the application.
         <translation>打开差异查看器</translation>
     </message>
     <message>
-        <source>Output Length Limit Exceeded</source>
-        <translation>超出输出长度限制（OLE）</translation>
-    </message>
-    <message>
-        <source>Testcases</source>
-        <translation>测试点</translation>
-    </message>
-    <message>
-        <source>The output #%1 contains more than %2 characters, so it&apos;s not displayed. You can set the output length limit in Preferences-&gt;Advanced-&gt;Limits-&gt;Output Length Limit</source>
-        <translation>测试点 #%1 的输出包含超过 %2 个字符，因此没有显示。你可以在设置-&gt;高级-&gt;限制-&gt;输出限制中更改限制大小</translation>
-    </message>
-    <message>
         <source>Input #%1</source>
         <translation>输入 #%1</translation>
     </message>
@@ -2526,12 +2718,32 @@ kill the application with SIGKILL which could not be handled by the application.
         <translation>编辑测试点</translation>
     </message>
     <message>
-        <source>Testcases</source>
-        <translation>测试点</translation>
+        <source>Preferences-&gt;Advanced-&gt;Limits-&gt;Output Display Length Limit</source>
+        <translation>设置-&gt;高级-&gt;限制-&gt;输出显示长度限制</translation>
     </message>
     <message>
-        <source>The testcase file [%1] contains more than %2 characters, so it&apos;s not loaded. You can change the length limit in Preferences-&gt;Advanced-&gt;Limits-&gt;Load Test Case File Length Limit</source>
-        <translation>测试点文件 [%1] 包含超过 %2 个字符，因此没有被加载。你可以在设置-&gt;高级-&gt;限制-&gt;加载测试用例文件最大长度长度限制中更改限制大小</translation>
+        <source>Preferences-&gt;Advanced-&gt;Limits-&gt;Load Test Case Length Limit</source>
+        <translation>设置-&gt;高级-&gt;限制-&gt;加载测试用例长度限制</translation>
+    </message>
+    <message>
+        <source>Input</source>
+        <translation>输入</translation>
+    </message>
+    <message>
+        <source>Output</source>
+        <translation>输出</translation>
+    </message>
+    <message>
+        <source>Expected</source>
+        <translation>答案</translation>
+    </message>
+    <message>
+        <source>Now the test case editor is read-only. You can set the length limit in %1.</source>
+        <translation>现在测试用例编辑器是只读的。你可以在 %1 中设置长度限制。</translation>
+    </message>
+    <message>
+        <source>Only the first %1 characters are shown.</source>
+        <translation>只显示了前 %1 个字符。</translation>
     </message>
 </context>
 <context>
@@ -2683,10 +2895,6 @@ kill the application with SIGKILL which could not be handled by the application.
     <message>
         <source>Testcases</source>
         <translation>测试点</translation>
-    </message>
-    <message>
-        <source>The testcase file [%1] contains more than %2 characters, so it&apos;s not loaded. You can change the length limit in Preferences-&gt;Advanced-&gt;Limits-&gt;Load Test Case File Length Limit</source>
-        <translation>测试点文件 [%1] 包含超过 %2 个字符，因此没有被加载。你可以在设置-&gt;高级-&gt;限制-&gt;加载测试用例文件最大长度长度限制中更改限制大小</translation>
     </message>
 </context>
 <context>

@@ -36,6 +36,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: recursive
+          fetch-depth: 0
 
       - name: Install Python 3.7
         uses: actions/setup-python@v1
@@ -193,3 +194,9 @@ jobs:
         with:
           name: "cpeditor-${{ matrix.config.os }}-${{ github.sha }}"
           path: build/${{ matrix.config.binary }}
+
+      - name: Check translations are up-to-date
+        if: startsWith(matrix.config.os, 'ubuntu')
+        run: |
+          tools/updateTranslation.sh
+          git diff --exit-code HEAD

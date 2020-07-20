@@ -19,9 +19,11 @@
 #include "Core/EventLogger.hpp"
 #include "Settings/AppearancePage.hpp"
 #include "Settings/CodeSnippetsPage.hpp"
+#include "Settings/DefaultPathManager.hpp"
 #include "Settings/ParenthesesPage.hpp"
 #include "Settings/PreferencesHomePage.hpp"
 #include "Util/Util.hpp"
+#include "generated/SettingsHelper.hpp"
 #include <QApplication>
 #include <QCloseEvent>
 #include <QHBoxLayout>
@@ -33,7 +35,6 @@
 #include <QStackedWidget>
 #include <QTreeWidget>
 #include <QVBoxLayout>
-#include <generated/SettingsHelper.hpp>
 
 AddPageHelper &AddPageHelper::page(const QString &key, const QString &trkey, const QStringList &content)
 {
@@ -172,7 +173,7 @@ PreferencesWindow::PreferencesWindow(QWidget *parent) : QMainWindow(parent)
             .page(TRKEY("General"), {"Default Language"})
             .dir(TRKEY("C++"))
                 .page("C++ Commands", tr("%1 Commands").arg(tr("C++")),
-                      {"C++/Compile Command", "C++/Output Path", "C++/Run Arguments"})
+                      {"C++/Compile Command", "C++/Output Path", "C++/Run Arguments", "C++/Compiler Output Codec"})
                 .page("C++ Template", tr("%1 Template").arg(tr("C++")),
                       {"C++/Template Path", "C++/Template Cursor Position Regex",
                        "C++/Template Cursor Position Offset Type", "C++/Template Cursor Position Offset Characters"})
@@ -184,7 +185,7 @@ PreferencesWindow::PreferencesWindow(QWidget *parent) : QMainWindow(parent)
             .end()
             .dir(TRKEY("Java"))
                 .page("Java Commands", tr("%1 Commands").arg(tr("Java")),
-                      {"Java/Compile Command", "Java/Output Path", "Java/Class Name", "Java/Run Command", "Java/Run Arguments"})
+                      {"Java/Compile Command", "Java/Output Path", "Java/Class Name", "Java/Run Command", "Java/Run Arguments", "Java/Compiler Output Codec"})
                 .page("Java Template", tr("%1 Template").arg(tr("Java")),
                       {"Java/Template Path", "Java/Template Cursor Position Regex", "Java/Template Cursor Position Offset Type",
                        "Java/Template Cursor Position Offset Characters"})
@@ -209,15 +210,16 @@ PreferencesWindow::PreferencesWindow(QWidget *parent) : QMainWindow(parent)
         .end()
         .page(TRKEY("Appearance"), new AppearancePage())
         .dir(TRKEY("Actions"))
-            .page(TRKEY("Save"), {"Save Faster", "Auto Format", "Save File On Compilation",
-                               "Save File On Execution", "Save Tests"})
+            .page(TRKEY("Save"), {"Save Faster", "Save File On Compilation", "Save File On Execution", "Save Tests"})
             .page(TRKEY("Auto Save"), {"Auto Save", "Auto Save Interval", "Auto Save Interval Type"})
             .page(TRKEY("Save Session"), {"Hot Exit/Enable", "Hot Exit/Auto Save", "Hot Exit/Auto Save Interval"})
             .page(TRKEY("Bind file and problem"), {"Restore Old Problem Url", "Open Old File For Old Problem Url"})
             .page(TRKEY("Empty Test Cases"), {"Run On Empty Testcase", "Check On Testcases With Empty Output"})
+            .page(TRKEY("Load External File Changes"), {"Auto Load External Changes If No Unsaved Modification", "Ask For Loading External Changes"})
         .end()
         .dir(TRKEY("Extensions"))
-            .page(TRKEY("Clang Format"), new PreferencesPageTemplate({"Clang Format/Path", "Clang Format/Style"}, false))
+            .page(TRKEY("Clang Format"), new PreferencesPageTemplate({"Clang Format/Path", "Clang Format/Format On Manual Save",
+                                         "Clang Format/Format On Auto Save", "Clang Format/Style"}, false))
             .dir(TRKEY("Language Server"))
                 .page("C++ Server", tr("%1 Server").arg(tr("C++")), {"LSP/Use Linting C++", "LSP/Delay C++", "LSP/Path C++", "LSP/Args C++"})
                 .page("Java Server", tr("%1 Server").arg(tr("Java")), {"LSP/Use Linting Java", "LSP/Delay Java", "LSP/Path Java", "LSP/Args Java"})
@@ -225,18 +227,19 @@ PreferencesWindow::PreferencesWindow(QWidget *parent) : QMainWindow(parent)
             .end()
             .page(TRKEY("Competitive Companion"), {"Competitive Companion/Enable", "Competitive Companion/Open New Tab",
                                                 "Competitive Companion/Connection Port"})
-            .page(TRKEY("CF Tool"), {"CF/Path"})
+            .page(TRKEY("CF Tool"), {"CF/Path", "CF/Show Toast Messages"})
         .end()
         .dir(TRKEY("File Path"))
             .page(TRKEY("Testcases"), {"Input File Save Path", "Answer File Save Path", "Testcases Matching Rules"})
             .page(TRKEY("Problem URL"), {"Default File Paths For Problem URLs"})
+            .page(TRKEY("Default Paths"), DefaultPathManager::actionSettingsList() << "Default Path/Names And Paths")
         .end()
         .page(TRKEY("Key Bindings"), {"Hotkey/Compile", "Hotkey/Run", "Hotkey/Compile Run", "Hotkey/Format", "Hotkey/Kill",
                                    "Hotkey/Change View Mode", "Hotkey/Snippets"})
         .dir(TRKEY("Advanced"))
             .page(TRKEY("Update"), {"Check Update", "Beta"})
-            .page(TRKEY("Limits"), {"Time Limit", "Output Length Limit", "Message Length Limit", "HTML Diff Viewer Length Limit",
-                                 "Open File Length Limit", "Load Test Case File Length Limit"})
+            .page(TRKEY("Limits"), {"Time Limit", "Output Length Limit", "Output Display Length Limit", "Message Length Limit",
+                                    "HTML Diff Viewer Length Limit", "Open File Length Limit", "Load Test Case Length Limit"})
             .page(TRKEY("Network Proxy"), {"Proxy/Enabled", "Proxy/Type", "Proxy/Host Name", "Proxy/Port", "Proxy/User", "Proxy/Password"})
         .end();
 

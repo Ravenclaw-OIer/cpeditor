@@ -73,7 +73,9 @@ class MainWindow : public QMainWindow
         QMap<QString, QVariant> toMap() const;
     };
 
+    explicit MainWindow(int index, QWidget *parent);
     explicit MainWindow(const QString &fileOpen, int index, QWidget *parent);
+    explicit MainWindow(const EditorStatus &status, bool duplicate, int index, QWidget *parent);
     ~MainWindow() override;
 
     int getUntitledIndex() const;
@@ -89,7 +91,7 @@ class MainWindow : public QMainWindow
     void setUntitledIndex(int index);
 
     EditorStatus toStatus() const;
-    void loadStatus(const EditorStatus &status);
+    void loadStatus(const EditorStatus &status, bool duplicate = false);
 
     bool save(bool force, const QString &head, bool safe = true);
     void saveAs();
@@ -120,10 +122,6 @@ class MainWindow : public QMainWindow
     QString tmpPath();
 
   private slots:
-    void on_compile_clicked();
-    void on_runOnly_clicked();
-    void on_run_clicked();
-
     void onCompilationStarted();
     void onCompilationFinished(const QString &warning);
     void onCompilationErrorOccurred(const QString &error);
@@ -136,24 +134,30 @@ class MainWindow : public QMainWindow
     void onRunOutputLimitExceeded(int index, const QString &type);
     void onRunKilled(int index);
 
-    void on_clear_messages_button_clicked();
+    void onFileWatcherChanged(const QString &);
+    void onEditorFontChanged(const QFont &newFont);
+    void onTextChanged();
+    void updateCursorInfo();
+    void updateChecker();
+    void runTestCase(int index);
+
+    // UI Slots
+
+    void on_compile_clicked();
+
+    void on_runOnly_clicked();
+
+    void on_run_clicked();
+
+    void on_clearMessagesButton_clicked();
 
     void on_changeLanguageButton_clicked();
-
-    void onFileWatcherChanged(const QString &);
-
-    void onTextChanged();
-
-    void updateCursorInfo();
-
-    void updateChecker();
-
-    void runTestCase(int index);
 
   signals:
     void editorFileChanged();
     void editorTmpPathChanged(MainWindow *window, const QString &path);
     void editorTextChanged(MainWindow *window);
+    void editorFontChanged();
     void confirmTriggered(MainWindow *widget);
     void requestToastMessage(const QString &head, const QString &body);
     void editorLanguageChanged(MainWindow *window);
@@ -163,6 +167,7 @@ class MainWindow : public QMainWindow
     enum SaveMode
     {
         IgnoreUntitled, // save only when filePath is not empty
+        AutoSave,       // basically the same as IgnoreUntitled, only different in auto-format
         AlwaysSave,     // save to filePath if it's not empty, otherwise ask for new path
         SaveAs,         // ask for new path no matter filePath is empty or not
     };

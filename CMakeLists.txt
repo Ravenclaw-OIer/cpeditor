@@ -42,18 +42,42 @@ else()
   message(STATUS "Will build the setup version")
 endif()
 
-IF(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/.git)
-  FIND_PACKAGE(Git)
-  IF(GIT_FOUND)
-    EXECUTE_PROCESS(
+# https://medium.com/@alasher/colored-c-compiler-output-with-ninja-clang-gcc-10bfe7f2b949
+option(FORCE_COLORED_OUTPUT "Always produce ANSI-colored output (GNU/Clang only)." On)
+if(${FORCE_COLORED_OUTPUT})
+  if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    add_compile_options(-fdiagnostics-color=always)
+  elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    add_compile_options(-fcolor-diagnostics)
+  endif()
+endif()
+
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/.git)
+  find_package(Git)
+  if(GIT_FOUND)
+    execute_process(
       COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
       WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
       OUTPUT_VARIABLE "GIT_COMMIT_HASH"
-      ERROR_QUIET
       OUTPUT_STRIP_TRAILING_WHITESPACE)
-    MESSAGE( STATUS "Git commit hash: ${GIT_COMMIT_HASH}")
-  ENDIF(GIT_FOUND)
-ENDIF(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/.git)
+    message(STATUS "Git commit hash: ${GIT_COMMIT_HASH}")
+    execute_process(
+      COMMAND ${GIT_EXECUTABLE} describe --long --tags
+      WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+      OUTPUT_VARIABLE "GIT_DESCRIBE"
+      OUTPUT_STRIP_TRAILING_WHITESPACE)
+    if(NOT "${GIT_DESCRIBE}" EQUAL "")
+      string(REGEX REPLACE "(.+)-(.+)-(.+)" "\\2" "COMMITS_SINCE_LAST_RELEASE" "${GIT_DESCRIBE}")
+      if(NOT "${COMMITS_SINCE_LAST_RELEASE}" EQUAL "0")
+        string(REGEX REPLACE "(.+)-(.+)-(.+)" "\\1.r\\2.\\3" "DISPLAY_VERSION" "${GIT_DESCRIBE}")
+      endif()
+    endif()
+  endif()
+endif()
+if(NOT DEFINED "DISPLAY_VERSION")
+  set("DISPLAY_VERSION" "${PROJECT_VERSION}")
+endif()
+message(STATUS "Display version: ${DISPLAY_VERSION}")
 
 configure_file(cmake/version.hpp.in ${CMAKE_BINARY_DIR}/generated/version.hpp)
 configure_file(cmake/portable.hpp.in ${CMAKE_BINARY_DIR}/generated/portable.hpp)
@@ -108,6 +132,8 @@ add_executable(cpeditor
     src/Settings/AppearancePage.hpp
     src/Settings/CodeSnippetsPage.cpp
     src/Settings/CodeSnippetsPage.hpp
+    src/Settings/DefaultPathManager.cpp
+    src/Settings/DefaultPathManager.hpp
     src/Settings/FileProblemBinder.cpp
     src/Settings/FileProblemBinder.hpp
     src/Settings/FontItem.cpp
