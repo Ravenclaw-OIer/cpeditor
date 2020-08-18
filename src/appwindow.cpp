@@ -149,7 +149,7 @@ AppWindow::AppWindow(bool cpp, bool java, bool python, bool noHotExit, int numbe
         lang = "Java";
     else if (python)
         lang = "Python";
-    openContest(path, lang, number);
+    openContest({path, number, lang});
     if (ui->tabWidget->count() == 0)
         openTab("");
 
@@ -371,8 +371,8 @@ void AppWindow::openTab(MainWindow *window)
 {
     connect(window, SIGNAL(confirmTriggered(MainWindow *)), this, SLOT(onConfirmTriggered(MainWindow *)));
     connect(window, SIGNAL(editorFileChanged()), this, SLOT(onEditorFileChanged()));
-    connect(window, SIGNAL(editorTmpPathChanged(MainWindow *, const QString &)), this,
-            SLOT(onEditorTmpPathChanged(MainWindow *, const QString &)));
+    connect(window, SIGNAL(requestUpdateLanguageServerFilePath(MainWindow *, const QString &)), this,
+            SLOT(updateLanguageServerFilePath(MainWindow *, const QString &)));
     connect(window, SIGNAL(editorLanguageChanged(MainWindow *)), this, SLOT(onEditorLanguageChanged(MainWindow *)));
     connect(window, SIGNAL(editorTextChanged(MainWindow *)), this, SLOT(onEditorTextChanged(MainWindow *)));
     connect(window, &MainWindow::editorFontChanged, this, [this] { onSettingsApplied("Appearance"); });
@@ -496,8 +496,12 @@ QStringList AppWindow::openFolder(const QString &path, bool cpp, bool java, bool
     return res;
 }
 
-void AppWindow::openContest(const QString &path, const QString &lang, int number)
+void AppWindow::openContest(Widgets::ContestDialog::ContestData const &data)
 {
+    const QString &path = data.path;
+    const QString &lang = data.language;
+    int number = data.number;
+
     QDir dir(path), parent(path);
     parent.cdUp();
     if (!dir.exists() && parent.exists())
@@ -616,7 +620,7 @@ void AppWindow::on_actionBuildInfo_triggered()
 #endif
                            .arg(GIT_COMMIT_HASH)
                            .arg(__DATE__ " " __TIME__)
-#if defined(Q_OS_UNIX)
+#if defined(Q_OS_LINUX)
                            .arg("Linux")
 #elif defined(Q_OS_WIN)
                            .arg("Windows")
@@ -654,28 +658,9 @@ void AppWindow::on_actionOpen_triggered()
 
 void AppWindow::on_actionOpenContest_triggered()
 {
-    auto path = DefaultPathManager::getExistingDirectory("Open Contest", this, tr("Open Contest"));
-    if (QFile::exists(path) && QFileInfo(path).isDir())
-    {
-        bool ok = false;
-        int number =
-            QInputDialog::getInt(this, tr("Open Contest"), tr("Number of problems in this contest:"), 5, 0, 26, 1, &ok);
-        if (ok)
-        {
-            int current = 0;
-            if (SettingsHelper::getDefaultLanguage() == "Java")
-                current = 1;
-            else if (SettingsHelper::getDefaultLanguage() == "Python")
-                current = 2;
-            auto lang = QInputDialog::getItem(this, tr("Open Contest"), tr("Choose a language"),
-                                              {"C++", "Java", "Python"}, current, false, &ok);
-            if (ok)
-            {
-                LOG_INFO("Opening contest with args " << INFO_OF(path) << INFO_OF(lang) << INFO_OF(number));
-                openContest(path, lang, number);
-            }
-        }
-    }
+    Widgets::ContestDialog dialog(this);
+    if (dialog.exec() == QDialog::Accepted)
+        openContest(dialog.contestData());
 }
 
 void AppWindow::on_actionSave_triggered()
@@ -836,7 +821,7 @@ void AppWindow::onReceivedMessage(quint32 instanceId, QByteArray message)
             lang = "Java";
         else if (python)
             lang = "Python";
-        openContest(path, lang, number);
+        openContest({path, number, lang});
     }
 }
 
@@ -966,7 +951,7 @@ void AppWindow::onEditorTextChanged(MainWindow *window)
     }
 }
 
-void AppWindow::onEditorTmpPathChanged(MainWindow *window, const QString &path)
+void AppWindow::updateLanguageServerFilePath(MainWindow *window, const QString &path)
 {
     if (currentWindow() == window)
     {
@@ -1350,7 +1335,7 @@ void AppWindow::onTabContextMenuRequested(const QPoint &pos)
     {
         LOG_INFO(INFO_OF(index));
 
-        auto widget = windowAt(index);
+        auto window = windowAt(index);
 
         if (tabMenu != nullptr)
             delete tabMenu;
@@ -1358,14 +1343,14 @@ void AppWindow::onTabContextMenuRequested(const QPoint &pos)
 
         tabMenu->addAction(tr("Close"), [index, this] { closeTab(index); });
 
-        tabMenu->addAction(tr("Close Others"), [widget, this] {
+        tabMenu->addAction(tr("Close Others"), [window, this] {
             for (int i = 0; i < ui->tabWidget->count(); ++i)
-                if (windowAt(i) != widget && closeTab(i))
+                if (windowAt(i) != window && closeTab(i))
                     --i;
         });
 
-        tabMenu->addAction(tr("Close to the Left"), [widget, this] {
-            for (int i = 0; i < ui->tabWidget->count() && windowAt(i) != widget; ++i)
+        tabMenu->addAction(tr("Close to the Left"), [window, this] {
+            for (int i = 0; i < ui->tabWidget->count() && windowAt(i) != window; ++i)
                 if (closeTab(i))
                     --i;
         });
@@ -1378,16 +1363,23 @@ void AppWindow::onTabContextMenuRequested(const QPoint &pos)
         tabMenu->addAction(tr("Close Saved"), [this] { on_actionCloseSaved_triggered(); });
 
         tabMenu->addAction(tr("Close All"), [this] { on_actionCloseAll_triggered(); });
-        QString filePath = widget->getFilePath();
+        QString filePath = window->getFilePath();
 
         tabMenu->addSeparator();
 
-        tabMenu->addAction(tr("Duplicate Tab"), [widget, this] { openTab(widget->toStatus(), true); });
+        tabMenu->addAction(tr("Duplicate Tab"), [window, this] { openTab(window->toStatus(), true); });
+
+        tabMenu->addSeparator();
+
+        if (window->getLanguage() != "Python")
+            tabMenu->addAction(tr("Set Compile Command"), [window] { window->updateCompileCommand(); });
+
+        tabMenu->addAction(tr("Set Time Limit"), [window] { window->updateTimeLimit(); });
 
         LOG_INFO(INFO_OF(filePath));
 
         const auto outputFilePath =
-            Core::Compiler::outputFilePath(widget->tmpPath(), widget->getFilePath(), widget->getLanguage(), false);
+            Core::Compiler::outputFilePath(window->tmpPath(), window->getFilePath(), window->getLanguage(), false);
 
         const auto revealSourceFile = Util::revealInFileManager(filePath, tr("Source File"));
         const auto revealExecutableFile = Util::revealInFileManager(outputFilePath, tr("Executable File"));
@@ -1407,16 +1399,16 @@ void AppWindow::onTabContextMenuRequested(const QPoint &pos)
         }
 
         tabMenu->addSeparator();
-        if (!widget->getProblemURL().isEmpty())
+        if (!window->getProblemURL().isEmpty())
         {
             tabMenu->addAction(tr("Open Problem in Browser"),
-                               [widget] { QDesktopServices::openUrl(widget->getProblemURL()); });
+                               [window] { QDesktopServices::openUrl(window->getProblemURL()); });
             tabMenu->addAction(tr("Copy Problem URL"),
-                               [widget] { QGuiApplication::clipboard()->setText(widget->getProblemURL()); });
+                               [window] { QGuiApplication::clipboard()->setText(window->getProblemURL()); });
         }
-        tabMenu->addAction(tr("Set Codeforces URL"), [widget, this] {
+        tabMenu->addAction(tr("Set Codeforces URL"), [window, this] {
             QString contestId, problemCode;
-            Extensions::CFTool::parseCfUrl(widget->getProblemURL(), contestId, problemCode);
+            Extensions::CFTool::parseCfUrl(window->getProblemURL(), contestId, problemCode);
             bool ok = false;
             contestId = QInputDialog::getText(this, tr("Set CF URL"), tr("Enter the contest ID:"), QLineEdit::Normal,
                                               contestId, &ok);
@@ -1426,18 +1418,18 @@ void AppWindow::onTabContextMenuRequested(const QPoint &pos)
             if (ok)
             {
                 auto url = "https://codeforces.com/contest/" + contestId + "/problem/" + problemCode;
-                widget->setProblemURL(url);
+                window->setProblemURL(url);
             }
         });
-        tabMenu->addAction(tr("Set Problem URL"), [widget, this] {
+        tabMenu->addAction(tr("Set Problem URL"), [window, this] {
             bool ok = false;
             auto url = QInputDialog::getText(this, tr("Set Problem URL"), tr("Enter the new problem URL:"),
-                                             QLineEdit::Normal, widget->getProblemURL(), &ok);
+                                             QLineEdit::Normal, window->getProblemURL(), &ok);
             if (ok)
             {
-                if (url.isEmpty() && widget->isUntitled())
-                    widget->setUntitledIndex(getNewUntitledIndex());
-                widget->setProblemURL(url);
+                if (url.isEmpty() && window->isUntitled())
+                    window->setUntitledIndex(getNewUntitledIndex());
+                window->setProblemURL(url);
             }
         });
         tabMenu->popup(ui->tabWidget->tabBar()->mapToGlobal(pos));
@@ -1470,19 +1462,19 @@ void AppWindow::reAttachLanguageServer(MainWindow *window)
 
     if (window->getLanguage() == "C++")
     {
-        cppServer->openDocument(window->tmpPath(), window->getEditor(), window->getLogger());
+        cppServer->openDocument(window->filePathOrTmpPath(), window->getEditor(), window->getLogger());
         cppServer->requestLinting();
         lspTimerCpp->start();
     }
     else if (window->getLanguage() == "Java")
     {
-        javaServer->openDocument(window->tmpPath(), window->getEditor(), window->getLogger());
+        javaServer->openDocument(window->filePathOrTmpPath(), window->getEditor(), window->getLogger());
         javaServer->requestLinting();
         lspTimerJava->start();
     }
     else if (window->getLanguage() == "Python")
     {
-        pythonServer->openDocument(window->tmpPath(), window->getEditor(), window->getLogger());
+        pythonServer->openDocument(window->filePathOrTmpPath(), window->getEditor(), window->getLogger());
         pythonServer->requestLinting();
         lspTimerPython->start();
     }
