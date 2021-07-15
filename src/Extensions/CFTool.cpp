@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Ashar Khan <ashar786khan@gmail.com>
+ * Copyright (C) 2019-2021 Ashar Khan <ashar786khan@gmail.com>
  *
  * This file is part of CP Editor.
  *
@@ -35,8 +35,7 @@ CFTool::CFTool(const QString &path, MessageLogger *logger) : CFToolPath(path)
 
 CFTool::~CFTool()
 {
-    if (CFToolProcess != nullptr)
-        delete CFToolProcess;
+    delete CFToolProcess;
 }
 
 void CFTool::submit(const QString &filePath, const QString &url)
@@ -84,8 +83,8 @@ void CFTool::submit(const QString &filePath, const QString &url)
 
         LOG_INFO(INFO_OF(CFToolProcess->arguments().join(' ')));
 
-        connect(CFToolProcess, SIGNAL(readyReadStandardOutput()), this, SLOT(onReadReady()));
-        connect(CFToolProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(onFinished(int)));
+        connect(CFToolProcess, &QProcess::readyReadStandardOutput, this, &CFTool::onReadReady);
+        connect(CFToolProcess, qOverload<int, QProcess::ExitStatus>(&QProcess::finished), this, &CFTool::onFinished);
         CFToolProcess->start();
         bool started = CFToolProcess->waitForStarted(2000);
         if (started)
@@ -125,7 +124,8 @@ void CFTool::updatePath(const QString &p)
 bool CFTool::parseCfUrl(const QString &url, QString &contestId, QString &problemCode)
 {
     LOG_INFO(INFO_OF(url));
-    auto match = QRegularExpression(".*://codeforces.com/contest/([1-9][0-9]*)/problem/(0|[A-Z][1-9]?)").match(url);
+    auto match =
+        QRegularExpression(".*://codeforces.com/(?:gym|contest)/([1-9][0-9]*)/problem/(0|[A-Z][1-9]?)").match(url);
     if (match.hasMatch())
     {
         contestId = match.captured(1);
@@ -139,6 +139,7 @@ bool CFTool::parseCfUrl(const QString &url, QString &contestId, QString &problem
         problemCode = match.captured(2);
         return true;
     }
+
     return false;
 }
 
@@ -165,7 +166,7 @@ void CFTool::onReadReady()
         LOG_INFO("Response is empty");
 }
 
-void CFTool::onFinished(int exitCode)
+void CFTool::onFinished(int exitCode, QProcess::ExitStatus e)
 {
     if (exitCode == 0)
     {

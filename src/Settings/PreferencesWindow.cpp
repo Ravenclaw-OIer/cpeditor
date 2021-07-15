@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Ashar Khan <ashar786khan@gmail.com>
+ * Copyright (C) 2019-2021 Ashar Khan <ashar786khan@gmail.com>
  *
  * This file is part of CP Editor.
  *
@@ -17,11 +17,11 @@
 
 #include "Settings/PreferencesWindow.hpp"
 #include "Core/EventLogger.hpp"
-#include "Settings/AppearancePage.hpp"
 #include "Settings/CodeSnippetsPage.hpp"
 #include "Settings/DefaultPathManager.hpp"
 #include "Settings/ParenthesesPage.hpp"
 #include "Settings/PreferencesHomePage.hpp"
+#include "Settings/PreferencesPageTemplate.hpp"
 #include "Util/Util.hpp"
 #include "generated/SettingsHelper.hpp"
 #include <QApplication>
@@ -36,9 +36,9 @@
 #include <QTreeWidget>
 #include <QVBoxLayout>
 
-AddPageHelper &AddPageHelper::page(const QString &key, const QString &trkey, const QStringList &content)
+AddPageHelper &AddPageHelper::page(const QString &key, const QString &trkey, const QStringList &content, bool alignTop)
 {
-    return page(key, trkey, new PreferencesPageTemplate(content));
+    return page(key, trkey, new PreferencesPageTemplate(content, pathFor(key), trPathFor(trkey), alignTop, window));
 }
 
 AddPageHelper &AddPageHelper::page(const QString &key, const QString &trkey, PreferencesPage *newpage)
@@ -50,19 +50,19 @@ AddPageHelper &AddPageHelper::page(const QString &key, const QString &trkey, Pre
                                    const QStringList &content)
 {
     window->registerName(key, trkey);
-    if (currentPath.size() == 0)
+    if (atTop())
     {
         currentItem = new QTreeWidgetItem({trkey});
         tree->addTopLevelItem(currentItem);
-        newpage->setPath(key);
+        newpage->setPath(pathFor(key), trPathFor(trkey));
         newpage->setTitle(trkey);
         window->addPage(currentItem, newpage, content);
     }
     else
     {
-        QTreeWidgetItem *item = new QTreeWidgetItem({trkey});
+        auto *item = new QTreeWidgetItem({trkey});
         currentItem->addChild(item);
-        newpage->setPath(currentPath.join('/') + '/' + key);
+        newpage->setPath(pathFor(key), trPathFor(trkey));
         if (key == "@")
             newpage->setTitle(currentItem->text(0));
         else
@@ -75,18 +75,19 @@ AddPageHelper &AddPageHelper::page(const QString &key, const QString &trkey, Pre
 AddPageHelper &AddPageHelper::dir(const QString &key, const QString &trkey)
 {
     window->registerName(key, trkey);
-    if (currentPath.size() == 0)
+    if (atTop())
     {
         currentItem = new QTreeWidgetItem({trkey});
         tree->addTopLevelItem(currentItem);
     }
     else
     {
-        QTreeWidgetItem *item = new QTreeWidgetItem({trkey});
+        auto *item = new QTreeWidgetItem({trkey});
         currentItem->addChild(item);
         currentItem = item;
     }
     currentPath.push_back(key);
+    currentTrPath.push_back(trkey);
     return *this;
 }
 
@@ -94,7 +95,28 @@ AddPageHelper &AddPageHelper::end()
 {
     currentItem = currentItem->parent();
     currentPath.pop_back();
+    currentTrPath.pop_back();
     return *this;
+}
+
+void AddPageHelper::ensureAtTop() const
+{
+    Q_ASSERT(atTop());
+}
+
+bool AddPageHelper::atTop() const
+{
+    return currentPath.isEmpty();
+}
+
+QString AddPageHelper::pathFor(const QString &key)
+{
+    return (currentPath + QStringList(key)).join('/');
+}
+
+QString AddPageHelper::trPathFor(const QString &trkey)
+{
+    return (currentTrPath + QStringList(trkey)).join('/');
 }
 
 AddPageHelper::AddPageHelper(PreferencesWindow *w) : window(w), tree(window->menuTree)
@@ -108,21 +130,21 @@ PreferencesWindow::PreferencesWindow(QWidget *parent) : QMainWindow(parent)
     setWindowTitle(tr("Preferences"));
 
     // setup UI
-    splitter = new QSplitter();
+    auto *splitter = new QSplitter();
     splitter->setChildrenCollapsible(false);
     setCentralWidget(splitter);
 
     leftWidget = new QWidget();
     splitter->addWidget(leftWidget);
 
-    leftLayout = new QVBoxLayout(leftWidget);
+    auto *leftLayout = new QVBoxLayout(leftWidget);
 
-    searchLayout = new QHBoxLayout();
+    auto *searchLayout = new QHBoxLayout();
     leftLayout->addLayout(searchLayout);
 
     searchEdit = new QLineEdit();
     searchEdit->setPlaceholderText(tr("Search..."));
-    connect(searchEdit, SIGNAL(textChanged(const QString &)), this, SLOT(updateSearch(const QString &)));
+    connect(searchEdit, &QLineEdit::textChanged, this, [this](QString const &item) { updateSearch(item); });
     searchLayout->addWidget(searchEdit);
 
     homeButton = new QPushButton(tr("Home"));
@@ -143,15 +165,15 @@ PreferencesWindow::PreferencesWindow(QWidget *parent) : QMainWindow(parent)
     stackedWidget = new QStackedWidget();
     splitter->addWidget(stackedWidget);
 
-    homePage = new PreferencesHomePage();
+    homePage = new PreferencesHomePage(this);
     connect(homePage, &PreferencesHomePage::requestPage,
-            [this](const QString &path) { switchToPage(getPageWidget(path)); });
+            [this](const QString &path) { switchToPage(getPageWidget(path, false)); });
     stackedWidget->addWidget(homePage);
 
     splitter->setSizes({10000, 30000});
 
     exitShortcut = new QShortcut(QKeySequence::Cancel, this);
-    connect(exitShortcut, SIGNAL(activated()), this, SLOT(close()));
+    connect(exitShortcut, &QShortcut::activated, this, &PreferencesWindow::close);
 
     travelShortcut = new QShortcut({"Ctrl+Tab"}, this);
     connect(travelShortcut, &QShortcut::activated,
@@ -167,7 +189,7 @@ PreferencesWindow::PreferencesWindow(QWidget *parent) : QMainWindow(parent)
 
     AddPageHelper(this)
         .page(TRKEY("Code Edit"),
-              {"Tab Width", "Auto Indent", "Wrap Text", "Auto Complete Parentheses", "Auto Remove Parentheses",
+              {"Tab Width", "Cursor Width", "Auto Indent", "Wrap Text", "Auto Complete Parentheses", "Auto Remove Parentheses",
                "Tab Jump Out Parentheses", "Replace Tabs"})
         .dir(TRKEY("Language"))
             .page(TRKEY("General"), {"Default Language"})
@@ -208,31 +230,38 @@ PreferencesWindow::PreferencesWindow(QWidget *parent) : QMainWindow(parent)
                        "Python Tab Jump Out"})
             .end()
         .end()
-        .page(TRKEY("Appearance"), new AppearancePage())
+        .dir(TRKEY("Appearance"))
+            .page(TRKEY("General"),{"Locale", "UI Style", "Editor Theme", "Opacity", "Test Case Maximum Height",
+                                    "Show Compile And Run Only", "Display EOLN In Diff", "Extra Bottom Margin"})
+            .page(TRKEY("Font"), {"Show Only Monospaced Font", "Editor Font", "Test Cases Font", "Message Logger Font",
+                                  "Use Custom Application Font", "Custom Application Font"})
+        .end()
         .dir(TRKEY("Actions"))
             .page(TRKEY("Save"), {"Save Faster", "Save File On Compilation", "Save File On Execution", "Save Tests"})
             .page(TRKEY("Auto Save"), {"Auto Save", "Auto Save Interval", "Auto Save Interval Type"})
-#ifdef Q_OS_LINUX
+#if defined(Q_OS_UNIX) && (!defined(Q_OS_MACOS))
             .page(TRKEY("Detached Execution"), {"Detached Run Terminal Program", "Detached Run Terminal Arguments"})
 #endif
             .page(TRKEY("Save Session"), {"Hot Exit/Enable", "Hot Exit/Auto Save", "Hot Exit/Auto Save Interval"})
             .page(TRKEY("Bind file and problem"), {"Restore Old Problem Url", "Open Old File For Old Problem Url"})
-            .page(TRKEY("Empty Test Cases"), {"Run On Empty Testcase", "Check On Testcases With Empty Output"})
+            .page(TRKEY("Test Cases"), {"Run On Empty Testcase", "Check On Testcases With Empty Output", "Auto Uncheck Accepted Testcases"})
             .page(TRKEY("Load External File Changes"), {"Auto Load External Changes If No Unsaved Modification", "Ask For Loading External Changes"})
         .end()
         .dir(TRKEY("Extensions"))
-            .page(TRKEY("Clang Format"), new PreferencesPageTemplate({"Clang Format/Path", "Clang Format/Format On Manual Save",
-                                         "Clang Format/Format On Auto Save", "Clang Format/Style"}, false))
+            .dir(TRKEY("Code Formatting"))
+                .page(TRKEY("General"), {"Format On Manual Save", "Format On Auto Save"})
+                .page(TRKEY("Clang Format"), {"Clang Format/Program", "Clang Format/Arguments", "Clang Format/Style"}, false)
+                .page(TRKEY("YAPF"), {"YAPF/Program", "YAPF/Arguments", "YAPF/Style"}, false)
+            .end()
             .dir(TRKEY("Language Server"))
                 .page("C++ Server", tr("%1 Server").arg(tr("C++")), {"LSP/Use Linting C++", "LSP/Delay C++", "LSP/Path C++", "LSP/Args C++"})
                 .page("Java Server", tr("%1 Server").arg(tr("Java")), {"LSP/Use Linting Java", "LSP/Delay Java", "LSP/Path Java", "LSP/Args Java"})
                 .page("Python Server", tr("%1 Server").arg(tr("Python")), {"LSP/Use Linting Python", "LSP/Delay Python", "LSP/Path Python", "LSP/Args Python"})
             .end()
-            .page(TRKEY("Competitive Companion"), new PreferencesPageTemplate({"Competitive Companion/Enable",
-                "Competitive Companion/Open New Tab", "Competitive Companion/Set Time Limit For Tab",
-                "Competitive Companion/Connection Port",
+            .page(TRKEY("Competitive Companion"), {"Competitive Companion/Enable", "Competitive Companion/Open New Tab",
+                "Competitive Companion/Set Time Limit For Tab", "Competitive Companion/Connection Port",
                 "Competitive Companion/Head Comments", "Competitive Companion/Head Comments Time Format",
-                "Competitive Companion/Head Comments Powered By CP Editor"}, false))
+                "Competitive Companion/Head Comments Powered By CP Editor"}, false)
             .page(TRKEY("CF Tool"), {"CF/Path", "CF/Show Toast Messages"})
         .end()
         .dir(TRKEY("File Path"))
@@ -245,13 +274,21 @@ PreferencesWindow::PreferencesWindow(QWidget *parent) : QMainWindow(parent)
         .dir(TRKEY("Advanced"))
             .page(TRKEY("Update"), {"Check Update", "Beta"})
             .page(TRKEY("Limits"), {"Default Time Limit", "Output Length Limit", "Output Display Length Limit", "Message Length Limit",
-                                    "HTML Diff Viewer Length Limit", "Open File Length Limit", "Load Test Case Length Limit"})
+                                    "HTML Diff Viewer Length Limit", "Open File Length Limit", "Display Test Case Length Limit"})
             .page(TRKEY("Network Proxy"), {"Proxy/Enabled", "Proxy/Type", "Proxy/Host Name", "Proxy/Port", "Proxy/User", "Proxy/Password"})
-        .end();
+        .end()
+    .ensureAtTop();
 
 #undef TRKEY
 
     // clang-format on
+
+    homePage->init();
+}
+
+bool PreferencesWindow::pathExists(const QString &pagePath) const
+{
+    return getPageWidget(pagePath, false) != nullptr;
 }
 
 void PreferencesWindow::display()
@@ -270,6 +307,28 @@ void PreferencesWindow::display()
     }
 }
 
+void PreferencesWindow::open(const QString &path)
+{
+    auto *page = getPageWidget(path, true);
+
+    if (page == nullptr)
+    {
+        LOG_DEV("Can't find the given path: " << INFO_OF(path));
+        return;
+    }
+
+    if (isHidden())
+        display();
+    else
+        Util::showWidgetOnTop(this);
+    if (switchToPage(page))
+    {
+        auto *widget = SettingsManager::getWidget(SettingsManager::getKeyOfPath(path));
+        if (widget != nullptr)
+            widget->setFocus(Qt::PopupFocusReason);
+    }
+}
+
 void PreferencesWindow::updateSearch(const QString &text)
 {
     for (int i = 0; i < menuTree->topLevelItemCount(); ++i)
@@ -278,22 +337,22 @@ void PreferencesWindow::updateSearch(const QString &text)
     }
 }
 
-void PreferencesWindow::switchToPage(QWidget *page, bool force)
+bool PreferencesWindow::switchToPage(QWidget *page, bool force)
 {
     // return if page is nullptr
     if (page == nullptr)
-        return;
+        return false;
 
-    // return if it's no need to switch
+    // return if there's no need to switch
     if (stackedWidget->currentWidget() == page)
-        return;
+        return true;
 
     // ask for saving changes or not if not force
     if (!force)
     {
-        auto current = qobject_cast<PreferencesPage *>(stackedWidget->currentWidget());
+        auto *current = qobject_cast<PreferencesPage *>(stackedWidget->currentWidget());
         if (current != nullptr && !current->aboutToExit())
-            return;
+            return false;
     }
 
     // disable home button when it's already at home
@@ -302,9 +361,10 @@ void PreferencesWindow::switchToPage(QWidget *page, bool force)
     // switch if everything is OK
     stackedWidget->setCurrentWidget(page);
 
-    auto preferencesPage = qobject_cast<PreferencesPage *>(page);
+    auto *preferencesPage = qobject_cast<PreferencesPage *>(page);
     if (preferencesPage != nullptr)
     {
+        pageTreeItem[preferencesPage]->setSelected(true);
         menuTree->setCurrentItem(pageTreeItem[preferencesPage]);
         preferencesPage->loadSettings();
     }
@@ -312,6 +372,8 @@ void PreferencesWindow::switchToPage(QWidget *page, bool force)
     {
         menuTree->clearSelection();
     }
+
+    return true;
 }
 
 void PreferencesWindow::registerName(const QString &key, const QString &trkey)
@@ -326,14 +388,19 @@ void PreferencesWindow::addPage(QTreeWidgetItem *item, PreferencesPage *page, co
     pageWidget[item] = page;
     pageTreeItem[page] = item;
     stackedWidget->addWidget(page);
-    connect(page, SIGNAL(settingsApplied(const QString &)), this, SIGNAL(settingsApplied(const QString &)));
+    connect(page, &PreferencesPage::settingsApplied, this, &PreferencesWindow::settingsApplied);
 }
 
-PreferencesPage *PreferencesWindow::getPageWidget(const QString &pagePath)
+PreferencesPage *PreferencesWindow::getPageWidget(const QString &pagePath, bool allowPrefix) const
 {
     auto parts = pagePath.split('/');
     for (QString &name : parts)
-        name = treeEntryTranslation[name];
+    {
+        if (treeEntryTranslation.contains(name))
+        {
+            name = treeEntryTranslation[name];
+        }
+    }
 
     QTreeWidgetItem *current = getTopLevelItem(parts.front());
 
@@ -345,7 +412,12 @@ PreferencesPage *PreferencesWindow::getPageWidget(const QString &pagePath)
     {
         QTreeWidgetItem *nxt = getChild(current, parts[i]);
         if (nxt == nullptr)
-            return nullptr;
+        {
+            auto *res = allowPrefix ? pageWidget[current] : nullptr;
+            if (res == nullptr)
+                LOG_DEV("Can't find path: " << pagePath);
+            return res;
+        }
         current = nxt;
     }
 
@@ -354,7 +426,7 @@ PreferencesPage *PreferencesWindow::getPageWidget(const QString &pagePath)
 
 void PreferencesWindow::closeEvent(QCloseEvent *event)
 {
-    auto current = qobject_cast<PreferencesPage *>(stackedWidget->currentWidget());
+    auto *current = qobject_cast<PreferencesPage *>(stackedWidget->currentWidget());
     if (!SettingsHelper::isForceClose() && current != nullptr && !current->aboutToExit())
         event->ignore();
     else
@@ -377,7 +449,8 @@ void PreferencesWindow::updateSearch(QTreeWidgetItem *item, const QString &text)
         return;
     }
 
-    bool shouldHide = true, translatedMatched = false;
+    bool shouldHide = true;
+    bool translatedMatched = false;
 
     if (item->text(0).contains(text, Qt::CaseInsensitive))
     {
@@ -396,7 +469,7 @@ void PreferencesWindow::updateSearch(QTreeWidgetItem *item, const QString &text)
         else
         {
             // check whether the content contains *text*
-            for (auto s : content[item])
+            for (auto const &s : content[item])
             {
                 if (s.contains(text, Qt::CaseInsensitive))
                 {
@@ -409,7 +482,7 @@ void PreferencesWindow::updateSearch(QTreeWidgetItem *item, const QString &text)
 
     for (int i = 0; i < item->childCount(); ++i)
     {
-        auto child = item->child(i);
+        auto *child = item->child(i);
 
         // show all children if the translation of the current node contains *text*
         updateSearch(child, translatedMatched ? QString() : text);
@@ -423,16 +496,17 @@ void PreferencesWindow::updateSearch(QTreeWidgetItem *item, const QString &text)
     item->setHidden(shouldHide);
 }
 
-QTreeWidgetItem *PreferencesWindow::getTopLevelItem(const QString &text)
+QTreeWidgetItem *PreferencesWindow::getTopLevelItem(const QString &text) const
 {
     for (int i = 0; i < menuTree->topLevelItemCount(); ++i)
     {
-        auto item = menuTree->topLevelItem(i);
+        auto *item = menuTree->topLevelItem(i);
         if (item->text(0) == text)
         {
             return item;
         }
     }
+    LOG_DEV("Can't find top level item: " << text);
     return nullptr;
 }
 
@@ -440,7 +514,7 @@ QTreeWidgetItem *PreferencesWindow::getChild(QTreeWidgetItem *item, const QStrin
 {
     for (int i = 0; i < item->childCount(); ++i)
     {
-        auto child = item->child(i);
+        auto *child = item->child(i);
         if (child->text(0) == text)
         {
             return child;
@@ -449,7 +523,7 @@ QTreeWidgetItem *PreferencesWindow::getChild(QTreeWidgetItem *item, const QStrin
     return nullptr;
 }
 
-int PreferencesWindow::nextNonHiddenPage(int index, int direction, bool includingSelf)
+int PreferencesWindow::nextNonHiddenPage(int index, int direction, bool includingSelf) const
 {
     if (index < 0 || index >= stackedWidget->count())
     {
@@ -465,8 +539,8 @@ int PreferencesWindow::nextNonHiddenPage(int index, int direction, bool includin
     {
         if (index == 0)
             return 0;
-        auto currentWidget = qobject_cast<PreferencesPage *>(stackedWidget->widget(index));
-        auto currentItem = pageTreeItem[currentWidget];
+        auto *currentWidget = qobject_cast<PreferencesPage *>(stackedWidget->widget(index));
+        auto *currentItem = pageTreeItem[currentWidget];
         if (currentItem == nullptr)
         {
             LOG_WTF("Failed to get the current item");

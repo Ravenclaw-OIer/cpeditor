@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Ashar Khan <ashar786khan@gmail.com>
+ * Copyright (C) 2019-2021 Ashar Khan <ashar786khan@gmail.com>
  *
  * This file is part of CP Editor.
  *
@@ -24,7 +24,7 @@ class MessageLogger;
 
 namespace Util
 {
-const static QStringList cppSuffix = {"cpp", "hpp", "h", "cc", "cxx", "c"};
+const static QStringList cppSuffix = {"cpp", "cc", "cxx", "c++", "c", "hpp", "h"};
 const static QStringList javaSuffix = {"java"};
 const static QStringList pythonSuffix = {"py", "py3"};
 #ifdef Q_OS_WIN
@@ -32,6 +32,8 @@ const static QString exeSuffix = ".exe";
 #else
 const static QString exeSuffix = "";
 #endif
+
+QString fileNameWithSuffix(const QString &name, const QString &lang);
 
 QString fileNameFilter(bool cpp, bool java, bool python);
 

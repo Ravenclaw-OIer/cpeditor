@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Ashar Khan <ashar786khan@gmail.com>
+ * Copyright (C) 2019-2021 Ashar Khan <ashar786khan@gmail.com>
  *
  * This file is part of CP Editor.
  *
@@ -48,7 +48,7 @@ class Runner : public QObject
      * @brief descruct the runner
      * @note the process will be killed if it's still running
      */
-    ~Runner();
+    ~Runner() override;
 
     /**
      * @brief run a program on a given input
@@ -92,7 +92,7 @@ class Runner : public QObject
      * @param timeUsed the time between the execution started and finished
      * @param tle whether the time limit is exceeded
      */
-    void runFinished(int index, const QString &out, const QString &err, int exitCode, int timeUsed, bool tle);
+    void runFinished(int index, const QString &out, const QString &err, int exitCode, qint64 timeUsed, bool tle);
 
     /**
      * @brief failed to start the execution

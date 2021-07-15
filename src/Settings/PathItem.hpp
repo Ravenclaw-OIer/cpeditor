@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Ashar Khan <ashar786khan@gmail.com>
+ * Copyright (C) 2019-2021 Ashar Khan <ashar786khan@gmail.com>
  *
  * This file is part of CP Editor.
  *
@@ -62,6 +62,8 @@ class PathItem : public QWidget
     QString filter() const;
 
     QString title() const;
+
+    void focusInEvent(QFocusEvent *event) override;
 
   private:
     Type fileType;

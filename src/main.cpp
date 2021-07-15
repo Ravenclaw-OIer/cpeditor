@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Ashar Khan <ashar786khan@gmail.com>
+ * Copyright (C) 2019-2021 Ashar Khan <ashar786khan@gmail.com>
  *
  * This file is part of CP Editor.
  *
@@ -20,6 +20,7 @@
 #include "Settings/SettingsInfo.hpp"
 #include "SignalHandler.hpp"
 #include "Util/Util.hpp"
+#include "application.hpp"
 #include "appwindow.hpp"
 #include "generated/SettingsHelper.hpp"
 #include "generated/version.hpp"
@@ -35,34 +36,45 @@
 #include <QProgressDialog>
 #include <QTextStream>
 #include <iostream>
-#include <singleapplication.h>
+
+#ifdef Q_OS_WIN
+#include <windows.h>
+#endif
 
 #define TOJSON(x) json[#x] = x
 
 int main(int argc, char *argv[])
 {
-    SingleApplication app(argc, argv, true);
+    Application app(argc, argv);
     SingleApplication::setApplicationName("CP Editor");
     SingleApplication::setApplicationVersion(DISPLAY_VERSION);
     QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+#ifdef Q_OS_MACOS
+    QApplication::setWindowIcon(QIcon(":/macos-icon.png"));
+#else
     QApplication::setWindowIcon(QIcon(":/icon.png"));
+#endif
+
+#ifdef Q_OS_WIN
+    AllowSetForegroundWindow(ASFW_ANY); // #657
+#endif
 
     SignalHandler handler;
     QObject::connect(&handler, &SignalHandler::signalReceived, qApp, [](int signal) {
         if (qApp)
         {
             auto widgets = QApplication::topLevelWidgets();
-            for (auto widget : widgets)
+            for (auto *widget : widgets)
             {
-                auto dialog = qobject_cast<QDialog *>(widget);
+                auto *dialog = qobject_cast<QDialog *>(widget);
                 if (dialog && dialog->isModal())
                 {
 #ifndef Q_OS_WIN // always force-close on Windows because task manager sends SIGINT on kill
                     if (signal == SignalHandler::SIG_INT)
                     {
-                        for (auto w : widgets)
+                        for (auto *w : widgets)
                         {
-                            auto appWindow = qobject_cast<AppWindow *>(w);
+                            auto *appWindow = qobject_cast<AppWindow *>(w);
                             if (appWindow)
                             {
                                 appWindow->showOnTop();
@@ -72,10 +84,10 @@ int main(int argc, char *argv[])
                         Util::showWidgetOnTop(dialog);
                         return;
                     }
-                    else
+                    else // NOLINT: Use else after return, since it has different branching on different OS
 #endif
                     {
-                        auto progressDialog = qobject_cast<QProgressDialog *>(dialog);
+                        auto *progressDialog = qobject_cast<QProgressDialog *>(dialog);
                         if (progressDialog)
                             progressDialog->cancel();
                         else
@@ -83,9 +95,9 @@ int main(int argc, char *argv[])
                     }
                 }
             }
-            for (auto widget : widgets)
+            for (auto *widget : widgets)
             {
-                auto appWindow = qobject_cast<AppWindow *>(widget);
+                auto *appWindow = qobject_cast<AppWindow *>(widget);
                 if (appWindow)
                 {
 #ifndef Q_OS_WIN // always force-close on Windows because task manager sends SIGINT on kill
@@ -105,7 +117,7 @@ int main(int argc, char *argv[])
 
     QTextStream cerr(stderr, QIODevice::WriteOnly);
 
-    QString programName(argv[0]);
+    QString programName(argv[0]); // NOLINT: Pointer arithmetics?
 
     QCommandLineParser parser;
     parser.addVersionOption();
@@ -116,9 +128,6 @@ int main(int argc, char *argv[])
     parser.addOptions(
         {{{"d", "depth"}, "Maximum depth when opening files in directories. No limit if not specified.", "depth", "-1"},
          {{"c", "contest"}, "Open a contest. i.e. Open files named A, B, ..., Z in a given directory."},
-         /*{{"n", "new"},
-          "Open a new window instead of open tabs in an existing window. This may cause error of the competitive "
-          "companion server."},*/
          {"cpp", "Open C++ files in given directories. / Use C++ for open contests."},
          {"java", "Open Java files in given directories. / Use Java for open contests."},
          {"python", "Open Python files in given directories. / Use Python for open contests."},
@@ -143,7 +152,7 @@ int main(int argc, char *argv[])
 
     SettingsInfo::updateSettingInfo(); // generate an English version, so that we can use SettingsHelper
     SettingsManager::init();
-    Core::Translator::setLocale(SettingsHelper::getLocale());
+    Core::Translator::setLocale();
 
     auto args = parser.positionalArguments();
 
@@ -184,7 +193,7 @@ int main(int argc, char *argv[])
 
         LOG_INFO("Path extracted as : " << path);
 
-        if (/*!parser.isSet("new") &&*/ app.isSecondary())
+        if (app.isSecondary())
         {
             QJsonObject json;
             json["type"] = "contest";
@@ -193,13 +202,17 @@ int main(int argc, char *argv[])
             TOJSON(python);
             TOJSON(number);
             TOJSON(path);
-            if (app.sendMessage("AAAAAAAAAAAAAAAAAAAANOLOSTDATA" + QJsonDocument(json).toJson()))
+            if (app.sendMessage("AAAAAAAAAAAAAAAAAAAANOLOSTDATA" + QJsonDocument(json).toJson(), 20000))
             {
                 LOG_INFO("This is secondary application. Sending to primary instance the binary data : " +
                          QJsonDocument(json).toJson(QJsonDocument::Compact));
                 cerr << "There is already a CP Editor running. New tabs are opened there.\n";
                 return 0;
             }
+            LOG_ERR("Failed to sendMessage");
+            cerr << "The open-file request timeouts. Please kill the old CP Editor instance if it's still running but "
+                    "has no response.\n";
+            return 1;
         }
 
         LOG_INFO("Launching the new Appwindow with args: " << BOOL_INFO_OF(cpp) << BOOL_INFO_OF(java)
@@ -211,61 +224,62 @@ int main(int argc, char *argv[])
         QObject::connect(&app, &SingleApplication::receivedMessage, &w, &AppWindow::onReceivedMessage);
         LOG_INFO("Showing the application window and beginning the event loop");
         w.show();
-        return app.exec();
+        return SingleApplication::exec();
     }
-    else
+    LOG_INFO("Staarting in normal mode. Now parsing depth");
+    bool ok = false;
+    int depth = parser.value("depth").toInt(&ok);
+
+    if (!ok || depth < -1)
     {
-        LOG_INFO("Staarting in normal mode. Now parsing depth");
-        bool ok = false;
-        int depth = parser.value("depth").toInt(&ok);
-
-        if (!ok || depth < -1)
-        {
-            LOG_ERR("Failed to use parse depth. Provided : " << parser.value("depth"));
-            cerr << "Depth should be a non-negative integer.\n\n"
-                 << "See " + programName + " --help for more infomation.\n\n";
-            return 1;
-        }
-
-        if (!cpp && !java && !python)
-            cpp = java = python = true;
-
-        for (auto &path : args)
-        {
-            if (QFileInfo(path).isRelative())
-                path = QDir::current().filePath(path);
-            LOG_INFO("Path is : " << path);
-        }
-
-        if (/*!parser.isSet("new") &&*/ app.isSecondary())
-        {
-            QJsonObject json;
-            json["type"] = "normal";
-            TOJSON(depth);
-            TOJSON(cpp);
-            TOJSON(java);
-            TOJSON(python);
-            json["paths"] = QJsonArray::fromStringList(args);
-            if (app.sendMessage("AAAAAAAAAAAAAAAAAAAANOLOSTDATA" + QJsonDocument(json).toJson()))
-            {
-                LOG_INFO("This is secondary application. Sending to primary instance the data : "
-                         << QJsonDocument(json).toJson(QJsonDocument::Compact));
-                cerr << "There is already a CP Editor running. New tabs are opened there.\n";
-                return 0;
-            }
-        }
-        LOG_INFO("Launching the new Appwindow with args: " << INFO_OF(depth) << BOOL_INFO_OF(cpp) << BOOL_INFO_OF(java)
-                                                           << BOOL_INFO_OF(python) << BOOL_INFO_OF(noHotExit)
-                                                           << INFO_OF(args.join(", ")));
-
-        AppWindow w(depth, cpp, java, python, noHotExit, args);
-        LOG_INFO("Launched window connecting this window to onReceiveMessage()");
-        QObject::connect(&app, &SingleApplication::receivedMessage, &w, &AppWindow::onReceivedMessage);
-        LOG_INFO("Showing the application window and beginning the event loop");
-
-        w.show();
-        return app.exec();
+        LOG_ERR("Failed to use parse depth. Provided : " << parser.value("depth"));
+        cerr << "Depth should be a non-negative integer.\n\n"
+             << "See " + programName + " --help for more infomation.\n\n";
+        return 1;
     }
+
+    if (!cpp && !java && !python)
+        cpp = java = python = true;
+
+    for (auto &path : args)
+    {
+        if (QFileInfo(path).isRelative())
+            path = QDir::current().filePath(path);
+        LOG_INFO("Path is : " << path);
+    }
+
+    if (app.isSecondary())
+    {
+        QJsonObject json;
+        json["type"] = "normal";
+        TOJSON(depth);
+        TOJSON(cpp);
+        TOJSON(java);
+        TOJSON(python);
+        json["paths"] = QJsonArray::fromStringList(args);
+        if (app.sendMessage("AAAAAAAAAAAAAAAAAAAANOLOSTDATA" + QJsonDocument(json).toJson(), 20000))
+        {
+            LOG_INFO("This is secondary application. Sending to primary instance the data : "
+                     << QJsonDocument(json).toJson(QJsonDocument::Compact));
+            cerr << "There is already a CP Editor running. New tabs are opened there.\n";
+            return 0;
+        }
+        LOG_ERR("Failed to sendMessage");
+        cerr << "The open-file request timeouts. Please kill the old CP Editor instance if it's still running but "
+                "has no response.\n";
+        return 1;
+    }
+    LOG_INFO("Launching the new Appwindow with args: " << INFO_OF(depth) << BOOL_INFO_OF(cpp) << BOOL_INFO_OF(java)
+                                                       << BOOL_INFO_OF(python) << BOOL_INFO_OF(noHotExit)
+                                                       << INFO_OF(args.join(", ")));
+
+    AppWindow w(depth, cpp, java, python, noHotExit, args);
+    LOG_INFO("Launched window connecting this window to onReceiveMessage()");
+    QObject::connect(&app, &SingleApplication::receivedMessage, &w, &AppWindow::onReceivedMessage);
+    LOG_INFO("Showing the application window and beginning the event loop");
+
+    w.show();
+    return SingleApplication::exec();
 }
 
 #undef TOJSON

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Ashar Khan <ashar786khan@gmail.com>
+ * Copyright (C) 2019-2021 Ashar Khan <ashar786khan@gmail.com>
  *
  * This file is part of CP Editor.
  *
@@ -32,13 +32,13 @@ UpdatePresenter::UpdatePresenter()
     textEdit->setReadOnly(true);
 
     hint = new QLabel(this);
-    mainLayout = new QVBoxLayout(this);
-    subLayout = new QHBoxLayout();
+    auto *mainLayout = new QVBoxLayout(this);
+    auto *subLayout = new QHBoxLayout();
 
-    downloadButton = new QPushButton(tr("Download"), this);
-    cancelButton = new QPushButton(tr("Close"), this);
+    auto *downloadButton = new QPushButton(tr("Download"), this);
+    auto *cancelButton = new QPushButton(tr("Close"), this);
 
-    connect(cancelButton, SIGNAL(clicked()), this, SLOT(close()));
+    connect(cancelButton, &QPushButton::clicked, this, &UpdatePresenter::close);
     connect(downloadButton, &QPushButton::clicked, this,
             [this] { QDesktopServices::openUrl(QUrl(downloadUrl, QUrl::TolerantMode)); });
 
@@ -68,6 +68,7 @@ void UpdatePresenter::showUpdate(const Telemetry::UpdateChecker::UpdateMetaInfor
             .arg(info.releasePageUrl)
             .arg(info.version);
     hint->setText(message);
+    hint->setOpenExternalLinks(true);
 
     Util::showWidgetOnTop(this);
 }

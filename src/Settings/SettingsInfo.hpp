@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Ashar Khan <ashar786khan@gmail.com>
+ * Copyright (C) 2019-2021 Ashar Khan <ashar786khan@gmail.com>
  *
  * This file is part of CP Editor.
  *
@@ -22,23 +22,36 @@
 #include <QVariant>
 #include <functional>
 
+class ValueWidget;
+
 class SettingsInfo
 {
     Q_DECLARE_TR_FUNCTIONS(SettingsInfo)
 
   public:
-    struct SettingInfo
+    class SettingInfo
     {
-        QString name, desc, type, ui, tip, help;
-        bool requireAllDepends; // false for one of the depends, true for all depends
+      public:
+        QString name;             // key
+        QString desc;             // translated description
+        QString untrDesc;         // untranslated description
+        QString type;             // int, bool, QString, etc.
+        QString ui;               // type of the widget
+        QString tip;              // translated tooltips
+        QString untrTip;          // untranslated tooltips
+        QString docAnchor;        // the anchor of the documentation
+        bool requireAllDepends{}; // false for one of the depends, true for all depends
+        bool immediatelyApply{};
+        std::function<void(SettingInfo *, ValueWidget *, QWidget *)> onApply;
         QList<QPair<QString, std::function<bool(const QVariant &)>>> depends;
+        QList<QString> old; // the old keys of this setting
         QVariant def;
         QVariant param;
         QList<SettingInfo> child;
 
         QString key() const
         {
-            return name.toLower().replace('+', 'p').replace(' ', '_');
+            return name.toLower().replace("c++", "cpp").replace(' ', '_');
         }
     };
 
@@ -59,6 +72,8 @@ class SettingsInfo
 
   private:
     static QList<SettingInfo> settings;
+
+    friend class SettingsUpdater;
 };
 
 #endif // SETTINGSINFO_HPP

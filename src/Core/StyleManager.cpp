@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Ashar Khan <ashar786khan@gmail.com>
+ * Copyright (C) 2019-2021 Ashar Khan <ashar786khan@gmail.com>
  *
  * This file is part of CP Editor.
  *
@@ -66,7 +66,6 @@ bool StyleManager::setStyle(const QString &styleName)
     }
 #endif
 
-    setStyleSheet(currentStyle);
     setPalette(currentStyle);
 
     if (currentStyle == "default")
@@ -108,23 +107,11 @@ QStringList StyleManager::styleList()
 #ifdef Q_OS_WIN
 bool StyleManager::isWindowsDarkThemeForApps()
 {
-    QSettings settings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
+    QSettings settings(R"(HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize)",
                        QSettings::NativeFormat);
     return settings.value("AppsUseLightTheme") == 0;
 }
 #endif
-
-void StyleManager::setStyleSheet(const QString &styleName)
-{
-    QString styleSheet;
-
-    if (styleName == "Light Fusion")
-        styleSheet = "QToolTip {color: #000000; background-color: #d57d25 ; border: 1px solid black}";
-    else if (styleName == "Dark Fusion")
-        styleSheet = "QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }";
-
-    qApp->setStyleSheet(styleSheet);
-}
 
 void StyleManager::setPalette(const QString &styleName)
 {
@@ -147,7 +134,7 @@ QPalette StyleManager::darkFusionPalette()
     darkPalette.setColor(QPalette::WindowText, Qt::white);
     darkPalette.setColor(QPalette::Base, QColor(18, 18, 18));
     darkPalette.setColor(QPalette::AlternateBase, darkColor);
-    darkPalette.setColor(QPalette::ToolTipBase, Qt::white);
+    darkPalette.setColor(QPalette::ToolTipBase, QColor(18, 18, 18));
     darkPalette.setColor(QPalette::ToolTipText, Qt::white);
     darkPalette.setColor(QPalette::Text, Qt::white);
     darkPalette.setColor(QPalette::Disabled, QPalette::Text, disabledColor);
@@ -157,7 +144,7 @@ QPalette StyleManager::darkFusionPalette()
     darkPalette.setColor(QPalette::BrightText, Qt::red);
     darkPalette.setColor(QPalette::Link, QColor(42, 130, 218));
     darkPalette.setColor(QPalette::Highlight, QColor(42, 130, 218));
-    darkPalette.setColor(QPalette::HighlightedText, Qt::black);
+    darkPalette.setColor(QPalette::HighlightedText, Qt::white);
     darkPalette.setColor(QPalette::Disabled, QPalette::HighlightedText, disabledColor);
 
     return darkPalette;
@@ -174,7 +161,7 @@ QPalette StyleManager::lightFusionPalette()
     lightPalette.setColor(QPalette::WindowText, Qt::black);
     lightPalette.setColor(QPalette::Base, QColor(237, 237, 237));
     lightPalette.setColor(QPalette::AlternateBase, lightColor);
-    lightPalette.setColor(QPalette::ToolTipBase, Qt::black);
+    lightPalette.setColor(QPalette::ToolTipBase, QColor(237, 237, 237));
     lightPalette.setColor(QPalette::ToolTipText, Qt::black);
     lightPalette.setColor(QPalette::Text, Qt::black);
     lightPalette.setColor(QPalette::Disabled, QPalette::Text, disabledColor);

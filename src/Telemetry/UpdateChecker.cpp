@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Ashar Khan <ashar786khan@gmail.com>
+ * Copyright (C) 2019-2021 Ashar Khan <ashar786khan@gmail.com>
  *
  * This file is part of CP Editor.
  *
@@ -24,6 +24,7 @@
 #include "generated/version.hpp"
 #include <QJsonArray>
 #include <QJsonDocument>
+#include <QVersionNumber>
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkProxy>
 #include <QtNetwork/QNetworkReply>
@@ -38,7 +39,7 @@ UpdateChecker::UpdateChecker()
     progress = new Widgets::UpdateProgressDialog();
     presenter = new Widgets::UpdatePresenter();
     request = new QNetworkRequest(QUrl("https://api.github.com/repos/cpeditor/cpeditor/releases"));
-    connect(progress, SIGNAL(canceled()), this, SLOT(cancelCheckUpdate()));
+    connect(progress, &Widgets::UpdateProgressDialog::canceled, this, &UpdateChecker::cancelCheckUpdate);
 }
 
 UpdateChecker::~UpdateChecker()
@@ -60,11 +61,10 @@ void UpdateChecker::checkUpdate(bool silent)
 
 void UpdateChecker::cancelCheckUpdate()
 {
-    if (manager)
-        delete manager;
+    delete manager;
     manager = new QNetworkAccessManager();
     updateProxy();
-    connect(manager, SIGNAL(finished(QNetworkReply *)), this, SLOT(managerFinished(QNetworkReply *)));
+    connect(manager, &QNetworkAccessManager::finished, this, &UpdateChecker::managerFinished);
 }
 
 UpdateChecker::UpdateMetaInformation UpdateChecker::toMetaInformation(const QJsonDocument &release)
@@ -77,19 +77,28 @@ UpdateChecker::UpdateMetaInformation UpdateChecker::toMetaInformation(const QJso
     {
         auto asset = QJsonDocument::fromVariant(e);
         auto assetName = asset["name"].toString();
+
 #if defined(Q_OS_WIN)
-        if (assetName.contains("windows"))
+#ifdef PORTABLE_VERSION
+        if (assetName.contains("windows") && assetName.contains("portable"))
+#else
+        if (assetName.contains("windows") && !assetName.contains("portable"))
+#endif
+        {
+            result.assetDownloadUrl = asset["browser_download_url"].toString();
+            break;
+        }
+
 #elif defined(Q_OS_MACOS)
         if (assetName.contains("macos"))
+        {
+            result.assetDownloadUrl = asset["browser_download_url"].toString();
+            break;
+        }
 #else
-        if (assetName.contains("linux"))
+        result.assetDownloadUrl = release["html_url"].toString();
+        break;
 #endif
-#ifdef PORTABLE_VERSION
-            if (result.assetDownloadUrl.isEmpty() || assetName.contains("portable"))
-#else
-            if (result.assetDownloadUrl.isEmpty() || !assetName.contains("portable"))
-#endif
-                result.assetDownloadUrl = asset["browser_download_url"].toString();
     }
     result.preview = release["prerelease"].toBool();
     result.version = release["tag_name"].toString();
@@ -120,22 +129,21 @@ void UpdateChecker::managerFinished(QNetworkReply *reply)
     QString jsonReply = reply->readAll();
     QJsonDocument doc = QJsonDocument::fromJson(jsonReply.toUtf8());
 
-    QVector<QPair<Version, UpdateMetaInformation>> releases;
+    QVector<QPair<QVersionNumber, UpdateMetaInformation>> releases;
 
     for (auto const &e : doc.array().toVariantList())
     {
         auto json = QJsonDocument::fromVariant(e);
         auto info = toMetaInformation(json);
-        Version version(info.version);
-        LOG_INFO(INFO_OF(info.version) << INFO_OF(version.valid));
-        if (version.valid)
+        const auto version = QVersionNumber::fromString(info.version);
+        LOG_INFO(INFO_OF(info.version) << INFO_OF(version.isNull()));
+        if (!version.isNull())
             releases.push_back(qMakePair(version, info));
     }
 
     std::sort(releases.begin(), releases.end(),
-              [](const QPair<Version, UpdateMetaInformation> &lhs, const QPair<Version, UpdateMetaInformation> &rhs) {
-                  return lhs.first < rhs.first;
-              });
+              [](const QPair<QVersionNumber, UpdateMetaInformation> &lhs,
+                 const QPair<QVersionNumber, UpdateMetaInformation> &rhs) { return lhs.first < rhs.first; });
 
     while (!SettingsHelper::isBeta() && !releases.isEmpty() && releases.last().second.preview)
         releases.pop_back();
@@ -148,7 +156,7 @@ void UpdateChecker::managerFinished(QNetworkReply *reply)
 
     auto latestVersion = releases.last().first;
     auto latestInfo = releases.last().second;
-    Version currentVersion(APP_VERSION);
+    const auto currentVersion = QVersionNumber::fromString(APP_VERSION);
 
     if (currentVersion < latestVersion)
     {
@@ -162,7 +170,7 @@ void UpdateChecker::managerFinished(QNetworkReply *reply)
 
         auto last = currentVersion;
         QStringList changelog;
-        for (auto release : releases)
+        for (auto const &release : releases)
         {
             auto version = release.first;
             bool used = false;
@@ -170,14 +178,16 @@ void UpdateChecker::managerFinished(QNetworkReply *reply)
             {
                 do
                 {
-                    if (version.major == latestVersion.major && version.minor == latestVersion.minor)
+                    if (version.majorVersion() == latestVersion.majorVersion() &&
+                        version.minorVersion() == latestVersion.minorVersion())
                     {
                         if (!latestInfo.preview && release.second.preview)
                         {
                             break;
                         }
                     }
-                    else if (version.major == last.major && version.minor == last.minor)
+                    else if (version.majorVersion() == last.majorVersion() &&
+                             version.minorVersion() == last.minorVersion())
                     {
                         break;
                     }
@@ -233,45 +243,5 @@ void UpdateChecker::updateProxy()
         proxy.setPassword(SettingsHelper::getProxyPassword());
         manager->setProxy(proxy);
     }
-}
-
-UpdateChecker::Version::Version(const QString &version)
-{
-    auto splitted = version.split('.');
-
-    valid = true;
-
-    do
-    {
-        if (splitted.length() != 3)
-        {
-            valid = false;
-            break;
-        }
-
-        major = splitted[0].toInt(&valid);
-        if (!valid)
-            break;
-
-        minor = splitted[1].toInt(&valid);
-        if (!valid)
-            break;
-
-        patch = splitted[2].toInt(&valid);
-        if (!valid)
-            break;
-    } while (false);
-
-    if (!valid)
-        major = minor = patch = 0;
-}
-
-bool UpdateChecker::Version::operator<(const Version &rhs) const
-{
-    if (major != rhs.major)
-        return major < rhs.major;
-    if (minor != rhs.minor)
-        return minor < rhs.minor;
-    return patch < rhs.patch;
 }
 } // namespace Telemetry

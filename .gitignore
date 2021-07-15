@@ -30,6 +30,9 @@ ui_*.h
 Makefile*
 *build-*
 
+# metainfo files
+*.appdata.xml
+
 # Qt unit tests
 target_wrapper.*
 
@@ -44,6 +47,7 @@ target_wrapper.*
 CMakeLists.txt.user*
 
 build/
+.clangd/
 
 # Visual Studio
 .vs
@@ -62,3 +66,9 @@ compile_commands.json
 
 # Translations
 resources/translations/*.qm
+
+# NeoVim LSP
+.cache/
+
+# macOS
+.DS_Store

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Ashar Khan <ashar786khan@gmail.com>
+ * Copyright (C) 2019-2021 Ashar Khan <ashar786khan@gmail.com>
  *
  * This file is part of CP Editor.
  *
@@ -18,7 +18,7 @@
 #include "Widgets/DiffViewer.hpp"
 #include "Core/EventLogger.hpp"
 #include "Core/MessageLogger.hpp"
-#include "diff_match_patch.h"
+#include "third_party/diff_match_patch/diff_match_patch.h"
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QScrollBar>
@@ -30,14 +30,14 @@ namespace Widgets
 {
 DiffViewer::DiffViewer(QWidget *parent) : QMainWindow(parent)
 {
-    widget = new QWidget(this);
-    layout = new QHBoxLayout();
+    auto *widget = new QWidget(this);
+    auto *layout = new QHBoxLayout();
     widget->setLayout(layout);
     setCentralWidget(widget);
     setWindowTitle(tr("Diff Viewer"));
     resize(720, 480);
 
-    leftLayout = new QVBoxLayout();
+    auto *leftLayout = new QVBoxLayout();
     outputLabel = new QLabel(tr("Output"), widget);
     leftLayout->addWidget(outputLabel);
     outputEdit = new QTextEdit(widget);
@@ -46,7 +46,7 @@ DiffViewer::DiffViewer(QWidget *parent) : QMainWindow(parent)
     leftLayout->addWidget(outputEdit);
     layout->addLayout(leftLayout);
 
-    rightLayout = new QVBoxLayout();
+    auto *rightLayout = new QVBoxLayout();
     expectedLabel = new QLabel(tr("Expected"), widget);
     rightLayout->addWidget(expectedLabel);
     expectedEdit = new QTextEdit(widget);
@@ -55,14 +55,14 @@ DiffViewer::DiffViewer(QWidget *parent) : QMainWindow(parent)
     rightLayout->addWidget(expectedEdit);
     layout->addLayout(rightLayout);
 
-    connect(expectedEdit->horizontalScrollBar(), SIGNAL(valueChanged(int)), outputEdit->horizontalScrollBar(),
-            SLOT(setValue(int)));
-    connect(outputEdit->horizontalScrollBar(), SIGNAL(valueChanged(int)), expectedEdit->horizontalScrollBar(),
-            SLOT(setValue(int)));
-    connect(expectedEdit->verticalScrollBar(), SIGNAL(valueChanged(int)), outputEdit->verticalScrollBar(),
-            SLOT(setValue(int)));
-    connect(outputEdit->verticalScrollBar(), SIGNAL(valueChanged(int)), expectedEdit->verticalScrollBar(),
-            SLOT(setValue(int)));
+    connect(expectedEdit->horizontalScrollBar(), &QScrollBar::valueChanged, outputEdit->horizontalScrollBar(),
+            &QScrollBar::setValue);
+    connect(outputEdit->horizontalScrollBar(), &QScrollBar::valueChanged, expectedEdit->horizontalScrollBar(),
+            &QScrollBar::setValue);
+    connect(expectedEdit->verticalScrollBar(), &QScrollBar::valueChanged, outputEdit->verticalScrollBar(),
+            &QScrollBar::setValue);
+    connect(outputEdit->verticalScrollBar(), &QScrollBar::valueChanged, expectedEdit->verticalScrollBar(),
+            &QScrollBar::setValue);
 }
 
 void DiffViewer::setText(const QString &output, const QString &expected)
@@ -78,9 +78,10 @@ void DiffViewer::setText(const QString &output, const QString &expected)
         auto diffs = differ.diff_main(nonNullOutput, nonNullExpected);
         differ.diff_cleanupEfficiency(diffs);
 
-        QString outputHTML, expectedHTML;
+        QString outputHTML;
+        QString expectedHTML;
         outputHTML = expectedHTML = "<body style='background-color: white; color: black;'>";
-        for (auto diff : diffs)
+        for (auto const &diff : diffs)
         {
             QString text = diff.text.toHtmlEscaped().replace(" ", "&nbsp;");
             if (SettingsHelper::isDisplayEOLNInDiff())

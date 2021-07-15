@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Ashar Khan <ashar786khan@gmail.com>
+ * Copyright (C) 2019-2021 Ashar Khan <ashar786khan@gmail.com>
  *
  * This file is part of CP Editor.
  *
@@ -19,7 +19,6 @@
 #include "Core/EventLogger.hpp"
 #include "Settings/SettingsManager.hpp"
 #include "generated/SettingsHelper.hpp"
-#include <QDebug>
 #include <QFileInfo>
 #include <QRegularExpression>
 
@@ -41,8 +40,7 @@ void DefaultPathManager::setDefaultPathForAction(const QString &action, const QS
 
     if (!SettingsManager::contains(settingsKey, true))
     {
-        qDebug() << "Unknown Action:" << action;
-        LOG_ERR("Unknown Action");
+        LOG_DEV("Unknown Action: " << action);
         return;
     }
 
@@ -97,7 +95,7 @@ QString DefaultPathManager::getSaveFileName(const QString &action, QWidget *pare
                                             const QString &filter, QString *selectedFilter,
                                             QFileDialog::Options options)
 {
-    const auto result =
+    auto result =
         QFileDialog::getSaveFileName(parent, caption, defaultPathForAction(action), filter, selectedFilter, options);
     if (!result.isEmpty())
         setDefaultPathForAction(action, result);
@@ -137,7 +135,7 @@ QString DefaultPathManager::convertPath(const QString &str)
     QString result = str;
     for (const auto &key : defaultPath.keys())
         result.replace(QString("${%1}").arg(key), defaultPath[key]);
-    const QRegularExpression placeHolderRegex("\\$\\{.*?\\}");
+    const QRegularExpression placeHolderRegex(R"(\$\{.*?\})");
     if (result.contains(placeHolderRegex))
     {
         LOG_WARN("Unknown place holder: " << INFO_OF(str) << INFO_OF(result));

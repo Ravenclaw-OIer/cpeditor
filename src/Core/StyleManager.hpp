@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Ashar Khan <ashar786khan@gmail.com>
+ * Copyright (C) 2019-2021 Ashar Khan <ashar786khan@gmail.com>
  *
  * This file is part of CP Editor.
  *
@@ -35,8 +35,6 @@ class StyleManager
     static bool isWindowsDarkThemeForApps();
 
     static void setPalette(const QString &styleName);
-
-    static void setStyleSheet(const QString &styleName);
 
     static QPalette darkFusionPalette();
 

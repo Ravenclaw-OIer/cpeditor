@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Ashar Khan <ashar786khan@gmail.com>
+ * Copyright (C) 2019-2021 Ashar Khan <ashar786khan@gmail.com>
  *
  * This file is part of CP Editor.
  *
@@ -21,6 +21,7 @@
 #include <QApplication>
 #include <QCoreApplication>
 #include <QFileDialog>
+#include <QFocusEvent>
 #include <QHBoxLayout>
 #include <QLineEdit>
 #include <QStyle>
@@ -38,7 +39,7 @@ PathItem::PathItem(Type type, QWidget *parent) : QWidget(parent), fileType(type)
     toolButton = new QToolButton();
     toolButton->setToolTip(tr("Choose a file"));
     toolButton->setIcon(QApplication::style()->standardIcon(QStyle::SP_DialogOpenButton));
-    connect(toolButton, SIGNAL(clicked()), this, SLOT(onButtonClicked()));
+    connect(toolButton, &QToolButton::clicked, this, &PathItem::onButtonClicked);
     layout->addWidget(toolButton);
 }
 
@@ -88,4 +89,9 @@ QString PathItem::title() const
     default:
         Q_UNREACHABLE();
     }
+}
+
+void PathItem::focusInEvent(QFocusEvent *event)
+{
+    lineEdit->setFocus(event->reason());
 }

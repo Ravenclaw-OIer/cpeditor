@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Ashar Khan <ashar786khan@gmail.com>
+ * Copyright (C) 2019-2021 Ashar Khan <ashar786khan@gmail.com>
  *
  * This file is part of CP Editor.
  *
@@ -69,8 +69,8 @@ class TestCases : public QWidget
     QString checkerText() const;
     Core::Checker::CheckerType checkerType() const;
 
-    void setShow(int index, bool show);
-    bool isShow(int index) const;
+    void setChecked(int index, bool checked);
+    bool isChecked(int index) const;
 
     void loadFromSavedFiles(const QString &filePath);
     void saveToFiles(const QString &filePath, bool safe);
@@ -97,6 +97,12 @@ class TestCases : public QWidget
     void onChildDeleted(TestCase *widget);
 
   private:
+    bool validateIndex(int index, const QString &funcName) const;
+    void updateVerdicts();
+    static QString inputFilePath(const QString &filePath, int index);
+    static QString answerFilePath(const QString &filePath, int index);
+    static QString testCaseFilePath(QString rule, const QString &filePath, int index);
+
     static const int MAX_NUMBER_OF_TESTCASES = 100;
     QVBoxLayout *mainLayout = nullptr, *scrollAreaLayout = nullptr;
     QHBoxLayout *titleLayout = nullptr, *checkerLayout = nullptr;
@@ -109,11 +115,6 @@ class TestCases : public QWidget
     QList<TestCase *> testcases;
     MessageLogger *log;
     bool choosingChecker = false;
-
-    void updateVerdicts();
-    QString inputFilePath(const QString &filePath, int index);
-    QString answerFilePath(const QString &filePath, int index);
-    QString testCaseFilePath(QString rule, const QString &filePath, int index);
 };
 } // namespace Widgets
 #endif // TESTCASES_HPP

@@ -20,16 +20,12 @@
         <translation>打开文件中</translation>
     </message>
     <message>
-        <source>https://github.com/cpeditor/cpeditor/blob/%1/doc/MANUAL.md</source>
-        <translation>https://github.com/cpeditor/cpeditor/blob/%1/doc/MANUAL_zh-CN.md</translation>
-    </message>
-    <message>
         <source>About CP Editor %1</source>
         <translation>关于 CP Editor %1</translation>
     </message>
     <message>
-        <source>&lt;p&gt;&lt;b&gt;CP Editor&lt;/b&gt; is a native Qt-based code editor. It&apos;s specially designed for competitive programming, unlike other editors/IDEs which are mainly for developers. It helps you focus on your algorithm and automates the compilation, executing and testing. It even fetches test cases for you from different platforms and submits solutions to Codeforces!&lt;/p&gt;&lt;p&gt;Copyright (C) 2019-2020 Ashar Khan &amp;lt;ashar786khan@gmail.com&amp;gt;&lt;/p&gt;&lt;p&gt;This is free software; see the source for copying conditions. There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. The source code for CP Editor is available at &lt;a href=&quot;https://github.com/cpeditor/cpeditor&quot;&gt; https://github.com/cpeditor/cpeditor&lt;/a&gt;.&lt;/p&gt;</source>
-        <translation>&lt;p&gt;&lt;b&gt;CP Editor&lt;/b&gt; 是一个基于 Qt 的原生态 IDE。它专为算法竞赛设计，不像其它 IDE 主要是为了开发设计。它可以帮助你自动化编译、运行、测试，从而让你专注于算法设计。它甚至可以从各种算法竞赛网站上获取样例，将代码提交到 Codeforces 上！&lt;/p&gt;&lt;p&gt;Copyright (C) 2019-2020 Ashar Khan &amp;lt;ashar786khan@gmail.com&amp;gt;&lt;/p&gt;&lt;p&gt;本程序是自由软件；请参看源代码的版权声明。本软件没有任何担保；包括没有适销性和某一专用目的下的适用性担保。CP Editor 的代码可以在 &lt;a href=&quot;https://github.com/cpeditor/cpeditor&quot;&gt; https://github.com/cpeditor/cpeditor&lt;/a&gt; 获取。&lt;/p&gt;</translation>
+        <source>&lt;p&gt;&lt;b&gt;CP Editor&lt;/b&gt; is a native Qt-based code editor. It&apos;s specially designed for competitive programming, unlike other editors/IDEs which are mainly for developers. It helps you focus on your algorithm and automates the compilation, executing and testing. It even fetches test cases for you from different platforms and submits solutions to Codeforces!&lt;/p&gt;&lt;p&gt;Copyright (C) 2019-2021 Ashar Khan &amp;lt;ashar786khan@gmail.com&amp;gt;&lt;/p&gt;&lt;p&gt;This is free software; see the source for copying conditions. There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. The source code for CP Editor is available at &lt;a href=&quot;https://github.com/cpeditor/cpeditor&quot;&gt; https://github.com/cpeditor/cpeditor&lt;/a&gt;.&lt;/p&gt;</source>
+        <translation>&lt;p&gt;&lt;b&gt;CP Editor&lt;/b&gt; 是一个基于 Qt 的原生态 IDE。它专为算法竞赛设计，不像其它 IDE 主要是为了开发设计。它可以帮助你自动化编译、运行、测试，从而让你专注于算法设计。它甚至可以从各种算法竞赛网站上获取样例，将代码提交到 Codeforces 上！&lt;/p&gt;&lt;p&gt;Copyright (C) 2019-2021 Ashar Khan &amp;lt;ashar786khan@gmail.com&amp;gt;&lt;/p&gt;&lt;p&gt;本程序是自由软件；请参看源代码的版权声明。本软件没有任何担保；包括没有适销性和某一专用目的下的适用性担保。CP Editor 的代码可以在 &lt;a href=&quot;https://github.com/cpeditor/cpeditor&quot;&gt; https://github.com/cpeditor/cpeditor&lt;/a&gt; 获取。&lt;/p&gt;</translation>
     </message>
     <message>
         <source>Open Files</source>
@@ -304,10 +300,6 @@
         <translation>关于</translation>
     </message>
     <message>
-        <source>Support me</source>
-        <translation>支持作者</translation>
-    </message>
-    <message>
         <source>Editor Mode</source>
         <translation>编辑器模式</translation>
     </message>
@@ -467,16 +459,21 @@ git 提交编号: %3
         <source>Set Time Limit</source>
         <translation>设置时间限制</translation>
     </message>
-</context>
-<context>
-    <name>AppearancePage</name>
     <message>
-        <source>Change Locale</source>
-        <translation>改变语言</translation>
+        <source>Full Screen</source>
+        <translation>全屏</translation>
     </message>
     <message>
-        <source>You need to restart the application to completely apply the locale change.</source>
-        <translation>你需要重启程序以彻底地改变语言。</translation>
+        <source>Support us</source>
+        <translation>支持我们</translation>
+    </message>
+    <message>
+        <source>How to exit full-screen</source>
+        <translation>如何退出全屏模式</translation>
+    </message>
+    <message>
+        <source>Press F11 key to exit full-screen mode.</source>
+        <translation>按下 F11 以退出全屏模式。</translation>
     </message>
 </context>
 <context>
@@ -612,11 +609,11 @@ git 提交编号: %3
     </message>
     <message>
         <source>Checker exited with exit code %1</source>
-        <translation>评测器退出，返回值: %1</translation>
+        <translation>评测器以返回值 %1 退出</translation>
     </message>
     <message>
         <source>Checker exited with unknown exit code %1</source>
-        <translation>评测器退出，未知返回值: %1</translation>
+        <translation>评测器以未知返回值 %1 退出</translation>
     </message>
     <message>
         <source>Time Limit Exceeded</source>
@@ -627,8 +624,20 @@ git 提交编号: %3
         <translation>测试点 #%2 的 %1 超过 %3 个字符，超出了输出长度限制，因此进程被结束。你可以在 %4 更改限制大小。</translation>
     </message>
     <message>
-        <source>Killed</source>
-        <translation>被终止</translation>
+        <source>The checker is killed</source>
+        <translation>评测器已被终止运行</translation>
+    </message>
+    <message>
+        <source>Started compiling the checker</source>
+        <translation>开始编译评测器</translation>
+    </message>
+    <message>
+        <source>The checker is compiled</source>
+        <translation>评测器编译完成</translation>
+    </message>
+    <message>
+        <source>Failed to compile the checker: %1</source>
+        <translation>未能成功编译评测器：%1</translation>
     </message>
 </context>
 <context>
@@ -638,16 +647,16 @@ git 提交编号: %3
         <translation>源文件 [%1] 不存在</translation>
     </message>
     <message>
-        <source>The compile command for %1 is empty</source>
-        <translation>%1 的编译命令为空</translation>
-    </message>
-    <message>
         <source>Unsupported programming language &quot;%1&quot;</source>
         <translation>编程语言“%1”不受支持</translation>
     </message>
     <message>
-        <source>Failed to start compilation. Please check the compile command in the settings.</source>
-        <translation>未能成功启动编译。请在设置中检查编译命令。</translation>
+        <source>Failed to start the compiler. Please check %1 or add the compiler in the PATH environment variable.</source>
+        <translation>未能启动编译器。请检查 %1 或将编译器添加到 PATH 环境变量中。</translation>
+    </message>
+    <message>
+        <source>%1 is empty</source>
+        <translation>%1 为空</translation>
     </message>
 </context>
 <context>
@@ -673,6 +682,10 @@ Press any key to exit</source>
     <message>
         <source>Failed to start detached execution. Please check your terminal emulator settings in %1.</source>
         <translation>未能成功在终端中运行。请在 %1 中检查终端模拟器的设置。</translation>
+    </message>
+    <message>
+        <source>Detached execution is not supported on your platform</source>
+        <translation>你的平台上不支持在终端中运行</translation>
     </message>
 </context>
 <context>
@@ -730,11 +743,7 @@ Press any key to exit</source>
     </message>
 </context>
 <context>
-    <name>Extensions::ClangFormatter</name>
-    <message>
-        <source>Formatter/check</source>
-        <translation>格式化工具/检查</translation>
-    </message>
+    <name>Extensions::CodeFormatter</name>
     <message>
         <source>Formatter</source>
         <translation>格式化工具</translation>
@@ -748,20 +757,24 @@ Press any key to exit</source>
         <translation>格式化完毕</translation>
     </message>
     <message>
-        <source>The format process didn&apos;t finish in 2 seconds. This is probably because the clang-format binary is not found by CP Editor. You can set the path to clang-format at %1.</source>
-        <translation>格式化进程未能在 2 秒内结束。这可能是因为 CP Editor 未能找到 clang-format 的可执行文件。你可以在 %1 设置 clang-format 可执行文件的路径。</translation>
-    </message>
-    <message>
-        <source>The format command is: %1 %2</source>
-        <translation>格式化指令为: %1 %2</translation>
-    </message>
-    <message>
         <source>Formatter[stdout]</source>
         <translation>格式化工具[stdout]</translation>
     </message>
     <message>
         <source>Formatter[stderr]</source>
         <translation>格式化工具[stderr]</translation>
+    </message>
+    <message>
+        <source>The format command [%1 %2] finished with exit code %3.</source>
+        <translation>格式化命令 [%1 %2] 以返回值 %3 结束了。</translation>
+    </message>
+    <message>
+        <source>The format process didn&apos;t finish in 2 seconds. This is probably because the %1 program is not found by CP Editor. You can set the path to the program at %2.</source>
+        <translation>格式化进程未能在 2 秒内结束。这很可能是因为 CP Editor 没有找到 %1 程序。你可以在 %2 设置程序的路径。</translation>
+    </message>
+    <message>
+        <source>The output of the format process is empty. Please ensure there is no in-place modification option in the formatting arguments.</source>
+        <translation>格式化进程的输出为空。请确保格式化命令中没有就地修改选项。</translation>
     </message>
 </context>
 <context>
@@ -783,20 +796,24 @@ Press any key to exit</source>
         <translation>服务器已停止</translation>
     </message>
     <message>
-        <source>Got a POST Request</source>
-        <translation>收到了一个 POST 请求</translation>
-    </message>
-    <message>
         <source>JSON parser reported errors:
 %1</source>
         <translation>JSON 解析器报告了错误：
 %1</translation>
     </message>
+    <message>
+        <source>The request received is not JSON</source>
+        <translation>收到的请求不是 JSON</translation>
+    </message>
+    <message>
+        <source>A %1 request is received and ignored</source>
+        <translation>收到并忽略了一个 %1 请求</translation>
+    </message>
 </context>
 <context>
     <name>Extensions::LanguageServer</name>
     <message>
-        <source>Langauge Server [%1]</source>
+        <source>Language Server [%1]</source>
         <translation></translation>
     </message>
     <message>
@@ -957,10 +974,6 @@ p, li { white-space: pre-wrap; }
         <translation>保存临时文件失败，代码未提交。</translation>
     </message>
     <message>
-        <source>You will not be able to submit code to Codeforces because CF Tool is not installed or is not on SYSTEM PATH. You can set it manually in settings.</source>
-        <translation>你无法将代码提交至 Codeforces，因为 CF Tool 没有安装，或是它不在 PATH 环境变量里。你可以在设置中手动设置 CF Tool 的路径。</translation>
-    </message>
-    <message>
         <source>Untitled-%1</source>
         <translation>未命名-%1</translation>
     </message>
@@ -1045,14 +1058,6 @@ Do you want to reload it?</source>
     <message>
         <source>%1 characters selected</source>
         <translation>共有 %1 个字符被选择</translation>
-    </message>
-    <message>
-        <source>The compile command for %1 is invalid. Is the compiler in the system PATH?</source>
-        <translation>语言 %1 的编译命令不可用。编译器是否在环境变量 PATH 中？</translation>
-    </message>
-    <message>
-        <source>The run command for %1 is invalid. Is the runner in the system Path?</source>
-        <translation>语言 %1 的运行命令不可用。解释器是否在环境变量 PATH 中？</translation>
     </message>
     <message>
         <source>Compilation has started</source>
@@ -1182,6 +1187,14 @@ Do you want to reload it?</source>
         <source>Custom time limit for this tab: (ms)</source>
         <translation>这个标签页的自定义时间限制：(毫秒)</translation>
     </message>
+    <message>
+        <source>You need to install CF Tool to submit your code to Codeforces. If already installed, you can add it in the PATH environment variable or check your settings at %1.</source>
+        <translation>你需要安装 CF Tool 以将代码提交到 Codeforces。如果你已经安装了，你可以将它添加到 PATH 环境变量中，或者检查 %1 处的设置。</translation>
+    </message>
+    <message>
+        <source>Failed to start compilation: %1</source>
+        <translation>未能开始编译：%1</translation>
+    </message>
 </context>
 <context>
     <name>MessageLogger</name>
@@ -1294,12 +1307,16 @@ If it&apos;s partially checked, the global setting in Code Edit will be used.</s
         <translation>Python 运行命令</translation>
     </message>
     <message>
-        <source>Appearance</source>
-        <translation>外观</translation>
+        <source>You can read the &lt;a href=&quot;%1&quot;&gt;documentation&lt;/a&gt; or go through the settings for more information.</source>
+        <translation>你可以阅读 &lt;a href=&quot;%1&quot;&gt;文档&lt;/a&gt; 或在设置中浏览以获取更多信息。</translation>
     </message>
     <message>
-        <source>You can read the &lt;a href=&quot;https://github.com/cpeditor/cpeditor/blob/%1/doc/MANUAL.md&quot;&gt;Manual&lt;/a&gt; or go through the settings for more information.</source>
-        <translation>你可以阅读 &lt;a href=&quot;https://github.com/cpeditor/cpeditor/blob/%1/doc/MANUAL-zh_CN.md&quot;&gt;手册&lt;/a&gt; 或在设置中浏览以获取更多信息。</translation>
+        <source>Appearance Settings</source>
+        <translation>外观设置</translation>
+    </message>
+    <message>
+        <source>Font Settings</source>
+        <translation>字体设置</translation>
     </message>
 </context>
 <context>
@@ -1472,10 +1489,6 @@ If it&apos;s partially checked, the global setting in Code Edit will be used.</s
         <translation>保存会话</translation>
     </message>
     <message>
-        <source>Empty Test Cases</source>
-        <translation>空测试点</translation>
-    </message>
-    <message>
         <source>Network Proxy</source>
         <translation>网络代理</translation>
     </message>
@@ -1491,6 +1504,22 @@ If it&apos;s partially checked, the global setting in Code Edit will be used.</s
         <source>Detached Execution</source>
         <translation>终端中运行</translation>
     </message>
+    <message>
+        <source>Font</source>
+        <translation>字体</translation>
+    </message>
+    <message>
+        <source>YAPF</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Code Formatting</source>
+        <translation>代码格式化</translation>
+    </message>
+    <message>
+        <source>Test Cases</source>
+        <translation>测试用例</translation>
+    </message>
 </context>
 <context>
     <name>SettingsInfo</name>
@@ -1501,6 +1530,14 @@ If it&apos;s partially checked, the global setting in Code Edit will be used.</s
     <message>
         <source>The width of the tab character, or the number of spaces of an indent</source>
         <translation>制表符的宽度或缩进的空格个数</translation>
+    </message>
+    <message>
+        <source>Cursor Width</source>
+        <translation>光标宽度</translation>
+    </message>
+    <message>
+        <source>The width of the cursor in pixels</source>
+        <translation>光标的像素宽度</translation>
     </message>
     <message>
         <source>Editor Font</source>
@@ -1527,11 +1564,7 @@ If it&apos;s partially checked, the global setting in Code Edit will be used.</s
         <translation>Clang Format 可执行文件的路径</translation>
     </message>
     <message>
-        <source>Style</source>
-        <translation>风格</translation>
-    </message>
-    <message>
-        <source>The Clang Format style options, which are often saved in a .clang-format configuration file.
+        <source>The Clang Format style options, which are usually saved in a .clang-format configuration file.
 You can learn about it at &lt;https://clang.llvm.org/docs/ClangFormatStyleOptions.html&gt;.</source>
         <translation>Clang Format 格式化所用风格，通常存储为 .clang-format。
 你可以在 &lt;https://clang.llvm.org/docs/ClangFormatStyleOptions.html&gt; 上了解更多。</translation>
@@ -1722,7 +1755,7 @@ You can use &quot;${filename}&quot; for the complete file name,
     </message>
     <message>
         <source>The name of the main class of your solution.</source>
-        <translation>你的代码中非 public 主类的名称。</translation>
+        <translation>你的代码中主类的名称。</translation>
     </message>
     <message>
         <source>Automatically delete the whole pair of parentheses when deleting
@@ -1755,12 +1788,8 @@ This can be overridden for each parenthesis in each language.</source>
         <translation>保存文件时保存测试用例</translation>
     </message>
     <message>
-        <source>Save the testcases on the disk when saving a file, and load the saved testcases when opening a file.</source>
+        <source>Save the test cases on the disk when saving a file, and load the saved test cases when opening a file.</source>
         <translation>在保存文件时一并保存测试用例，在加载时一并加载。</translation>
-    </message>
-    <message>
-        <source>Maximized Window</source>
-        <translation></translation>
     </message>
     <message>
         <source>Check for updates on startup</source>
@@ -1783,7 +1812,7 @@ This can be overridden for each parenthesis in each language.</source>
         <translation>启用 Competitive Companion</translation>
     </message>
     <message>
-        <source>Receive data sent by Competitive Companion and load the example testcases.</source>
+        <source>Receive data sent by Competitive Companion and load the example test cases.</source>
         <translation>接受 Competitive Companion 发送的数据并加载测试数据。</translation>
     </message>
     <message>
@@ -1901,10 +1930,6 @@ A source file won&apos;t be opened if it&apos;s too long.</source>
 如果超长，将不会打开。</translation>
     </message>
     <message>
-        <source>Load Test Case Length Limit</source>
-        <translation>加载测试用例长度限制</translation>
-    </message>
-    <message>
         <source>Path to LSP executable</source>
         <translation>路径</translation>
     </message>
@@ -1925,19 +1950,19 @@ A source file won&apos;t be opened if it&apos;s too long.</source>
         <translation>启用 Language Server</translation>
     </message>
     <message>
-        <source>Show Error, Warning, Information and Hints in Code Editor for C++ Langauge</source>
+        <source>Show Error, Warning, Information and Hints in Code Editor for C++ Language</source>
         <translation>在编辑器中为 C++ 显示错误、警告、信息和提示</translation>
     </message>
     <message>
-        <source>Show Error, Warning, Information and Hints in Code Editor for Java Langauge</source>
+        <source>Show Error, Warning, Information and Hints in Code Editor for Java Language</source>
         <translation>在编辑器中为 Java 显示错误、警告、信息和提示</translation>
     </message>
     <message>
-        <source>Show Error, Warning, Information and Hints in Code Editor for Python Langauge</source>
+        <source>Show Error, Warning, Information and Hints in Code Editor for Python Language</source>
         <translation>在编辑器中为 Python 显示错误、警告、信息和提示</translation>
     </message>
     <message>
-        <source>Use auto complete with Language Server</source>
+        <source>Use auto-complete with Language Server</source>
         <translation>使用 Language Server 的自动补全</translation>
     </message>
     <message>
@@ -1949,7 +1974,7 @@ A source file won&apos;t be opened if it&apos;s too long.</source>
         <translation>提示延迟（毫秒）</translation>
     </message>
     <message>
-        <source>Delay in linting in miliseconds after last modification to code</source>
+        <source>Delay in linting in milliseconds after last modification to code</source>
         <translation>最后一次修改后，延迟进行提示的时间间隔</translation>
     </message>
     <message>
@@ -2136,7 +2161,7 @@ from Competitive Companion again, the old file will be opened.</source>
         <translation>在输出为空的测试点上检查输出的正确性</translation>
     </message>
     <message>
-        <source>Check your answer even if your output or the expected the output is empty.</source>
+        <source>Check your answer even if your output or the expected output is empty.</source>
         <translation>即使你的输出或答案的输出为空，依然检查输出的正确性。</translation>
     </message>
     <message>
@@ -2153,8 +2178,8 @@ from Competitive Companion again, the old file will be opened.</source>
     </message>
     <message>
         <source>After the last modification: the timer will be reset after a modification to the code.
-After the first modification: the timer will start after a modification, if at that time the timer is not running.
-Without modification: auto-save happens with an constant inverval no matter there are modifications or not.</source>
+After the first modification: the timer will start after a modification if at that time the timer is not running.
+Without modification: auto-save happens with a constant interval no matter there are modifications or not.</source>
         <translation>After the last modification: 计时器会在修改代码后重置。
 After the first modification: 在修改代码时，若计时器未在运行，则计时器会开始运行。
 Without modification: 以恒定的时间间隔自动保存，无论是否进行了修改。</translation>
@@ -2205,7 +2230,7 @@ kill the application with SIGKILL which could not be handled by the application.
         <translation>检查更新时启用代理</translation>
     </message>
     <message>
-        <source>The host name of the proxy, e.g. 127.0.0.1</source>
+        <source>The hostname of the proxy, e.g. 127.0.0.1</source>
         <translation>代理的主机名，例如：127.0.0.1</translation>
     </message>
     <message>
@@ -2353,16 +2378,8 @@ It is a list of &lt;default path name&gt;s, separated by commas, and can be empt
         <translation>它可以被 %1 覆盖。</translation>
     </message>
     <message>
-        <source>Use Clang Format to format the code when auto-saving it.</source>
-        <translation>自动保存代码时使用 Clang Format 进行格式化。</translation>
-    </message>
-    <message>
         <source>Format code on manual save</source>
         <translation>手动保存时格式化代码</translation>
-    </message>
-    <message>
-        <source>Use Clang Format to format the code when saving it manually.</source>
-        <translation>手动保存代码时使用 Clang Format 进行格式化。</translation>
     </message>
     <message>
         <source>Format code on auto-save</source>
@@ -2398,11 +2415,6 @@ If the output is too long, it will be elided.</source>
         <translation>会显示出来的程序输出的最大字符数。如果输出过长，超长部分会被省略。</translation>
     </message>
     <message>
-        <source>The maximum number of characters in a test case to be loaded.
-A loaded test case will be elided and read-only if it&apos;s too long.</source>
-        <translation>一个被加载的测试用例中最大的字符数量。一个被加载的测试用例如果过长，超长部分会被省略。</translation>
-    </message>
-    <message>
         <source>Show toast messages for submission verdicts</source>
         <translation>为评测结果显示气泡消息</translation>
     </message>
@@ -2433,10 +2445,6 @@ Consult your terminal emulator for the suitable arguments.</source>
 在大多数终端模拟器（包括 konsole, xterm, xfce-terminal）中，这个参数是 &quot;-e&quot;。
 在 gnome-terminal 中，这个参数是 &quot;--&quot;。
 请自行查阅适用于你所使用的终端模拟器的参数。</translation>
-    </message>
-    <message>
-        <source>Head Comments</source>
-        <translation>头部注释</translation>
     </message>
     <message>
         <source>Save Test Case To A File</source>
@@ -2472,7 +2480,7 @@ https://doc.qt.io/qt-5/qtime.html#toString</translation>
     </message>
     <message>
         <source>Add a line saying &quot;Powered By CP Editor&quot; in the head comments.
-This doesn&apos;t cost you anyting, but helps more people to know CP Editor.</source>
+This doesn&apos;t cost you anything, but helps more people to know CP Editor.</source>
         <translation>在头部注释中添加一行 &quot;Powered By CP Editor&quot;。
 这可以在不花费任何代价的情况下让更多的人知道 CP Editor。</translation>
     </message>
@@ -2493,6 +2501,123 @@ The program will be killed if it doesn&apos;t terminate in the time limit.</sour
     <message>
         <source>Use the time limit parsed by Competitive Companion as the time limit of the corresponding tab.</source>
         <translation>为对应的标签页使用由 Competitive Companion 解析得到的时间限制。</translation>
+    </message>
+    <message>
+        <source>Show Only Monospaced Font</source>
+        <translation>仅显示等宽字体</translation>
+    </message>
+    <message>
+        <source>Change Locale</source>
+        <translation>改变语言</translation>
+    </message>
+    <message>
+        <source>You need to restart the application to completely apply the locale change.</source>
+        <translation>你需要重启程序以彻底地改变语言。</translation>
+    </message>
+    <message>
+        <source>Show only monospaced fonts when choosing a font</source>
+        <translation>在选择字体时只显示等宽字体</translation>
+    </message>
+    <message>
+        <source>Display Test Case Length Limit</source>
+        <translation>显示测试用例长度限制</translation>
+    </message>
+    <message>
+        <source>The maximum number of characters in a test case to be displayed.
+A test case will be elided and read-only if it&apos;s too long.</source>
+        <translation>会显示出来的测试用例的最大字符数。如果测试用例过长，超长部分会被省略，且测试用例会变得只读。</translation>
+    </message>
+    <message>
+        <source>Clang Format Program</source>
+        <translation>Clang Format 程序</translation>
+    </message>
+    <message>
+        <source>Clang Format Arguments</source>
+        <translation>Clang Format 参数</translation>
+    </message>
+    <message>
+        <source>The arguments passed to clang-format. It should NOT contain &quot;-i&quot;.</source>
+        <translation>传递给 clang-format 的参数。它不应包含 &quot;-i&quot;。</translation>
+    </message>
+    <message>
+        <source>Clang Format Style</source>
+        <translation>Clang Format 风格</translation>
+    </message>
+    <message>
+        <source>YAPF Program</source>
+        <translation>YAPF 程序</translation>
+    </message>
+    <message>
+        <source>The program of YAPF. It could be `yapf` (which doesn&apos;t need arguments) or `python` (which needs `-m yapf` as the arguments).</source>
+        <translation>YAPF 的程序。它可以是 `yapf`（无需额外设置参数）或 `python`（需要 `-m yapf` 作为参数）。</translation>
+    </message>
+    <message>
+        <source>YAPF Arguments</source>
+        <translation>YAPF 参数</translation>
+    </message>
+    <message>
+        <source>The arguments passed to the YAPF program. It should NOT contain &quot;-i&quot;.</source>
+        <translation>传递给 YAPF 程序的参数。它不应包含 &quot;-i&quot;。</translation>
+    </message>
+    <message>
+        <source>YAPF Style</source>
+        <translation>YAPF 风格</translation>
+    </message>
+    <message>
+        <source>The YAPF style options, which are usually saved in a .style.yapf or setup.conf configuration file.
+You can learn about it by running `yapf --style-help`.</source>
+        <translation>YAPF 格式化所用风格，通常存储为 .style.yapf 或 setup.conf。
+你可以运行 `yapf --style-help` 以了解更多。</translation>
+    </message>
+    <message>
+        <source>Format the code when saving it manually.</source>
+        <translation>手动保存时格式化代码。</translation>
+    </message>
+    <message>
+        <source>Format the code when auto-saving it.</source>
+        <translation>自动保存时格式化代码。</translation>
+    </message>
+    <message>
+        <source>Content of the head comments</source>
+        <translation>头部注释的内容</translation>
+    </message>
+    <message>
+        <source>network-proxy</source>
+        <comment>the anchor of Enable Proxy on the corresponding page of https://cpeditor.org/docs/preferences</comment>
+        <translation>网络代理</translation>
+    </message>
+    <message>
+        <source>network-proxy</source>
+        <comment>the anchor of Type on the corresponding page of https://cpeditor.org/docs/preferences</comment>
+        <translation>网络代理</translation>
+    </message>
+    <message>
+        <source>network-proxy</source>
+        <comment>the anchor of Host Name on the corresponding page of https://cpeditor.org/docs/preferences</comment>
+        <translation>网络代理</translation>
+    </message>
+    <message>
+        <source>network-proxy</source>
+        <comment>the anchor of Port on the corresponding page of https://cpeditor.org/docs/preferences</comment>
+        <translation>网络代理</translation>
+    </message>
+    <message>
+        <source>network-proxy</source>
+        <comment>the anchor of User on the corresponding page of https://cpeditor.org/docs/preferences</comment>
+        <translation>网络代理</translation>
+    </message>
+    <message>
+        <source>network-proxy</source>
+        <comment>the anchor of Password on the corresponding page of https://cpeditor.org/docs/preferences</comment>
+        <translation>网络代理</translation>
+    </message>
+    <message>
+        <source>Auto Uncheck Accepted Testcases</source>
+        <translation>自动取消选中已通过的测试点</translation>
+    </message>
+    <message>
+        <source>Automatically uncheck test cases when they get accepted.</source>
+        <translation>在测试点通过测试时自动取消选中。</translation>
     </message>
 </context>
 <context>
@@ -2543,6 +2668,48 @@ The program will be killed if it doesn&apos;t terminate in the time limit.</sour
     <message>
         <source>Move the current row down (Ctrl+Shift+Down)</source>
         <translation>将当前行下移一行（Ctrl+Shift+↓）</translation>
+    </message>
+</context>
+<context>
+    <name>SupportEntry</name>
+    <message>
+        <source>Donate</source>
+        <translation>捐赠</translation>
+    </message>
+</context>
+<context>
+    <name>SupportUsDialog</name>
+    <message>
+        <source>Like CP Editor?</source>
+        <translation>喜欢 CP Editor 吗？</translation>
+    </message>
+    <message>
+        <source>Thank you for using CP Editor!</source>
+        <translation>感谢您使用 CP Editor！</translation>
+    </message>
+    <message>
+        <source>To support us, you can:</source>
+        <translation>你可以用下列方式支持我们：</translation>
+    </message>
+    <message>
+        <source>Give us a star on GitHub</source>
+        <translation>在 GitHub 上给我们一个 star</translation>
+    </message>
+    <message>
+        <source>Share CP Editor with your friends</source>
+        <translation>向你的朋友们分享 CP Editor</translation>
+    </message>
+    <message>
+        <source>Financially support us</source>
+        <translation>在经济上支持我们</translation>
+    </message>
+    <message>
+        <source>Provide some suggestions to help us do better</source>
+        <translation>提供一些建议以使我们做得更好</translation>
+    </message>
+    <message>
+        <source>I&apos;m using @cpeditor_, an IDE specially designed for competitive programmers, which is awesome!</source>
+        <translation>我正在使用 @cpeditor_，一款为算法竞赛量身定制的 IDE，它非常好用！</translation>
     </message>
 </context>
 <context>
@@ -2751,20 +2918,20 @@ The program will be killed if it doesn&apos;t terminate in the time limit.</sour
         <translation>答案</translation>
     </message>
     <message>
-        <source>Now the test case editor is read-only. You can set the length limit at %1.</source>
-        <translation>现在测试用例编辑器是只读的。你可以在 %1 中设置长度限制。</translation>
-    </message>
-    <message>
-        <source>Only the first %1 characters are shown.</source>
-        <translation>只显示了前 %1 个字符。</translation>
-    </message>
-    <message>
         <source>Save to file</source>
         <translation>保存到文件</translation>
     </message>
     <message>
         <source>Save test case to file</source>
         <translation>将测试用例保存到文件</translation>
+    </message>
+    <message>
+        <source>Only the first %1 characters are shown. Now the test case editor is read-only. You can set the length limit at %2.</source>
+        <translation>只显示了前 %1 个字符。现在测试用例编辑器是只读的。你可以在 %2 中设置长度限制。</translation>
+    </message>
+    <message>
+        <source>Copy Output to Expected</source>
+        <translation>将输出复制到答案</translation>
     </message>
 </context>
 <context>
@@ -2818,36 +2985,13 @@ The program will be killed if it doesn&apos;t terminate in the time limit.</sour
         <translation>下列文件由于没有匹配而未加载：%1。你可以在 %2 设置匹配规则。</translation>
     </message>
     <message>
-        <source>Remove Empty</source>
-        <translation>删除空测试点</translation>
-    </message>
-    <message>
-        <source>Remove All</source>
-        <translation>删除全部测试点</translation>
-    </message>
-    <message>
-        <source>Clear Testcases</source>
-        <translation>清除测试点</translation>
-    </message>
-    <message>
         <source>Are you sure you want to delete all test cases?</source>
         <translation>你确定要删除所有测试点吗？</translation>
     </message>
     <message>
-        <source>Hide AC</source>
-        <translation>隐藏已通过的测试点</translation>
-    </message>
-    <message>
-        <source>Show All</source>
-        <translation>显示所有测试点</translation>
-    </message>
-    <message>
-        <source>Hide All</source>
-        <translation>隐藏所有测试点</translation>
-    </message>
-    <message>
         <source>Invert</source>
-        <translation>反转显示状态</translation>
+        <extracomment>This action checks the checkboxes which were not checked, and unchecks the ones which were checked</extracomment>
+        <translation>反选</translation>
     </message>
     <message>
         <source>Ignore trailing spaces</source>
@@ -2917,6 +3061,53 @@ The program will be killed if it doesn&apos;t terminate in the time limit.</sour
         <source>Unaccepted / Accepted / Total</source>
         <translation>未通过 / 通过 / 总计</translation>
     </message>
+    <message>
+        <source>Check All</source>
+        <extracomment>Here &quot;Check&quot; means to check the checkbox</extracomment>
+        <translation>全选</translation>
+    </message>
+    <message>
+        <source>Uncheck All</source>
+        <translation>取消全选</translation>
+    </message>
+    <message>
+        <source>Uncheck Accepted</source>
+        <translation>取消选择已通过的</translation>
+    </message>
+    <message>
+        <source>Delete All</source>
+        <translation>全部删除</translation>
+    </message>
+    <message>
+        <source>Delete Empty</source>
+        <translation>删除空测试点</translation>
+    </message>
+    <message>
+        <source>Delete Checked</source>
+        <extracomment>Here &quot;checked&quot; means the checkbox is checked</extracomment>
+        <translation>删除选中的测试点</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to delete all checked test cases?</source>
+        <translation>你确定要删除所有选中的测试点吗？</translation>
+    </message>
+    <message>
+        <source>Copy Test Cases</source>
+        <translation>复制测试用例</translation>
+    </message>
+    <message>
+        <source>Paste Test Cases</source>
+        <translation>粘贴测试用例</translation>
+    </message>
+    <message>
+        <source>Copy Output to Expected</source>
+        <translation>将输出复制到答案</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to copy all checked output to their corresponding expected?</source>
+        <extracomment>Here &quot;checked&quot; means the checkbox is checked</extracomment>
+        <translation>你确定要将所有选中的输出复制到与之对应的答案吗？</translation>
+    </message>
 </context>
 <context>
     <name>Widgets::UpdatePresenter</name>
@@ -2964,8 +3155,8 @@ The program will be killed if it doesn&apos;t terminate in the time limit.</sour
         <translation>获取更新列表中...</translation>
     </message>
     <message>
-        <source>Error: %1&lt;br /&gt;&lt;br /&gt;Updater failed to check for update. Please manually check for update at&lt;br /&gt;&lt;a href=&quot;https://cpeditor.github.io/download&quot;&gt;https://cpeditor.github.io/download&lt;/a&gt; or &lt;a href=&quot;https://github.com/cpeditor/cpeditor/releases&quot;&gt;https://github.com/cpeditor/cpeditor/releases&lt;/a&gt;.</source>
-        <translation>错误：%1&lt;br /&gt;&lt;br /&gt;检查更新失败。请前往 &lt;br /&gt;&lt;a href=&quot;https://cpeditor.github.io/download&quot;&gt;https://cpeditor.github.io/download&lt;/a&gt; 或 &lt;a href=&quot;https://github.com/cpeditor/cpeditor/releases&quot;&gt;https://github.com/cpeditor/cpeditor/releases&lt;/a&gt; 手动检查更新。</translation>
+        <source>Error: %1&lt;br /&gt;&lt;br /&gt;Updater failed to check for update. Please manually check for update at&lt;br /&gt;&lt;a href=&quot;https://cpeditor.org/download&quot;&gt;https://cpeditor.org/download&lt;/a&gt; or &lt;a href=&quot;https://github.com/cpeditor/cpeditor/releases&quot;&gt;https://github.com/cpeditor/cpeditor/releases&lt;/a&gt;.</source>
+        <translation>错误：%1&lt;br /&gt;&lt;br /&gt;检查更新失败。请前往 &lt;br /&gt;&lt;a href=&quot;https://cpeditor.org/zh/download&quot;&gt;https://cpeditor.org/zh/download&lt;/a&gt; 或 &lt;a href=&quot;https://github.com/cpeditor/cpeditor/releases&quot;&gt;https://github.com/cpeditor/cpeditor/releases&lt;/a&gt; 手动检查更新。</translation>
     </message>
     <message>
         <source>Close</source>

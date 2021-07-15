@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Ashar Khan <ashar786khan@gmail.com>
+ * Copyright (C) 2019-2021 Ashar Khan <ashar786khan@gmail.com>
  *
  * This file is part of CP Editor.
  *
@@ -29,17 +29,15 @@ namespace Core
 Runner::Runner(int index) : runnerIndex(index)
 {
     runProcess = new QProcess();
-    connect(runProcess, SIGNAL(started()), this, SLOT(onStarted()));
-    connect(runProcess, SIGNAL(errorOccurred(QProcess::ProcessError)), this,
-            SLOT(onErrorOccurred(QProcess::ProcessError)));
+    connect(runProcess, &QProcess::started, this, &Runner::onStarted);
+    connect(runProcess, &QProcess::errorOccurred, this, &Runner::onErrorOccurred);
 }
 
 Runner::~Runner()
 {
     // The order of destructions is important, runTimer is used when emitting signals
 
-    if (killTimer != nullptr)
-        delete killTimer;
+    delete killTimer;
 
     if (runProcess != nullptr)
     {
@@ -53,8 +51,7 @@ Runner::~Runner()
         delete runProcess;
     }
 
-    if (runTimer != nullptr)
-        delete runTimer;
+    delete runTimer;
 }
 
 void Runner::run(const QString &tmpFilePath, const QString &sourceFilePath, const QString &lang,
@@ -81,14 +78,14 @@ void Runner::run(const QString &tmpFilePath, const QString &sourceFilePath, cons
 
     // connect signals and set timers
 
-    connect(runProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(onFinished(int, QProcess::ExitStatus)));
-    connect(runProcess, SIGNAL(readyReadStandardOutput()), this, SLOT(onReadyReadStandardOutput()));
-    connect(runProcess, SIGNAL(readyReadStandardError()), this, SLOT(onReadyReadStandardError()));
+    connect(runProcess, qOverload<int, QProcess::ExitStatus>(&QProcess::finished), this, &Runner::onFinished);
+    connect(runProcess, &QProcess::readyReadStandardOutput, this, &Runner::onReadyReadStandardOutput);
+    connect(runProcess, &QProcess::readyReadStandardError, this, &Runner::onReadyReadStandardError);
 
     killTimer = new QTimer(runProcess);
     killTimer->setSingleShot(true);
     killTimer->setInterval(timeLimit);
-    connect(killTimer, SIGNAL(timeout()), this, SLOT(onTimeout()));
+    connect(killTimer, &QTimer::timeout, this, &Runner::onTimeout);
 
     runTimer = new QElapsedTimer();
 
@@ -116,7 +113,7 @@ void Runner::runDetached(const QString &tmpFilePath, const QString &sourceFilePa
     // use apple script on Mac OS
     runProcess->setProgram("osascript");
     runProcess->setArguments({"-l", "AppleScript"});
-    QString script = "tell app \"Terminal\" to do script \"" +
+    QString script = R"(tell app "Terminal" to do script ")" +
                      getCommand(tmpFilePath, sourceFilePath, lang, runCommand, args).replace("\"", "'") + "\"";
     runProcess->start();
     LOG_INFO("Running apple script\n" << script);
@@ -129,9 +126,9 @@ void Runner::runDetached(const QString &tmpFilePath, const QString &sourceFilePa
                                  getCommand(tmpFilePath, sourceFilePath, lang, runCommand, args).replace("\"", "^\"") +
                                  " ^& pause\""));
     LOG_INFO("CMD Arguemnts " << runProcess->arguments().join(" "));
-#else
+#elif defined(Q_OS_UNIX)
     auto terminal = SettingsHelper::getDetachedRunTerminalProgram();
-    LOG_INFO("Using: " << terminal << " on Linux");
+    LOG_INFO("Using: " << terminal << " on UNIX");
     auto quotedCommand = getCommand(tmpFilePath, sourceFilePath, lang, runCommand, args);
     auto execArgs = QProcess::splitCommand(SettingsHelper::getDetachedRunTerminalArguments()) +
                     QStringList{"/bin/bash", "-c",
@@ -139,6 +136,8 @@ void Runner::runDetached(const QString &tmpFilePath, const QString &sourceFilePa
                                     .arg(quotedCommand)
                                     .arg(tr("Program finished with exit code %1\nPress any key to exit").arg("$?"))};
     runProcess->start(terminal, execArgs);
+#else
+    emit failedToStartRun(runnerIndex, tr("Detached execution is not supported on your platform"));
 #endif
 }
 
@@ -171,7 +170,7 @@ void Runner::onTimeout()
 
 void Runner::onReadyReadStandardOutput()
 {
-    processStdout.append(runProcess->readAllStandardOutput());
+    processStdout.append(runProcess->readAllStandardOutput().replace('\0', ""));
     if (!outputLimitExceededEmitted && processStdout.length() > SettingsHelper::getOutputLengthLimit())
     {
         outputLimitExceededEmitted = true;
@@ -183,7 +182,7 @@ void Runner::onReadyReadStandardOutput()
 
 void Runner::onReadyReadStandardError()
 {
-    processStderr.append(runProcess->readAllStandardError());
+    processStderr.append(runProcess->readAllStandardError().replace('\0', ""));
     if (!outputLimitExceededEmitted && processStderr.length() > SettingsHelper::getOutputLengthLimit())
     {
         outputLimitExceededEmitted = true;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Ashar Khan <ashar786khan@gmail.com>
+ * Copyright (C) 2019-2021 Ashar Khan <ashar786khan@gmail.com>
  *
  * This file is part of CP Editor.
  *
@@ -52,6 +52,20 @@ QString fileNameFilter(bool cpp, bool java, bool python)
         filter += " *." + pythonSuffix.join(" *.");
 
     return QCoreApplication::translate("Util::FileUtil", "%1Source Files (%2)").arg(name, filter.trimmed());
+}
+
+QString fileNameWithSuffix(const QString &name, const QString &lang)
+{
+    QString result = name + ".";
+    if (lang == "C++")
+        result += cppSuffix[0];
+    else if (lang == "Java")
+        result += javaSuffix[0];
+    else if (lang == "Python")
+        result += pythonSuffix[0];
+    else
+        LOG_WTF("Unknown language: " << lang);
+    return result;
 }
 
 bool saveFile(const QString &path, const QString &content, const QString &head, bool safe, MessageLogger *log,
@@ -164,7 +178,7 @@ QPair<std::function<void()>, QString> revealInFileManager(const QString &filePat
 
     // Reference: http://lynxline.com/show-in-finder-show-in-explorer/ and https://forum.qt.io/post/296072
 
-    const QPair<std::function<void()>, QString> fallBack = {
+    QPair<std::function<void()>, QString> fallBack = {
         [filePath] { QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(filePath).path())); },
         QCoreApplication::translate("Util::FileUtil", "Open Containing Folder of %1").arg(name)};
 
@@ -172,8 +186,7 @@ QPair<std::function<void()>, QString> revealInFileManager(const QString &filePat
     {
         if (QFile::exists(QFileInfo(filePath).path()))
             return fallBack;
-        else
-            return {[] {}, QString()};
+        return {[] {}, QString()};
     }
 
 #if defined(Q_OS_MACOS)
@@ -234,22 +247,11 @@ QPair<std::function<void()>, QString> revealInFileManager(const QString &filePat
             args << "--select" << nativePath;
         }
         if (program.isEmpty())
-        {
             return fallBack;
-        }
-        else
-        {
-            return {[program, args] {
-                        QProcess openProcess;
-                        openProcess.startDetached(program, args);
-                    },
-                    QCoreApplication::translate("Util::FileUtil", "Reveal %1 in File Manager").arg(name)};
-        }
+        return {[program, args] { QProcess::startDetached(program, args); },
+                QCoreApplication::translate("Util::FileUtil", "Reveal %1 in File Manager").arg(name)};
     }
-    else
-    {
-        return fallBack;
-    }
+    return fallBack;
 #else
     return fallBack;
 #endif

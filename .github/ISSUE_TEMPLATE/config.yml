@@ -1,14 +1,11 @@
 blank_issues_enabled: false
 contact_links:
   - name: FAQ
-    url: https://github.com/cpeditor/cpeditor#faq
-    about: You may find your question and the answer here.
-  - name: Manual
-    url: https://github.com/cpeditor/cpeditor/blob/master/doc/MANUAL.md
-    about: Some instructions and tips.
-  - name: Telegram Group
-    url: https://t.me/cpeditor
-    about: You can ask questions except for feature requests and bug reports here.
-  - name: Slack Workspace
-    url: https://join.slack.com/t/cpeditor/shared_invite/zt-ekfy0zb5-SrOi8SIox8oq61oRonBynw
-    about: You can ask questions except for feature requests and bug reports in the "help" channel.
+    url: https://cpeditor.org/docs/faq
+    about: You may find your question and the answer to it here.
+  - name: Documentation
+    url: https://cpeditor.org/docs
+    about: The documentation tells you how to use CP Editor.
+  - name: Discussions
+    url: https://github.com/cpeditor/cpeditor/discussions
+    about: Feel free to ask any questions here, or discuss with the developers.

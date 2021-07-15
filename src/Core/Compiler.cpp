@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Ashar Khan <ashar786khan@gmail.com>
+ * Copyright (C) 2019-2021 Ashar Khan <ashar786khan@gmail.com>
  *
  * This file is part of CP Editor.
  *
@@ -17,6 +17,7 @@
 
 #include "Core/Compiler.hpp"
 #include "Core/EventLogger.hpp"
+#include "Settings/SettingsManager.hpp"
 #include "Util/FileUtil.hpp"
 #include "generated/SettingsHelper.hpp"
 #include <QDir>
@@ -30,10 +31,10 @@ Compiler::Compiler()
 {
     // create compiliation process and connect signals
     compileProcess = new QProcess();
-    connect(compileProcess, SIGNAL(started()), this, SIGNAL(compilationStarted()));
-    connect(compileProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(onProcessFinished(int)));
-    connect(compileProcess, SIGNAL(errorOccurred(QProcess::ProcessError)), this,
-            SLOT(onProcessErrorOccurred(QProcess::ProcessError)));
+    connect(compileProcess, &QProcess::started, this, &Compiler::compilationStarted);
+    connect(compileProcess, qOverload<int, QProcess::ExitStatus>(&QProcess::finished), this,
+            &Compiler::onProcessFinished);
+    connect(compileProcess, &QProcess::errorOccurred, this, &Compiler::onProcessErrorOccurred);
 }
 
 Compiler::~Compiler()
@@ -58,7 +59,7 @@ void Compiler::start(const QString &tmpFilePath, const QString &sourceFilePath, 
     if (!QFile::exists(tmpFilePath))
     {
         // quit with error if the source file is not found
-        emit compilationErrorOccurred(tr("The source file [%1] doesn't exist").arg(tmpFilePath));
+        emit compilationFailed(tr("The source file [%1] doesn't exist").arg(tmpFilePath));
         return;
     }
 
@@ -74,7 +75,7 @@ void Compiler::start(const QString &tmpFilePath, const QString &sourceFilePath, 
 
     if (args.isEmpty())
     {
-        emit compilationErrorOccurred(tr("The compile command for %1 is empty").arg(lang));
+        emit compilationFailed(tr("%1 is empty").arg(SettingsManager::getPathText(lang + "/Compile Command")));
         return;
     }
 
@@ -92,7 +93,7 @@ void Compiler::start(const QString &tmpFilePath, const QString &sourceFilePath, 
     }
     else
     {
-        emit compilationErrorOccurred(tr("Unsupported programming language \"%1\"").arg(lang));
+        emit compilationFailed(tr("Unsupported programming language \"%1\"").arg(lang));
         return;
     }
 
@@ -102,32 +103,6 @@ void Compiler::start(const QString &tmpFilePath, const QString &sourceFilePath, 
         QFileInfo(QFile::exists(sourceFilePath) ? sourceFilePath : tmpFilePath).canonicalPath());
 
     compileProcess->start(program, args);
-}
-
-bool Compiler::check(const QString &compileCommand)
-{
-    if (compileCommand.isEmpty())
-    {
-        LOG_WARN("The compile command is empty");
-        return false;
-    }
-
-    QProcess checkProcess;
-
-    // check both "--version" and "-version", "-version" is mainly for Java
-
-    checkProcess.start(QProcess::splitCommand(compileCommand)[0], {"--version"});
-    bool finished = checkProcess.waitForFinished(2000);
-    if (finished && checkProcess.exitCode() == 0)
-        return true;
-    checkProcess.kill(); // kill it if it's not finished, no harm if it's finished with non-zero exit code
-
-    checkProcess.start(QProcess::splitCommand(compileCommand)[0], {"-version"});
-    finished = checkProcess.waitForFinished(2000);
-
-    LOG_INFO(BOOL_INFO_OF(finished) << INFO_OF(checkProcess.exitCode()));
-
-    return finished && checkProcess.exitCode() == 0;
 }
 
 QString Compiler::outputPath(const QString &tmpFilePath, const QString &sourceFilePath, const QString &lang,
@@ -143,6 +118,10 @@ QString Compiler::outputPath(const QString &tmpFilePath, const QString &sourceFi
                                               .replace("${basename}", fileInfo.completeBaseName())
                                               .replace("${tmpdir}", QFileInfo(tmpFilePath).absolutePath())
                                               .replace("${tempdir}", QFileInfo(tmpFilePath).absolutePath()));
+
+    if (lang == "C++")
+        res += Util::exeSuffix; // Note: Util::exeSuffix is empty on UNIX
+
     if (createDirectory)
     {
         if (lang == "C++")
@@ -150,23 +129,22 @@ QString Compiler::outputPath(const QString &tmpFilePath, const QString &sourceFi
         else if (lang == "Java")
             QDir().mkpath(res);
     }
+
     return res;
 }
 
 QString Compiler::outputFilePath(const QString &tmpFilePath, const QString &sourceFilePath, const QString &lang,
                                  bool createDirectory)
 {
-    auto path = outputPath(tmpFilePath, sourceFilePath, lang, createDirectory);
+    const auto &path = outputPath(tmpFilePath, sourceFilePath, lang, createDirectory);
 
-    if (lang == "C++")
-        path += Util::exeSuffix;
-    else if (lang == "Java")
-        path = QDir(path).filePath(SettingsHelper::getJavaClassName() + ".class");
+    if (lang == "Java")
+        return QDir(path).filePath(SettingsHelper::getJavaClassName() + ".class");
 
     return path;
 }
 
-void Compiler::onProcessFinished(int exitCode)
+void Compiler::onProcessFinished(int exitCode, QProcess::ExitStatus e)
 {
     QString codecName = "UTF-8";
     if (lang == "C++")
@@ -189,8 +167,9 @@ void Compiler::onProcessErrorOccurred(QProcess::ProcessError error)
     LOG_WARN(INFO_OF(error));
     if (error == QProcess::FailedToStart)
     {
-        emit compilationErrorOccurred(
-            tr("Failed to start compilation. Please check the compile command in the settings."));
+        emit compilationFailed(
+            tr("Failed to start the compiler. Please check %1 or add the compiler in the PATH environment variable.")
+                .arg(SettingsManager::getPathText(lang + "/Compile Command")));
     }
 }
 

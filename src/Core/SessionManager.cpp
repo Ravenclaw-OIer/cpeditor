@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Ashar Khan <ashar786khan@gmail.com>
+ * Copyright (C) 2019-2021 Ashar Khan <ashar786khan@gmail.com>
  *
  * This file is part of CP Editor.
  *
@@ -42,7 +42,7 @@ SessionManager::SessionManager(AppWindow *appwindow) : QObject(appwindow), app(a
     timer = new QTimer(this);
 
     timer->setInterval(10000);
-    connect(timer, SIGNAL(timeout()), this, SLOT(updateSession()), Qt::DirectConnection);
+    connect(timer, &QTimer::timeout, this, &SessionManager::updateSession, Qt::DirectConnection);
 }
 
 void SessionManager::restoreSession(const QString &path)
@@ -67,7 +67,7 @@ void SessionManager::restoreSession(const QString &path)
 
     while (app->ui->tabWidget->count() > 0)
     {
-        auto tmp = app->windowAt(0);
+        auto *tmp = app->windowAt(0);
         app->ui->tabWidget->removeTab(0);
         delete tmp;
     }
@@ -87,7 +87,7 @@ void SessionManager::restoreSession(const QString &path)
     auto oldSize = app->size();
     app->setUpdatesEnabled(false);
 
-    for (auto const &tab : tabs)
+    for (auto &&tab : tabs)
     {
         if (progressDialog.wasCanceled())
             break;
@@ -98,6 +98,7 @@ void SessionManager::restoreSession(const QString &path)
     }
 
     app->setUpdatesEnabled(true);
+    app->repaint();
     app->resize(oldSize);
 
     if (currentIndex >= 0 && currentIndex < app->ui->tabWidget->count())
@@ -112,7 +113,7 @@ void SessionManager::setAutoUpdateSession(bool shouldAutoUpdate)
         timer->stop();
 }
 
-void SessionManager::setAutoUpdateDuration(unsigned int duration)
+void SessionManager::setAutoUpdateDuration(int duration)
 {
     timer->setInterval(duration);
 }

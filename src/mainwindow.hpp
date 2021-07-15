@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Ashar Khan <ashar786khan@gmail.com>
+ * Copyright (C) 2019-2021 Ashar Khan <ashar786khan@gmail.com>
  *
  * This file is part of CP Editor.
  *
@@ -20,6 +20,7 @@
 
 #include <QMainWindow>
 
+class AppWindow;
 class MessageLogger;
 class QCodeEditor;
 class QFileSystemWatcher;
@@ -43,7 +44,6 @@ class Runner;
 namespace Extensions
 {
 class CFTool;
-class ClangFormatter;
 struct CompanionData;
 } // namespace Extensions
 
@@ -59,24 +59,24 @@ class MainWindow : public QMainWindow
   public:
     struct EditorStatus
     {
-        bool isLanguageSet;
+        bool isLanguageSet{};
         QString filePath, savedText, problemURL, editorText, language, customCompileCommand;
-        int editorCursor, editorAnchor, horizontalScrollBarValue, verticalScrollbarValue, untitledIndex, checkerIndex,
-            customTimeLimit;
+        int editorCursor{}, editorAnchor{}, horizontalScrollBarValue{}, verticalScrollbarValue{}, untitledIndex{},
+            checkerIndex{}, customTimeLimit{};
         QStringList input, expected, customCheckers;
-        QVariantList testcasesIsShow;
+        QVariantList testcasesIsShow; // This can't be renamed to "isChecked" because that's not compatible
         QVariantList testCaseSplitterStates;
 
-        EditorStatus(){};
+        EditorStatus() = default;
 
         explicit EditorStatus(const QMap<QString, QVariant> &status);
 
         QMap<QString, QVariant> toMap() const;
     };
 
-    explicit MainWindow(int index, QWidget *parent);
-    explicit MainWindow(const QString &fileOpen, int index, QWidget *parent);
-    explicit MainWindow(const EditorStatus &status, bool duplicate, int index, QWidget *parent);
+    explicit MainWindow(int index, AppWindow *parent);
+    explicit MainWindow(const QString &fileOpen, int index, AppWindow *parent);
+    explicit MainWindow(const EditorStatus &status, bool duplicate, int index, AppWindow *parent);
     ~MainWindow() override;
 
     int getUntitledIndex() const;
@@ -105,13 +105,13 @@ class MainWindow : public QMainWindow
     void compileOnly();
     void runOnly();
     void compileAndRun();
-    void formatSource();
+    void formatSource(bool selectionOnly, bool logOnNoChange);
 
     void applyCompanion(const Extensions::CompanionData &data);
 
     void setLanguage(const QString &lang);
     QString getLanguage();
-    void applySettings(const QString &pagePath, bool shouldPerformDigonistic);
+    void applySettings(const QString &pagePath);
 
     MessageLogger *getLogger();
     QSplitter *getSplitter();
@@ -141,10 +141,11 @@ class MainWindow : public QMainWindow
     void onCompilationStarted();
     void onCompilationFinished(const QString &warning);
     void onCompilationErrorOccurred(const QString &error);
+    void onCompilationFailed(const QString &reason);
     void onCompilationKilled();
 
     void onRunStarted(int index);
-    void onRunFinished(int index, const QString &out, const QString &err, int exitCode, int timeUsed, bool tle);
+    void onRunFinished(int index, const QString &out, const QString &err, int exitCode, qint64 timeUsed, bool tle);
     void onFailedToStartRun(int index, const QString &error);
     void onRunOutputLimitExceeded(int index, const QString &type);
     void onRunKilled(int index);
@@ -198,7 +199,6 @@ class MainWindow : public QMainWindow
     QString language;
     bool isLanguageSet = false;
 
-    Extensions::ClangFormatter *formatter = nullptr;
     Core::Compiler *compiler = nullptr;
     QVector<Core::Runner *> runner;
     Core::Checker *checker = nullptr;
@@ -207,6 +207,8 @@ class MainWindow : public QMainWindow
     AfterCompile afterCompile = Nothing;
 
     MessageLogger *log = nullptr;
+
+    AppWindow *appWindow = nullptr;
 
     int untitledIndex;
     QString problemURL;
@@ -228,9 +230,7 @@ class MainWindow : public QMainWindow
     int customTimeLimit = -1;     // the custom time limit for this tab, -1 represents for the same as settings
     QString customCompileCommand; // the custom compile command for this tab, empty represents for the same as settings
 
-    void setTestCases();
     void setEditor();
-    void setupCore();
     void compile();
     void run();
     void run(int index);
@@ -243,8 +243,9 @@ class MainWindow : public QMainWindow
     void loadFile(const QString &loadPath);
     bool saveFile(SaveMode mode, const QString &head, bool safe);
     void performCompileAndRunDiagonistics();
-    QString getRunnerHead(int index);
+    static QString getRunnerHead(int index);
     QString compileCommand() const;
     int timeLimit() const;
+    void updateCompileAndRunButtons() const;
 };
 #endif // MAINWINDOW_HPP

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Ashar Khan <ashar786khan@gmail.com>
+ * Copyright (C) 2019-2021 Ashar Khan <ashar786khan@gmail.com>
  *
  * This file is part of CP Editor.
  *
@@ -43,7 +43,7 @@ TestCaseEdit::TestCaseEdit(Role role, int id, MessageLogger *logger, const QStri
     {
     case Input:
     case Expected:
-        connect(this, SIGNAL(textChanged()), this, SLOT(startAnimation()));
+        connect(this, &TestCaseEdit::textChanged, this, &TestCaseEdit::startAnimation);
         break;
     case Output:
         setReadOnly(true);
@@ -54,8 +54,7 @@ TestCaseEdit::TestCaseEdit(Role role, int id, MessageLogger *logger, const QStri
 
     startAnimation();
     setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(this, SIGNAL(customContextMenuRequested(const QPoint &)), this,
-            SLOT(onCustomContextMenuRequested(const QPoint &)));
+    connect(this, &TestCaseEdit::customContextMenuRequested, this, &TestCaseEdit::onCustomContextMenuRequested);
 }
 
 void TestCaseEdit::dragEnterEvent(QDragEnterEvent *event)
@@ -92,8 +91,8 @@ void TestCaseEdit::modifyText(const QString &text, bool keepHistory)
 {
     this->text = text;
 
-    const int limit =
-        role == Output ? SettingsHelper::getOutputDisplayLengthLimit() : SettingsHelper::getLoadTestCaseLengthLimit();
+    const int limit = role == Output ? SettingsHelper::getOutputDisplayLengthLimit()
+                                     : SettingsHelper::getDisplayTestCaseLengthLimit();
 
     QString displayText;
 
@@ -113,15 +112,14 @@ void TestCaseEdit::modifyText(const QString &text, bool keepHistory)
 
         const QString name = role == Input ? tr("Input") : (role == Output ? tr("Output") : tr("Expected"));
         const QString setLimitPlace = role == Output ? SettingsHelper::pathOfOutputDisplayLengthLimit()
-                                                     : SettingsHelper::pathOfLoadTestCaseLengthLimit();
+                                                     : SettingsHelper::pathOfDisplayTestCaseLengthLimit();
 
-        log->warn(
-            QString("%1[%2]").arg(name).arg(id + 1),
-            QString("<span title='%1'>%2</span>")
-                .arg(
-                    tr("Now the test case editor is read-only. You can set the length limit at %1.").arg(setLimitPlace))
-                .arg(tr("Only the first %1 characters are shown.").arg(limit)),
-            false);
+        log->warn(QString("%1[%2]").arg(name).arg(id + 1),
+                  tr("Only the first %1 characters are shown. Now the test case editor is read-only. You can set "
+                     "the length limit at %2.")
+                      .arg(limit)
+                      .arg(setLimitPlace),
+                  false);
     }
 
     if (keepHistory)
@@ -158,8 +156,10 @@ void TestCaseEdit::startAnimation()
 
 void TestCaseEdit::onCustomContextMenuRequested(const QPoint &pos)
 {
-    auto menu = createStandardContextMenu();
+    auto *menu = createStandardContextMenu();
+
     menu->addSeparator();
+
     menu->addAction(QApplication::style()->standardIcon(QStyle::SP_FileIcon), tr("Save to file"), [this] {
         LOG_INFO("Saving test case to file");
         QString fileName =
@@ -167,6 +167,7 @@ void TestCaseEdit::onCustomContextMenuRequested(const QPoint &pos)
         if (!fileName.isEmpty())
             Util::saveFile(fileName, toPlainText(), tr("Save test case to file"), true, log);
     });
+
     if (role != Output)
     {
         menu->addAction(QApplication::style()->standardIcon(QStyle::SP_DialogOpenButton), tr("Load From File"), [this] {
@@ -184,6 +185,16 @@ void TestCaseEdit::onCustomContextMenuRequested(const QPoint &pos)
                     modifyText(res);
             });
     }
+
+    if (role == Expected)
+    {
+        menu->addAction(QApplication::style()->standardIcon(QStyle::SP_ArrowForward), tr("Copy Output to Expected"),
+                        [this] {
+                            LOG_INFO("Copy Output to Expected");
+                            emit requestCopyOutputToExpected();
+                        });
+    }
+
     menu->popup(mapToGlobal(pos));
 }
 

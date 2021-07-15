@@ -1,81 +1,70 @@
-> 本页面由 [英文版本](README.md) 翻译而来，内容可能有所过时。
+<div align="center">
 
-# CP Editor
+<img src=assets/icon.ico width="128">
 
-<img src=assets/icon.ico height="80" width="80">
+**CP Editor - 提升你的算法竞赛编程体验！**
 
-CP Editor 是一个基于 Qt 的轻量级跨平台代码编辑器，专为算法竞赛设计。
+[![downloads](https://img.shields.io/github/downloads/cpeditor/cpeditor/total?style=for-the-badge)](https://github.com/cpeditor/cpeditor/releases)
+[![All Contributors](https://img.shields.io/github/all-contributors/cpeditor/cpeditor?style=for-the-badge)](#all-contributors)
+[![GitHub Sponsors](https://img.shields.io/github/sponsors/cpeditor?style=for-the-badge)](https://github.com/sponsors/cpeditor)
+<a href="https://www.producthunt.com/posts/cp-editor" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=283643&theme=dark" alt="Product Hunt" height="28"/></a>
 
-它可以让你刷题/打比赛更加轻松 :grin: 因为它自动化了很多算法竞赛中的流程。
+**[特性](https://cpeditor.org/zh) · [文档](https://cpeditor.org/zh/docs) · [更新日志](CHANGELOG.md) · [贡献指南](CONTRIBUTING_zh-CN.md) · [FAQ](https://cpeditor.org/zh/docs/faq/)**
 
-[特性](https://cpeditor.github.io/) | [安装](doc/INSTALL_zh-CN.md) | [使用](doc/MANUAL_zh-CN.md) | [更新日志](doc/CHANGELOG.md) | [贡献指南](CONTRIBUTING_zh-CN.md) | [FAQ](#faq) | [English](README.md) | [Русский](README_ru-RU.md)
+[English](README.md) · [Русский](README_ru-RU.md)
 
----
+![demo](assets/demo.gif)
 
-<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-43-orange.svg)](#contributors-sparkles)
-<!-- ALL-CONTRIBUTORS-BADGE:END -->
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/ce0f297f31f74485b0d340949d08d605)](https://www.codacy.com/gh/cpeditor/cpeditor)
-[![GitHub All Releases](https://img.shields.io/github/downloads/cpeditor/cpeditor/total?label=downloads%40all)](https://github.com/cpeditor/cpeditor/releases)
-[![Slack Workspace](https://img.shields.io/badge/join-slack-success)](https://join.slack.com/t/cpeditor/shared_invite/zt-ekfy0zb5-SrOi8SIox8oq61oRonBynw)
-[![QQ Group](https://img.shields.io/badge/join-QQ%20chat-success)](https://jq.qq.com/?_wv=1027&k=50eq8yF)
-[![Help wanted issues](https://img.shields.io/github/issues/cpeditor/cpeditor/help%20wanted)](https://github.com/cpeditor/cpeditor/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
+|  类型  |                            分支                            |                                                                                                        构建                                                                                                        |                                                                     下载量                                                                     |                                                         AUR                                                         |                                                snap                                                  |
+| :----: | :--------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------: |
+| alpha  | [master](https://github.com/cpeditor/cpeditor/tree/master) | [![GitHub Workflow Status](https://github.com/cpeditor/cpeditor/workflows/CI:%20Build%20Test/badge.svg?branch=master&event=push)](https://github.com/cpeditor/cpeditor/actions?query=event%3Apush+branch%3Amaster) |                                                                       -                                                                        | [![AUR version](https://img.shields.io/aur/version/cpeditor-git)](https://aur.archlinux.org/packages/cpeditor-git/) |  [![snap version](https://badgen.net/snapcraft/v/cpeditor/amd64/edge)](https://snapcraft.io/cpeditor)
+|  beta  |   [v6.9](https://github.com/cpeditor/cpeditor/tree/v6.9)   |   [![GitHub Workflow Status](https://github.com/cpeditor/cpeditor/workflows/CI:%20Build%20Test/badge.svg?branch=v6.9&event=push)](https://github.com/cpeditor/cpeditor/actions?query=event%3Apush+branch%3Av6.9)   | [![Downloads](https://img.shields.io/github/downloads/cpeditor/cpeditor/6.9.2/total)](https://github.com/cpeditor/cpeditor/releases/tag/6.9.2) |                                                          -                                                          |                                                   -
+| stable |   [v6.8](https://github.com/cpeditor/cpeditor/tree/v6.8)   |   [![GitHub Workflow Status](https://github.com/cpeditor/cpeditor/workflows/CI:%20Build%20Test/badge.svg?branch=v6.8&event=push)](https://github.com/cpeditor/cpeditor/actions?query=event%3Apush+branch%3Av6.8)   | [![Downloads](https://img.shields.io/github/downloads/cpeditor/cpeditor/6.8.2/total)](https://github.com/cpeditor/cpeditor/releases/tag/6.8.2) |     [![AUR version](https://img.shields.io/aur/version/cpeditor)](https://aur.archlinux.org/packages/cpeditor/)     |  [![snap version](https://badgen.net/snapcraft/v/cpeditor/amd64/stable)](https://snapcraft.io/cpeditor)
 
-|  类型  |                            分支                            |                                                                                                        构建                                                                                                        |                                                                     下载量                                                                     |                                                         AUR                                                         |
-| :----: | :--------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------: |
-| alpha  | [master](https://github.com/cpeditor/cpeditor/tree/master) | [![GitHub Workflow Status](https://github.com/cpeditor/cpeditor/workflows/CI:%20Build%20Test/badge.svg?branch=master&event=push)](https://github.com/cpeditor/cpeditor/actions?query=event%3Apush+branch%3Amaster) |                                                                       -                                                                        | [![AUR version](https://img.shields.io/aur/version/cpeditor-git)](https://aur.archlinux.org/packages/cpeditor-git/) |
-|  beta  |   [v6.6](https://github.com/cpeditor/cpeditor/tree/v6.6)   |   [![GitHub Workflow Status](https://github.com/cpeditor/cpeditor/workflows/CI:%20Build%20Test/badge.svg?branch=v6.6&event=push)](https://github.com/cpeditor/cpeditor/actions?query=event%3Apush+branch%3Av6.6)   | [![Downloads](https://img.shields.io/github/downloads/cpeditor/cpeditor/6.6.4/total)](https://github.com/cpeditor/cpeditor/releases/tag/6.6.4) |                                                          -                                                          |
-| stable |   [v6.5](https://github.com/cpeditor/cpeditor/tree/v6.5)   |   [![GitHub Workflow Status](https://github.com/cpeditor/cpeditor/workflows/CI:%20Build%20Test/badge.svg?branch=v6.5&event=push)](https://github.com/cpeditor/cpeditor/actions?query=event%3Apush+branch%3Av6.5)   | [![Downloads](https://img.shields.io/github/downloads/cpeditor/cpeditor/6.5.5/total)](https://github.com/cpeditor/cpeditor/releases/tag/6.5.5) |     [![AUR version](https://img.shields.io/aur/version/cpeditor)](https://aur.archlinux.org/packages/cpeditor/)     |
+</div>
 
 ## 开始使用
 
-- [发行版](https://github.com/cpeditor/cpeditor/releases) ([Gitee 镜像](https://gitee.com/ouuan/cpeditor/releases))
-- [各种安装方式](doc/INSTALL_zh-CN.md)
-- [使用说明与提示](doc/MANUAL_zh-CN.md)
+-   [发行版](https://github.com/cpeditor/cpeditor/releases) ([Gitee 镜像](https://gitee.com/ouuan/cpeditor/releases))
+-   [安装](https://cpeditor.org/zh/docs/installation/)
+-   [开始使用](https://cpeditor.org/zh/docs/setup/)
+-   [设置](https://cpeditor.org/zh/docs/preferences)
+-   [使用提示](https://cpeditor.org/zh/docs/tips/)
+
+## 捐赠
+
+-   [如何捐赠](DONATE_zh-CN.md)
+-   [捐赠者列表](DONORS.md)
 
 ## 做出贡献
 
-- [提 issue](https://github.com/cpeditor/cpeditor/issues/new/choose)
-- [贡献指南](CONTRIBUTING_zh-CN.md)
-- [适合新手解决的 issues](https://github.com/cpeditor/cpeditor/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
-- [需要帮助的 issues](https://github.com/cpeditor/cpeditor/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
+-   [贡献指南](CONTRIBUTING_zh-CN.md)
+-   [适合新手解决的 issues](https://github.com/cpeditor/cpeditor/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
+-   [需要帮助的 issues](https://github.com/cpeditor/cpeditor/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
 
-## 获取帮助
+## 反馈
 
-1. 请首先阅读 [使用指南](doc/MANUAL_zh-CN.md) 和 [FAQ](#faq)，并看看应用菜单和设置中有没有能帮到你的。
-2. 如果你要问的问题和 CP Editor 本身不太相关，请尝试通过百度来解决问题（例如：如何安装 Clang Format？这个编译错误是什么意思？）。
-3. 在 [Issues](https://github.com/cpeditor/cpeditor/issues) 中搜索，确保你是第一个发现这个问题/提出这个请求的。
-4. 在提 issue 时，请务必遵守模板，提供详细的信息，这有助于更快地获得更加令您满意的答复。
-5. 如果您要报告 bug / 请求新特性，而非询问如何使用，请提 issue 而非在 QQ 群中或 Slack 上提问。
+-   提问：开一个 Q&A 类别的 [新讨论](https://github.com/cpeditor/cpeditor/discussions/new)。请在得到答复后将最有用的回答 Mark as Answer。
+-   提供想法：开一个 Ideas 类别的 [新讨论](https://github.com/cpeditor/cpeditor/discussions/new)。
+-   正式的功能请求/bug 报告：[开一个 issue](https://github.com/cpeditor/cpeditor/issues/new/choose)，带有详细的描述以及尽可能多的信息。
+-   [表达感谢](https://github.com/cpeditor/cpeditor/discussions/755)
+-   [随意吐槽](https://github.com/cpeditor/cpeditor/discussions/760)
 
-- [提 issue](https://github.com/cpeditor/cpeditor/issues/new/choose)
-- [在 QQ 群中提问](https://jq.qq.com/?_wv=1027&k=50eq8yF) (1081647997)
-- [在 Slack 上提问](https://join.slack.com/t/cpeditor/shared_invite/zt-ekfy0zb5-SrOi8SIox8oq61oRonBynw)
+## 打包情况
 
-## FAQ
+[![Packaging status](https://repology.org/badge/vertical-allrepos/cpeditor.svg)](https://repology.org/project/cpeditor/versions)
 
-- 如何从网站上获取样例？
-   - 你需要在浏览器上安装 [Competitive Companion](https://github.com/jmerle/competitive-companion) 插件, 然后在打开 CP Editor 的情况下使用它（点击绿色加号）。
-- 如何在应用内提交代码到 CF 上?
-   - 你需要使用 Competitive Companion 获取 CF 题目的样例，或者在标签页的右键菜单中设置题目地址，然后就可以看到提交按钮了。
-- 为什么提交按钮无法点击？
-   - 这是因为 CP Editor 不能运行 `cf` 命令。你可以将 CF Tool 加入 PATH，或者在首选项中设置 CF Tool 的路径。
-- 提交时让我设置 template，那是什么？
-   - 请在命令行中使用 `cf config` 来设置用户名，密码和模板。
-- 使用 Competitive Companion 时，提示 invalid payload，那是什么?
-   - 一般来说多获取几次样例，重启浏览器和 CP Editor，甚至更换浏览器可以解决这个问题。
+如果需要帮助，软件包维护者可以联系我们。例如，我们可以在我们的 CI/CD 工作流中加入一些脚本。
 
-## 关于中文
-
-这是一个面向全世界的项目，在 Issues / Pull Requests 中请尽量使用英文。如果对自己的英语没有信心 / 觉得中文更加方便的话，可以在使用中文的同时附上一份 Google/百度翻译。尽量不要机翻，如果是纯机翻请附上原文，防止翻译错误导致理解出现偏差。提交信息（commit messages）的标题必须使用英文，内容则同 Issues / Pull Requests。
+Package maintainers can contact us if any help on packaging is needed. For example, we may add scripts in our CI workflow.
 
 ## 关于 Gitee
 
 本项目同时在 [GitHub](https://github.com/cpeditor/cpeditor) 和 [Gitee](https://gitee.com/ouuan/cpeditor) 上进行托管，其中 Gitee 仓库仅作为镜像使用，不保证总是与 GitHub 仓库同步，不开放 Issues / Pull Requests，如有需要请移步 [GitHub](https://github.com/cpeditor/cpeditor)，也可以进入 [QQ 群](https://jq.qq.com/?_wv=1027&k=50eq8yF) (1081647997) 来交流讨论。
 
-## Contributors :sparkles:
+## All Contributors
 
-感谢下面这些人的贡献：（[emoji key](https://allcontributors.org/docs/en/emoji-key)）
+感谢下面这些人的贡献：（如果我们忘记将你添加为贡献者，你可以[自行添加](https://allcontributors.org/docs/zh-cn/bot/usage)）
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
@@ -92,10 +81,10 @@ CP Editor 是一个基于 Qt 的轻量级跨平台代码编辑器，专为算法
       <a href="https://github.com/neko-para"><img src="https://avatars1.githubusercontent.com/u/26452623?v=4" width="100px;" alt=""/></a><br /><a href="https://github.com/neko-para"><sub><b>liaohy</b></sub></a><br /><a href="https://github.com/cpeditor/cpeditor/commits?author=neko-para" title="Code">💻</a> <a href="https://github.com/cpeditor/cpeditor/commits?author=neko-para" title="Documentation">📖</a> <a href="#translation-neko-para" title="Translation">🌍</a> <a href="#ideas-neko-para" title="Ideas, Planning, & Feedback">🤔</a> <a href="https://github.com/cpeditor/cpeditor/pulls?q=is%3Apr+reviewed-by%3Aneko-para" title="Reviewed Pull Requests">👀</a>
     </td>
     <td align="center">
-      <a href="https://github.com/sadykhzadeh"><img src="https://avatars1.githubusercontent.com/u/51178055?v=4" width="100px;" alt=""/></a><br /><a href="http://sadykhzadeh.github.io"><sub><b>Azer Sadykhzadeh</b></sub></a><br /><a href="#translation-sadykhzadeh" title="Translation">🌍</a>
+      <a href="https://github.com/sadykhzadeh"><img src="https://avatars1.githubusercontent.com/u/51178055?v=4" width="100px;" alt=""/></a><br /><a href="http://sadykhzadeh.github.io"><sub><b>Azer Sadykhzadeh</b></sub></a><br /><a href="#translation-sadykhzadeh" title="Translation">🌍</a> <a href="https://github.com/cpeditor/cpeditor/pulls?q=is%3Apr+reviewed-by%3Asadykhzadeh" title="Reviewed Pull Requests">👀</a>
     </td>
     <td align="center">
-      <a href="https://github.com/IZOBRETATEL777"><img src="https://avatars0.githubusercontent.com/u/32099652?v=4" width="100px;" alt=""/></a><br /><a href="http://izobretatelsoft.moy.su/"><sub><b>IZOBRETATEL777</b></sub></a><br /><a href="#translation-IZOBRETATEL777" title="Translation">🌍</a> <a href="https://github.com/cpeditor/cpeditor/pulls?q=is%3Apr+reviewed-by%3AIZOBRETATEL777" title="Reviewed Pull Requests">👀</a>
+      <a href="https://github.com/IZOBRETATEL777"><img src="https://avatars0.githubusercontent.com/u/32099652?v=4" width="100px;" alt=""/></a><br /><a href="http://izobretatelsoft.moy.su/"><sub><b>IZOBRETATEL777</b></sub></a><br /><a href="#translation-IZOBRETATEL777" title="Translation">🌍</a> <a href="https://github.com/cpeditor/cpeditor/pulls?q=is%3Apr+reviewed-by%3AIZOBRETATEL777" title="Reviewed Pull Requests">👀</a> <a href="#infra-IZOBRETATEL777" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a>
     </td>
     <td align="center">
       <a href="https://github.com/Razdeep"><img src="https://avatars2.githubusercontent.com/u/32531173?v=4" width="100px;" alt=""/></a><br /><a href="https://www.linkedin.com/in/razdeeproychowdhury"><sub><b>Rajdeep Roy Chowdhury</b></sub></a><br /><a href="https://github.com/cpeditor/cpeditor/commits?author=Razdeep" title="Code">💻</a> <a href="#ideas-Razdeep" title="Ideas, Planning, & Feedback">🤔</a> <a href="https://github.com/cpeditor/cpeditor/issues?q=author%3ARazdeep" title="Bug reports">🐛</a>
@@ -123,10 +112,13 @@ CP Editor 是一个基于 Qt 的轻量级跨平台代码编辑器，专为算法
   </tr>
   <tr>
     <td align="center">
-      <a href="https://github.com/sonulohani"><img src="https://avatars1.githubusercontent.com/u/2958681?v=4" width="100px;" alt=""/></a><br /><a href="https://github.com/sonulohani"><sub><b>Sonu Lohani</b></sub></a><br /><a href="https://github.com/cpeditor/cpeditor/issues?q=author%3Asonulohani" title="Bug reports">🐛</a> <a href="https://github.com/cpeditor/cpeditor/commits?author=sonulohani" title="Code">💻</a> <a href="#ideas-sonulohani" title="Ideas, Planning, & Feedback">🤔</a>
+      <a href="https://github.com/sonulohani"><img src="https://avatars1.githubusercontent.com/u/2958681?v=4" width="100px;" alt=""/></a><br /><a href="https://github.com/sonulohani"><sub><b>Sonu Lohani</b></sub></a><br /><a href="https://github.com/cpeditor/cpeditor/issues?q=author%3Asonulohani" title="Bug reports">🐛</a> <a href="https://github.com/cpeditor/cpeditor/commits?author=sonulohani" title="Code">💻</a> <a href="#ideas-sonulohani" title="Ideas, Planning, & Feedback">🤔</a> <a href="https://github.com/cpeditor/cpeditor/pulls?q=is%3Apr+reviewed-by%3Asonulohani" title="Reviewed Pull Requests">👀</a>
     </td>
     <td align="center">
       <a href="https://github.com/ChungZH"><img src="https://avatars0.githubusercontent.com/u/42088872?v=4" width="100px;" alt=""/></a><br /><a href="https://chungzh.cc/"><sub><b>Flex Zhong</b></sub></a><br /><a href="https://github.com/cpeditor/cpeditor/commits?author=ChungZH" title="Code">💻</a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/swift-zym"><img src="https://avatars.githubusercontent.com/u/61449077?v=4" width="100px;" alt=""/></a><br /><a href="https://183154.blog.luogu.org"><sub><b>Yiming Zhang</b></sub></a><br /><a href="https://github.com/cpeditor/cpeditor/commits?author=swift-zym" title="Code">💻</a> <a href="#design-swift-zym" title="Design">🎨</a> <a href="#ideas-swift-zym" title="Ideas, Planning, & Feedback">🤔</a> <a href="https://github.com/cpeditor/cpeditor/pulls?q=is%3Apr+reviewed-by%3Aswift-zym" title="Reviewed Pull Requests">👀</a>
     </td>
     <td align="center">
       <a href="https://github.com/Ravenclaw-OIer"><img src="https://avatars2.githubusercontent.com/u/44526586?v=4" width="100px;" alt=""/></a><br /><a href="http://ravenclaw-oier.github.io"><sub><b>Ravenclaw-OIer</b></sub></a><br /><a href="#ideas-Ravenclaw-OIer" title="Ideas, Planning, & Feedback">🤔</a> <a href="https://github.com/cpeditor/cpeditor/issues?q=author%3ARavenclaw-OIer" title="Bug reports">🐛</a> <a href="https://github.com/cpeditor/cpeditor/commits?author=Ravenclaw-OIer" title="Documentation">📖</a>
@@ -137,11 +129,11 @@ CP Editor 是一个基于 Qt 的轻量级跨平台代码编辑器，专为算法
     <td align="center">
       <a href="https://github.com/nikhil-sarda"><img src="https://avatars1.githubusercontent.com/u/51774873?v=4" width="100px;" alt=""/></a><br /><a href="https://github.com/nikhil-sarda"><sub><b>Nikhil Sarda</b></sub></a><br /><a href="https://github.com/cpeditor/cpeditor/issues?q=author%3Anikhil-sarda" title="Bug reports">🐛</a>
     </td>
+  </tr>
+  <tr>
     <td align="center">
       <a href="https://github.com/Arthur-QQ"><img src="https://avatars0.githubusercontent.com/u/30394349?v=4" width="100px;" alt=""/></a><br /><a href="https://github.com/Arthur-QQ"><sub><b>Arthur-QQ</b></sub></a><br /><a href="#ideas-Arthur-QQ" title="Ideas, Planning, & Feedback">🤔</a> <a href="https://github.com/cpeditor/cpeditor/issues?q=author%3AArthur-QQ" title="Bug reports">🐛</a>
     </td>
-  </tr>
-  <tr>
     <td align="center">
       <a href="https://github.com/Brijesh1in"><img src="https://avatars3.githubusercontent.com/u/33791137?v=4" width="100px;" alt=""/></a><br /><a href="https://github.com/Brijesh1in"><sub><b>Brijesh1in</b></sub></a><br /><a href="#ideas-Brijesh1in" title="Ideas, Planning, & Feedback">🤔</a> <a href="https://github.com/cpeditor/cpeditor/issues?q=author%3ABrijesh1in" title="Bug reports">🐛</a>
     </td>
@@ -157,11 +149,11 @@ CP Editor 是一个基于 Qt 的轻量级跨平台代码编辑器，专为算法
     <td align="center">
       <a href="https://github.com/Exile-2k4"><img src="https://avatars2.githubusercontent.com/u/40086604?v=4" width="100px;" alt=""/></a><br /><a href="https://github.com/Exile-2k4"><sub><b>Nguyễn Hoàng Dương</b></sub></a><br /><a href="#ideas-Exile-2k4" title="Ideas, Planning, & Feedback">🤔</a>
     </td>
+  </tr>
+  <tr>
     <td align="center">
       <a href="https://github.com/GoBigorGoHome"><img src="https://avatars3.githubusercontent.com/u/9896288?v=4" width="100px;" alt=""/></a><br /><a href="https://github.com/GoBigorGoHome"><sub><b>Pat</b></sub></a><br /><a href="#ideas-GoBigorGoHome" title="Ideas, Planning, & Feedback">🤔</a>
     </td>
-  </tr>
-  <tr>
     <td align="center">
       <a href="https://github.com/GoToCoding"><img src="https://avatars3.githubusercontent.com/u/16542586?v=4" width="100px;" alt=""/></a><br /><a href="https://github.com/GoToCoding"><sub><b>Ruzal Ibragimov</b></sub></a><br /><a href="https://github.com/cpeditor/cpeditor/issues?q=author%3AGoToCoding" title="Bug reports">🐛</a>
     </td>
@@ -177,11 +169,11 @@ CP Editor 是一个基于 Qt 的轻量级跨平台代码编辑器，专为算法
     <td align="center">
       <a href="https://github.com/Wandoka"><img src="https://avatars2.githubusercontent.com/u/26433142?v=4" width="100px;" alt=""/></a><br /><a href="https://github.com/Wandoka"><sub><b>Wandoka</b></sub></a><br /><a href="#ideas-Wandoka" title="Ideas, Planning, & Feedback">🤔</a>
     </td>
+  </tr>
+  <tr>
     <td align="center">
       <a href="https://github.com/ahmfuad"><img src="https://avatars3.githubusercontent.com/u/42442668?v=4" width="100px;" alt=""/></a><br /><a href="http://www.agamiramra.com"><sub><b>A. H. M Fuad</b></sub></a><br /><a href="https://github.com/cpeditor/cpeditor/issues?q=author%3Aahmfuad" title="Bug reports">🐛</a>
     </td>
-  </tr>
-  <tr>
     <td align="center">
       <a href="https://github.com/ankur314"><img src="https://avatars2.githubusercontent.com/u/37039680?v=4" width="100px;" alt=""/></a><br /><a href="https://github.com/ankur314"><sub><b>Ankur Ojha</b></sub></a><br /><a href="#ideas-ankur314" title="Ideas, Planning, & Feedback">🤔</a>
     </td>
@@ -197,11 +189,11 @@ CP Editor 是一个基于 Qt 的轻量级跨平台代码编辑器，专为算法
     <td align="center">
       <a href="https://github.com/rng70"><img src="https://avatars2.githubusercontent.com/u/45529910?v=4" width="100px;" alt=""/></a><br /><a href="https://github.com/rng70"><sub><b>Al Arafat Tanin</b></sub></a><br /><a href="#ideas-rng70" title="Ideas, Planning, & Feedback">🤔</a>
     </td>
+  </tr>
+  <tr>
     <td align="center">
       <a href="https://github.com/s6059r"><img src="https://avatars0.githubusercontent.com/u/58967102?v=4" width="100px;" alt=""/></a><br /><a href="https://github.com/s6059r"><sub><b>Siddharth Singh</b></sub></a><br /><a href="#ideas-s6059r" title="Ideas, Planning, & Feedback">🤔</a>
     </td>
-  </tr>
-  <tr>
     <td align="center">
       <a href="https://github.com/samael042"><img src="https://avatars3.githubusercontent.com/u/44134245?v=4" width="100px;" alt=""/></a><br /><a href="https://github.com/samael042"><sub><b>samael042</b></sub></a><br /><a href="https://github.com/cpeditor/cpeditor/issues?q=author%3Asamael042" title="Bug reports">🐛</a>
     </td>
@@ -217,24 +209,61 @@ CP Editor 是一个基于 Qt 的轻量级跨平台代码编辑器，专为算法
     <td align="center">
       <a href="https://github.com/lakshits11"><img src="https://avatars2.githubusercontent.com/u/54276661?v=4" width="100px;" alt=""/></a><br /><a href="https://github.com/lakshits11"><sub><b>lakshits11</b></sub></a><br /><a href="#ideas-lakshits11" title="Ideas, Planning, & Feedback">🤔</a>
     </td>
+  </tr>
+  <tr>
     <td align="center">
       <a href="https://github.com/sahilkhan03"><img src="https://avatars2.githubusercontent.com/u/45485428?v=4" width="100px;" alt=""/></a><br /><a href="http://sahilkhan.me"><sub><b>Md. Sahil Khan</b></sub></a><br /><a href="#ideas-sahilkhan03" title="Ideas, Planning, & Feedback">🤔</a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/AbhayAravinda"><img src="https://avatars1.githubusercontent.com/u/33093450?v=4" width="100px;" alt=""/></a><br /><a href="https://github.com/AbhayAravinda"><sub><b>AbhayAravinda</b></sub></a><br /><a href="https://github.com/cpeditor/cpeditor/issues?q=author%3AAbhayAravinda" title="Bug reports">🐛</a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/ammardab3an"><img src="https://avatars3.githubusercontent.com/u/40296428?v=4" width="100px;" alt=""/></a><br /><a href="https://github.com/ammardab3an"><sub><b>AmmarDab3an</b></sub></a><br /><a href="https://github.com/cpeditor/cpeditor/issues?q=author%3Aammardab3an" title="Bug reports">🐛</a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/AchintyaK20"><img src="https://avatars1.githubusercontent.com/u/56220374?v=4" width="100px;" alt=""/></a><br /><a href="https://github.com/AchintyaK20"><sub><b>Achintya Kumar</b></sub></a><br /><a href="https://github.com/cpeditor/cpeditor/issues?q=author%3AAchintyaK20" title="Bug reports">🐛</a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/nutzboi"><img src="https://avatars3.githubusercontent.com/u/31652809?v=4" width="100px;" alt=""/></a><br /><a href="https://github.com/nutzboi"><sub><b>nutzboi</b></sub></a><br /><a href="https://github.com/cpeditor/cpeditor/issues?q=author%3Anutzboi" title="Bug reports">🐛</a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/Gourav-raj"><img src="https://avatars1.githubusercontent.com/u/50336197?v=4" width="100px;" alt=""/></a><br /><a href="https://github.com/Gourav-raj"><sub><b>GOURAV RAJ</b></sub></a><br /><a href="#ideas-Gourav-raj" title="Ideas, Planning, & Feedback">🤔</a>
     </td>
   </tr>
   <tr>
     <td align="center">
-      <a href="https://github.com/AbhayAravinda"><img src="https://avatars1.githubusercontent.com/u/33093450?v=4" width="100px;" alt=""/></a><br /><a href="https://github.com/AbhayAravinda"><sub><b>AbhayAravinda</b></sub></a><br /><a href="https://github.com/cpeditor/cpeditor/issues?q=author%3AAbhayAravinda" title="Bug reports">🐛</a>
+      <a href="https://github.com/thebrave"><img src="https://avatars0.githubusercontent.com/u/2398126?v=4" width="100px;" alt=""/></a><br /><a href="https://github.com/thebrave"><sub><b>Jean Berniolles</b></sub></a><br /><a href="https://github.com/cpeditor/cpeditor/commits?author=thebrave" title="Code">💻</a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/jaysampartak"><img src="https://avatars2.githubusercontent.com/u/40232849?v=4" width="100px;" alt=""/></a><br /><a href="https://github.com/jaysampartak"><sub><b>jaysampartak</b></sub></a><br /><a href="https://github.com/cpeditor/cpeditor/issues?q=author%3Ajaysampartak" title="Bug reports">🐛</a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/andreaemonti"><img src="https://avatars3.githubusercontent.com/u/20700531?v=4" width="100px;" alt=""/></a><br /><a href="https://github.com/andreaemonti"><sub><b>Andrea E. Monti</b></sub></a><br /><a href="#ideas-andreaemonti" title="Ideas, Planning, & Feedback">🤔</a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/tiger2005"><img src="https://avatars.githubusercontent.com/u/41613797?v=4" width="100px;" alt=""/></a><br /><a href="https://github.com/tiger2005"><sub><b>tiger2005</b></sub></a><br /><a href="https://github.com/cpeditor/cpeditor/issues?q=author%3Atiger2005" title="Bug reports">🐛</a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/tusqasi"><img src="https://avatars.githubusercontent.com/u/24749908?v=4" width="100px;" alt=""/></a><br /><a href="https://github.com/tusqasi"><sub><b>tusqasi</b></sub></a><br /><a href="https://github.com/cpeditor/cpeditor/issues?q=author%3Atusqasi" title="Bug reports">🐛</a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/rbruno95"><img src="https://avatars.githubusercontent.com/u/48922045?v=4" width="100px;" alt=""/></a><br /><a href="https://github.com/rbruno95"><sub><b>Bruno</b></sub></a><br /><a href="https://github.com/cpeditor/cpeditor/issues?q=author%3Arbruno95" title="Bug reports">🐛</a>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/Mooos-MoSheng"><img src="https://avatars.githubusercontent.com/u/46639923?v=4" width="100px;" alt=""/></a><br /><a href="https://github.com/Mooos-MoSheng"><sub><b>墨笙_Mooos</b></sub></a><br /><a href="https://github.com/cpeditor/cpeditor/commits?author=Mooos-MoSheng" title="Code">💻</a> <a href="https://github.com/cpeditor/cpeditor/issues?q=author%3AMooos-MoSheng" title="Bug reports">🐛</a>
     </td>
   </tr>
 </table>
 
-<!-- markdownlint-enable -->
+<!-- markdownlint-restore -->
 <!-- prettier-ignore-end -->
+
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 本项目使用 [all-contributors](https://github.com/all-contributors/all-contributors)，欢迎各种形式的贡献！
 
-许可证
-----
+### 许可证
 
-[GNU General Public License Version 3.0](https://github.com/cpeditor/cpeditor/blob/master/LICENSE)
+[GNU General Public License Version 3.0](LICENSE)

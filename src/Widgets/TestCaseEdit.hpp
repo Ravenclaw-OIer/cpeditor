@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Ashar Khan <ashar786khan@gmail.com>
+ * Copyright (C) 2019-2021 Ashar Khan <ashar786khan@gmail.com>
  *
  * This file is part of CP Editor.
  *
@@ -50,6 +50,9 @@ class TestCaseEdit : public QPlainTextEdit
 
   private slots:
     void onCustomContextMenuRequested(const QPoint &);
+
+  signals:
+    void requestCopyOutputToExpected();
 
   private:
     void loadFromFile(const QString &path);

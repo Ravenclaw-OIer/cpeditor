@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Ashar Khan <ashar786khan@gmail.com>
+ * Copyright (C) 2019-2021 Ashar Khan <ashar786khan@gmail.com>
  *
  * This file is part of CP Editor.
  *
@@ -47,7 +47,7 @@ class Compiler : public QObject
      * @brief destruct a compiler
      * @note the compilation process will be killed if it's running
      */
-    ~Compiler();
+    ~Compiler() override;
 
     /**
      * @brief start the compilation
@@ -61,14 +61,8 @@ class Compiler : public QObject
                const QString &lang);
 
     /**
-     * @brief check whether a compile command is valid or not
-     * @param compilaCommand the command to check
-     * @note this only checks whether the program of the command works
-     */
-    static bool check(const QString &compileCommand);
-
-    /**
      * @brief get the output path (executable file path for C++, class path for Java, tmp file path for Python)
+     * This should be used as an argument in the compilation command
      * @param tmpFilePath the path to the temporary file which is compiled
      * @param sourceFilePath the path to the original source file, if it's empty, tmpFilePath will be used instead of it
      * @param lang the language being compiled
@@ -79,7 +73,7 @@ class Compiler : public QObject
 
     /**
      * @brief Similar to Compiler::outputPath, but returns the path of the output file.
-     * i.e. with .exe on Windows for C++, class file instead of containing directory for Java
+     * This should be used to find the executable file for C++ and class file for Java.
      */
     static QString outputFilePath(const QString &tmpFilePath, const QString &sourceFilePath, const QString &lang,
                                   bool createDirectory = true);
@@ -103,6 +97,12 @@ class Compiler : public QObject
     void compilationErrorOccurred(const QString &error);
 
     /**
+     * @brief failed to start compilation
+     * @param reason the reason of the failure
+     */
+    void compilationFailed(const QString &reason);
+
+    /**
      * @brief the compilation process has just been killed
      * @note It's only emitted when the process is killed when destructing the Compiler.
      */
@@ -113,7 +113,7 @@ class Compiler : public QObject
      * @brief the compilation process has just finished
      * @param the exit code of the compilation process
      */
-    void onProcessFinished(int exitCode);
+    void onProcessFinished(int exitCode, QProcess::ExitStatus e);
 
     void onProcessErrorOccurred(QProcess::ProcessError error);
 

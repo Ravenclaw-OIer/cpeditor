@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Ashar Khan <ashar786khan@gmail.com>
+ * Copyright (C) 2019-2021 Ashar Khan <ashar786khan@gmail.com>
  *
  * This file is part of CP Editor.
  *
@@ -21,7 +21,7 @@
 #include "Settings/SettingsUpdater.hpp"
 #include "Util/FileUtil.hpp"
 #include "generated/portable.hpp"
-#include <QDebug>
+#include <QDateTime>
 #include <QFile>
 #include <QFont>
 #include <QRect>
@@ -30,6 +30,10 @@
 QVariantMap *SettingsManager::cur = nullptr;
 QVariantMap *SettingsManager::def = nullptr;
 QMap<QString, QString> *SettingsManager::settingPath = nullptr;
+QMap<QString, QString> *SettingsManager::settingTrPath = nullptr;
+QMap<QString, QString> *SettingsManager::pathSetting = nullptr;
+QMap<QString, QWidget *> *SettingsManager::settingWidget = nullptr;
+long long SettingsManager::startTime = 0;
 
 const static QStringList configFileLocations = {
 #ifdef PORTABLE_VERSION
@@ -91,16 +95,21 @@ void SettingsManager::save(QSettings &setting, const QString &prefix, const QLis
 
 void SettingsManager::init()
 {
-    if (cur)
-        delete cur;
-    if (def)
-        delete def;
-    if (settingPath)
-        delete settingPath;
+    delete cur;
+    delete def;
+    delete settingPath;
+    delete settingTrPath;
+    delete pathSetting;
+    delete settingWidget;
 
     cur = new QVariantMap();
     def = new QVariantMap();
     settingPath = new QMap<QString, QString>();
+    settingTrPath = new QMap<QString, QString>();
+    pathSetting = new QMap<QString, QString>();
+    settingWidget = new QMap<QString, QWidget *>();
+
+    startTime = QDateTime::currentSecsSinceEpoch();
 
     generateDefaultSettings();
 
@@ -111,13 +120,19 @@ void SettingsManager::init()
 
 void SettingsManager::deinit()
 {
-    saveSettings(Util::configFilePath(configFileLocations[0]));
+    set("Total Usage Time", get("Total Usage Time").toInt() + QDateTime::currentSecsSinceEpoch() - startTime);
+
+    saveSettings(QString());
 
     delete cur;
     delete def;
     delete settingPath;
+    delete settingTrPath;
+    delete pathSetting;
+    delete settingWidget;
     cur = def = nullptr;
-    settingPath = nullptr;
+    settingPath = settingTrPath = pathSetting = nullptr;
+    settingWidget = nullptr;
 }
 
 void SettingsManager::generateDefaultSettings()
@@ -146,9 +161,11 @@ void SettingsManager::loadSettings(const QString &path)
 
 void SettingsManager::saveSettings(const QString &path)
 {
-    LOG_INFO("Start saving settings to " + path);
+    const auto savePath = path.isEmpty() ? Util::configFilePath(configFileLocations[0]) : path;
 
-    QSettings setting(path, QSettings::IniFormat);
+    LOG_INFO("Start saving settings to " + savePath);
+
+    QSettings setting(savePath, QSettings::IniFormat);
     setting.clear(); // Otherwise SettingsManager::remove won't work
     save(setting, "", SettingsInfo::getSettings());
 
@@ -157,24 +174,19 @@ void SettingsManager::saveSettings(const QString &path)
 
     setting.sync();
 
-    LOG_INFO("Settings have been saved to " + path);
+    LOG_INFO("Settings have been saved to " + savePath);
 }
 
-QVariant SettingsManager::get(QString key, bool alwaysDefault)
+QVariant SettingsManager::get(QString const &key, bool alwaysDefault)
 {
     if (!alwaysDefault && cur->contains(key))
         return cur->value(key);
-    else if (def->contains(key))
+    if (def->contains(key))
         return def->value(key);
-    else
-    {
-#ifdef QT_DEBUG
-        if (!noUnknownKeyWarning.contains(key))
-            qDebug() << "Settings: getting unknown key: " << key;
-#endif
-        LOG_WARN("SettingsManager::getting unknown key: " << key);
-        return QVariant();
-    }
+
+    if (!noUnknownKeyWarning.contains(key))
+        LOG_DEV("getting unknown key: " << key);
+    return QVariant();
 }
 
 bool SettingsManager::contains(const QString &key, bool includingDefault)
@@ -182,13 +194,13 @@ bool SettingsManager::contains(const QString &key, bool includingDefault)
     return cur->contains(key) || (includingDefault && def->contains(key));
 }
 
-void SettingsManager::set(const QString &key, QVariant value)
+void SettingsManager::set(const QString &key, QVariant const &value)
 {
     LOG_INFO_IF(!key.startsWith("Language Config/"), INFO_OF(key) << INFO_OF(value.toString()));
     cur->insert(key, value);
 }
 
-void SettingsManager::remove(QStringList keys)
+void SettingsManager::remove(QStringList const &keys)
 {
     for (const QString &key : keys)
         cur->remove(key);
@@ -199,35 +211,60 @@ void SettingsManager::reset()
     *cur = *def;
 }
 
-void SettingsManager::setPath(const QString &key, const QString &path)
+void SettingsManager::setPath(const QString &key, const QString &path, const QString &trPath)
 {
     settingPath->insert(key, path);
+    settingTrPath->insert(key, trPath);
+    pathSetting->insert(path, key);
 }
 
 QString SettingsManager::getPathText(const QString &key, bool parent)
 {
     if (!settingPath->contains(key))
     {
-#ifdef QT_DEBUG
-        qDebug() << "SettingsManager: Getting unknown key path: " << key;
-#endif
-        LOG_WARN("Getting unknown key path: " << key);
+        LOG_DEV("Getting unknown path: " << key);
         return "Unknown";
     }
-    auto nodes = settingPath->value(key).split('/');
-    for (int i = 0; i < nodes.count() - 1; ++i)
-        nodes[i] = QCoreApplication::translate("PreferencesWindow", nodes[i].toStdString().c_str());
+    auto path = settingPath->value(key);
+    auto trPath = QCoreApplication::translate("PreferencesWindow", "Preferences") + "/" + settingTrPath->value(key);
     if (parent)
-        nodes.pop_back();
-    else
-        nodes.back() = QCoreApplication::translate("SettingsInfo", nodes.back().toStdString().c_str());
-    return nodes.join("->");
+    {
+        path.chop(path.length() - path.lastIndexOf('/'));
+        trPath.chop(trPath.length() - trPath.lastIndexOf('/'));
+    }
+    return QString("<a href='#Preferences/%1'>%2</a>").arg(path).arg(trPath.replace('/', "->"));
+}
+
+QString SettingsManager::getKeyOfPath(const QString &path)
+{
+    if (!pathSetting->contains(path))
+    {
+        LOG_WARN("Getting unknown key of path: " << INFO_OF(path));
+        return QString();
+    }
+    return pathSetting->value(path);
+}
+
+void SettingsManager::setWidget(const QString &key, QWidget *widget)
+{
+    settingWidget->insert(key, widget);
+}
+
+QWidget *SettingsManager::getWidget(const QString &key)
+{
+    if (!settingWidget->contains(key))
+    {
+        LOG_WARN("Getting unknown widget: " << INFO_OF(key));
+        return nullptr;
+    }
+    return settingWidget->value(key);
 }
 
 QStringList SettingsManager::keyStartsWith(const QString &head)
 {
     QStringList keys = cur->keys();
-    keys.erase(std::remove_if(keys.begin(), keys.end(), [head](QString s) { return !s.startsWith(head); }), keys.end());
+    keys.erase(std::remove_if(keys.begin(), keys.end(), [head](QString const &s) { return !s.startsWith(head); }),
+               keys.end());
     return keys;
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Ashar Khan <ashar786khan@gmail.com>
+ * Copyright (C) 2019-2021 Ashar Khan <ashar786khan@gmail.com>
  *
  * This file is part of CP Editor.
  *
@@ -22,6 +22,7 @@
 #include "Core/MessageLogger.hpp"
 #include "Core/SessionManager.hpp"
 #include "Core/StyleManager.hpp"
+#include "Core/Translator.hpp"
 #include "Extensions/CFTool.hpp"
 #include "Extensions/CompanionServer.hpp"
 #include "Extensions/EditorTheme.hpp"
@@ -32,6 +33,8 @@
 #include "Telemetry/UpdateChecker.hpp"
 #include "Util/FileUtil.hpp"
 #include "Util/Util.hpp"
+#include "Widgets/SupportUsDialog.hpp"
+#include "application.hpp"
 #include "generated/SettingsHelper.hpp"
 #include "generated/portable.hpp"
 #include "generated/version.hpp"
@@ -59,8 +62,13 @@ AppWindow::AppWindow(bool noHotExit, QWidget *parent) : QMainWindow(parent), ui(
     allocate();
     setConnections();
 
-    auto separator = ui->menuFile->insertSeparator(ui->actionSave); // used to insert openRecentFilesMenu
-    auto openRecentFilesMenu = new QMenu(tr("Open Recent Files"), ui->menuFile);
+#ifdef Q_OS_MACOS
+    ui->actionSwapLineUp->setShortcut({"Ctrl+Meta+Up"});
+    ui->actionSwapLineDown->setShortcut({"Ctrl+Meta+Down"});
+#endif
+
+    auto *separator = ui->menuFile->insertSeparator(ui->actionSave); // used to insert openRecentFilesMenu
+    auto *openRecentFilesMenu = new QMenu(tr("Open Recent Files"), ui->menuFile);
     ui->menuFile->insertMenu(separator, openRecentFilesMenu);
     connect(openRecentFilesMenu, &QMenu::aboutToShow, [this, openRecentFilesMenu] {
         openRecentFilesMenu->clear();
@@ -82,7 +90,11 @@ AppWindow::AppWindow(bool noHotExit, QWidget *parent) : QMainWindow(parent), ui(
     Core::StyleManager::setDefault();
 
     QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+#ifdef Q_OS_MACOS
+    setWindowIcon(QIcon(":/macos-icon.png"));
+#else
     setWindowIcon(QIcon(":/icon.png"));
+#endif
 
 #ifdef Q_OS_WIN
     // setWindowOpacity(0.99) when opacity should be 100 is a workaround for a strange issue on Windows
@@ -106,7 +118,7 @@ AppWindow::AppWindow(bool noHotExit, QWidget *parent) : QMainWindow(parent), ui(
 
     SettingsHelper::setForceClose(false);
 
-    auto lastSessionPath = sessionManager->lastSessionPath();
+    auto lastSessionPath = Core::SessionManager::lastSessionPath();
 
     if (lastSessionPath.isEmpty())
         return;
@@ -129,14 +141,7 @@ AppWindow::AppWindow(int depth, bool cpp, bool java, bool python, bool noHotExit
     : AppWindow(noHotExit, parent)
 {
     openPaths(paths, cpp, java, python, depth);
-    if (ui->tabWidget->count() == 0)
-        openTab("");
-
-#ifdef Q_OS_WIN
-    // This is necessary because of setWindowOpacity(0.99) earlier
-    if (SettingsHelper::getOpacity() == 100)
-        setWindowOpacity(1);
-#endif
+    finishConstruction();
 }
 
 AppWindow::AppWindow(bool cpp, bool java, bool python, bool noHotExit, int number, const QString &path, QWidget *parent)
@@ -150,6 +155,12 @@ AppWindow::AppWindow(bool cpp, bool java, bool python, bool noHotExit, int numbe
     else if (python)
         lang = "Python";
     openContest({path, number, lang});
+
+    finishConstruction();
+}
+
+void AppWindow::finishConstruction()
+{
     if (ui->tabWidget->count() == 0)
         openTab("");
 
@@ -158,6 +169,25 @@ AppWindow::AppWindow(bool cpp, bool java, bool python, bool noHotExit, int numbe
     if (SettingsHelper::getOpacity() == 100)
         setWindowOpacity(1);
 #endif
+
+    // The window needs time to make its geometry stable. We wait it to display the new dialogs in correct positions
+    QTimer::singleShot(200, [this] {
+        if (SettingsHelper::isFirstTimeUser())
+        {
+            LOG_INFO("Is first-time user");
+            preferencesWindow->display();
+            SettingsHelper::setFirstTimeUser(false);
+        }
+        else if (!SettingsHelper::isPromotionDialogShown() &&
+                 SettingsHelper::getTotalUsageTime() >= 10 * 60 * 60) // 10 hours or above
+        {
+            LOG_INFO("Show promotion dialog");
+            auto *dialog = new SupportUsDialog(this);
+            dialog->open();
+            dialog->move(geometry().center().x() - dialog->width() / 2, geometry().center().y() - dialog->height() / 2);
+            SettingsHelper::setPromotionDialogShown(true);
+        }
+    });
 }
 
 AppWindow::~AppWindow()
@@ -166,7 +196,7 @@ AppWindow::~AppWindow()
     saveSettings();
     while (ui->tabWidget->count())
     {
-        auto tmp = ui->tabWidget->widget(0);
+        auto *tmp = ui->tabWidget->widget(0);
         ui->tabWidget->removeTab(0);
         delete tmp;
     }
@@ -207,6 +237,11 @@ void AppWindow::dragEnterEvent(QDragEnterEvent *event)
     }
 }
 
+PreferencesWindow *AppWindow::getPreferencesWindow() const
+{
+    return preferencesWindow;
+}
+
 void AppWindow::dropEvent(QDropEvent *event)
 {
     LOG_INFO("Files are being dropped to editor");
@@ -217,27 +252,36 @@ void AppWindow::dropEvent(QDropEvent *event)
     openPaths(paths);
 }
 
+void AppWindow::changeEvent(QEvent *event)
+{
+    if (event->type() == QEvent::WindowStateChange)
+    {
+        ui->actionFullScreen->setChecked(windowState().testFlag(Qt::WindowFullScreen));
+    }
+    QMainWindow::changeEvent(event);
+}
+
 /******************** PRIVATE METHODS ********************/
 void AppWindow::setConnections()
 {
-    connect(ui->tabWidget, SIGNAL(tabCloseRequested(int)), this, SLOT(onTabCloseRequested(int)));
-    connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(onTabChanged(int)));
+    connect(ui->tabWidget, &QTabWidget::tabCloseRequested, this, &AppWindow::onTabCloseRequested);
+    connect(ui->tabWidget, &QTabWidget::currentChanged, this, &AppWindow::onTabChanged);
     ui->tabWidget->tabBar()->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(ui->tabWidget->tabBar(), SIGNAL(customContextMenuRequested(const QPoint &)), this,
-            SLOT(onTabContextMenuRequested(const QPoint &)));
+    connect(ui->tabWidget->tabBar(), &QTabBar::customContextMenuRequested, this, &AppWindow::onTabContextMenuRequested);
 
-    connect(lspTimerCpp, SIGNAL(timeout()), this, SLOT(onLSPTimerElapsedCpp()));
-    connect(lspTimerJava, SIGNAL(timeout()), this, SLOT(onLSPTimerElapsedJava()));
-    connect(lspTimerPython, SIGNAL(timeout()), this, SLOT(onLSPTimerElapsedPython()));
+    connect(lspTimerCpp, &QTimer::timeout, this, &AppWindow::onLSPTimerElapsedCpp);
+    connect(lspTimerJava, &QTimer::timeout, this, &AppWindow::onLSPTimerElapsedJava);
+    connect(lspTimerPython, &QTimer::timeout, this, &AppWindow::onLSPTimerElapsedPython);
 
-    connect(preferencesWindow, SIGNAL(settingsApplied(const QString &)), this,
-            SLOT(onSettingsApplied(const QString &)));
+    connect(preferencesWindow, &PreferencesWindow::settingsApplied, this, &AppWindow::onSettingsApplied);
 
     connect(server, &Extensions::CompanionServer::onRequestArrived, this, &AppWindow::onIncomingCompanionRequest);
 
-    connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this,
-            SLOT(onTrayIconActivated(QSystemTrayIcon::ActivationReason)));
-    connect(trayIcon, SIGNAL(messageClicked()), this, SLOT(showOnTop()));
+    connect(trayIcon, &QSystemTrayIcon::activated, this, &AppWindow::onTrayIconActivated);
+    connect(trayIcon, &QSystemTrayIcon::messageClicked, this, &AppWindow::showOnTop);
+
+    connect(qobject_cast<Application *>(qApp), &Application::requestOpenFile, this,
+            qOverload<const QString &>(&AppWindow::openTab));
 }
 
 void AppWindow::allocate()
@@ -256,7 +300,7 @@ void AppWindow::allocate()
 
     findReplaceDialog = new FindReplaceDialog(this);
     findReplaceDialog->setModal(false);
-    findReplaceDialog->setWindowFlags(Qt::Window | Qt::WindowMinimizeButtonHint | Qt::WindowMaximizeButtonHint |
+    findReplaceDialog->setWindowFlags(Qt::Dialog | Qt::WindowMinimizeButtonHint | Qt::WindowMaximizeButtonHint |
                                       Qt::WindowCloseButtonHint);
 
     lspTimerCpp->setInterval(SettingsHelper::getLSPDelayCpp());
@@ -264,9 +308,9 @@ void AppWindow::allocate()
     lspTimerPython->setInterval(SettingsHelper::getLSPDelayPython());
 
     trayIconMenu = new QMenu();
-    trayIconMenu->addAction(tr("Show Main Window"), this, SLOT(showOnTop()));
-    trayIconMenu->addAction(tr("About"), this, SLOT(on_actionAbout_triggered()));
-    trayIconMenu->addAction(tr("Quit"), this, SLOT(on_actionQuit_triggered()));
+    trayIconMenu->addAction(tr("Show Main Window"), this, &AppWindow::showOnTop);
+    trayIconMenu->addAction(tr("About"), this, &AppWindow::on_actionAbout_triggered);
+    trayIconMenu->addAction(tr("Quit"), this, &AppWindow::on_actionQuit_triggered);
     trayIcon = new QSystemTrayIcon();
     trayIcon->setIcon(QIcon(":/icon.png"));
     trayIcon->setContextMenu(trayIconMenu);
@@ -305,50 +349,51 @@ void AppWindow::applySettings()
 
 void AppWindow::maybeSetHotkeys()
 {
-    for (auto e : hotkeyObjects)
+    for (auto *e : hotkeyObjects)
         delete e;
     hotkeyObjects.clear();
 
     if (!SettingsHelper::getHotkeyRun().isEmpty())
     {
-        hotkeyObjects.push_back(new QShortcut(SettingsHelper::getHotkeyRun(), this, SLOT(on_actionRun_triggered())));
+        hotkeyObjects.push_back(
+            new QShortcut(SettingsHelper::getHotkeyRun(), this, [this] { on_actionRun_triggered(); }));
     }
     if (!SettingsHelper::getHotkeyCompile().isEmpty())
     {
         hotkeyObjects.push_back(
-            new QShortcut(SettingsHelper::getHotkeyCompile(), this, SLOT(on_actionCompile_triggered())));
+            new QShortcut(SettingsHelper::getHotkeyCompile(), this, [this] { on_actionCompile_triggered(); }));
     }
     if (!SettingsHelper::getHotkeyCompileRun().isEmpty())
     {
         hotkeyObjects.push_back(
-            new QShortcut(SettingsHelper::getHotkeyCompileRun(), this, SLOT(on_actionCompileRun_triggered())));
+            new QShortcut(SettingsHelper::getHotkeyCompileRun(), this, [this] { on_actionCompileRun_triggered(); }));
     }
     if (!SettingsHelper::getHotkeyFormat().isEmpty())
     {
         hotkeyObjects.push_back(
-            new QShortcut(SettingsHelper::getHotkeyFormat(), this, SLOT(on_actionFormatCode_triggered())));
+            new QShortcut(SettingsHelper::getHotkeyFormat(), this, [this] { on_actionFormatCode_triggered(); }));
     }
     if (!SettingsHelper::getHotkeyKill().isEmpty())
     {
         hotkeyObjects.push_back(
-            new QShortcut(SettingsHelper::getHotkeyKill(), this, SLOT(on_actionKillProcesses_triggered())));
+            new QShortcut(SettingsHelper::getHotkeyKill(), this, [this] { on_actionKillProcesses_triggered(); }));
     }
     if (!SettingsHelper::getHotkeyChangeViewMode().isEmpty())
     {
         hotkeyObjects.push_back(
-            new QShortcut(SettingsHelper::getHotkeyChangeViewMode(), this, SLOT(onViewModeToggle())));
+            new QShortcut(SettingsHelper::getHotkeyChangeViewMode(), this, [this] { onViewModeToggle(); }));
     }
     if (!SettingsHelper::getHotkeySnippets().isEmpty())
     {
         hotkeyObjects.push_back(
-            new QShortcut(SettingsHelper::getHotkeySnippets(), this, SLOT(on_actionUseSnippets_triggered())));
+            new QShortcut(SettingsHelper::getHotkeySnippets(), this, [this] { on_actionUseSnippets_triggered(); }));
     }
 }
 
 bool AppWindow::closeTab(int index)
 {
     LOG_INFO(INFO_OF(index));
-    auto tmp = windowAt(index);
+    auto *tmp = windowAt(index);
     if (tmp->closeConfirm())
     {
         ui->tabWidget->removeTab(index);
@@ -369,16 +414,15 @@ void AppWindow::saveSettings()
 
 void AppWindow::openTab(MainWindow *window)
 {
-    connect(window, SIGNAL(confirmTriggered(MainWindow *)), this, SLOT(onConfirmTriggered(MainWindow *)));
-    connect(window, SIGNAL(editorFileChanged()), this, SLOT(onEditorFileChanged()));
-    connect(window, SIGNAL(requestUpdateLanguageServerFilePath(MainWindow *, const QString &)), this,
-            SLOT(updateLanguageServerFilePath(MainWindow *, const QString &)));
-    connect(window, SIGNAL(editorLanguageChanged(MainWindow *)), this, SLOT(onEditorLanguageChanged(MainWindow *)));
-    connect(window, SIGNAL(editorTextChanged(MainWindow *)), this, SLOT(onEditorTextChanged(MainWindow *)));
-    connect(window, &MainWindow::editorFontChanged, this, [this] { onSettingsApplied("Appearance"); });
-    connect(window, SIGNAL(requestToastMessage(const QString &, const QString &)), trayIcon,
-            SLOT(showMessage(const QString &, const QString &)));
-    connect(window, SIGNAL(compileOrRunTriggered()), this, SLOT(onCompileOrRunTriggered()));
+    connect(window, &MainWindow::confirmTriggered, this, &AppWindow::onConfirmTriggered);
+    connect(window, &MainWindow::editorFileChanged, this, &AppWindow::onEditorFileChanged);
+    connect(window, &MainWindow::requestUpdateLanguageServerFilePath, this, &AppWindow::updateLanguageServerFilePath);
+    connect(window, &MainWindow::editorLanguageChanged, this, &AppWindow::onEditorLanguageChanged);
+    connect(window, &MainWindow::editorTextChanged, this, &AppWindow::onEditorTextChanged);
+    connect(window, &MainWindow::editorFontChanged, this, [this] { onSettingsApplied("Appearance/Font"); });
+    connect(window, &MainWindow::requestToastMessage, trayIcon,
+            [this](QString const &head, QString const &body) { trayIcon->showMessage(head, body); });
+    connect(window, &MainWindow::compileOrRunTriggered, this, &AppWindow::onCompileOrRunTriggered);
 
     ui->tabWidget->setCurrentIndex(ui->tabWidget->addTab(window, window->getTabTitle(false, true)));
 
@@ -386,44 +430,9 @@ void AppWindow::openTab(MainWindow *window)
     onEditorFileChanged();
 }
 
-void AppWindow::openTab(const QString &path)
-{
-    LOG_INFO("OpenTab Path is " << path);
-    if (!path.isEmpty())
-    {
-        auto fileInfo = QFileInfo(path);
-        for (int t = 0; t < ui->tabWidget->count(); t++)
-        {
-            auto tPath = qobject_cast<MainWindow *>(ui->tabWidget->widget(t))->getFilePath();
-            if (path == tPath || (fileInfo.exists() && fileInfo == QFileInfo(tPath)))
-            {
-                ui->tabWidget->setCurrentIndex(t);
-                return;
-            }
-        }
-    }
-
-    auto newWindow = new MainWindow(path, getNewUntitledIndex(), this);
-
-    QString lang = SettingsHelper::getDefaultLanguage();
-
-    auto suffix = QFileInfo(path).suffix();
-
-    if (Util::cppSuffix.contains(suffix))
-        lang = "C++";
-    else if (Util::javaSuffix.contains(suffix))
-        lang = "Java";
-    else if (Util::pythonSuffix.contains(suffix))
-        lang = "Python";
-
-    newWindow->setLanguage(lang);
-
-    openTab(newWindow);
-}
-
 void AppWindow::openTab(const MainWindow::EditorStatus &status, bool duplicate)
 {
-    auto newWindow = new MainWindow(status, duplicate, getNewUntitledIndex(), this);
+    auto *newWindow = new MainWindow(status, duplicate, getNewUntitledIndex(), this);
     openTab(newWindow);
 }
 
@@ -451,6 +460,7 @@ void AppWindow::openTabs(const QStringList &paths)
     }
 
     setUpdatesEnabled(true);
+    repaint();
     resize(oldSize);
 
     progress.setValue(length);
@@ -461,7 +471,7 @@ void AppWindow::openPaths(const QStringList &paths, bool cpp, bool java, bool py
     LOG_INFO("Open Path with arguments " << BOOL_INFO_OF(cpp) << BOOL_INFO_OF(java) << BOOL_INFO_OF(python)
                                          << INFO_OF(depth) << INFO_OF(paths.join(" ")));
     QStringList res;
-    for (auto &path : paths)
+    for (auto const &path : paths)
     {
         if (QDir(path).exists())
             res.append(openFolder(path, cpp, java, python, depth));
@@ -502,7 +512,8 @@ void AppWindow::openContest(Widgets::ContestDialog::ContestData const &data)
     const QString &lang = data.language;
     int number = data.number;
 
-    QDir dir(path), parent(path);
+    QDir dir(path);
+    QDir parent(path);
     parent.cdUp();
     if (!dir.exists() && parent.exists())
         parent.mkdir(dir.dirName());
@@ -512,16 +523,7 @@ void AppWindow::openContest(Widgets::ContestDialog::ContestData const &data)
     QStringList tabs;
 
     for (int i = 0; i < number; ++i)
-    {
-        QString name('A' + i);
-        if (language == "C++")
-            name += ".cpp";
-        else if (language == "Java")
-            name += ".java";
-        else if (language == "Python")
-            name += ".py";
-        tabs.append(QDir(path).filePath(name));
-    }
+        tabs.append(QDir(path).filePath(Util::fileNameWithSuffix(QChar('A' + i), language)));
 
     openTabs(tabs);
 }
@@ -559,7 +561,7 @@ int AppWindow::getNewUntitledIndex()
     QSet<int> vis;
     for (int t = 0; t < ui->tabWidget->count(); ++t)
     {
-        auto tmp = windowAt(t);
+        auto *tmp = windowAt(t);
         if (tmp->isUntitled() && tmp->getProblemURL().isEmpty())
         {
             vis.insert(tmp->getUntitledIndex());
@@ -572,20 +574,20 @@ int AppWindow::getNewUntitledIndex()
 
 /***************** ABOUT SECTION ***************************/
 
-void AppWindow::on_actionSupportMe_triggered()
+void AppWindow::on_actionSupportUs_triggered() // NOLINT: It can be made static
 {
-    QDesktopServices::openUrl(QUrl("https://paypal.me/coder3101", QUrl::TolerantMode));
+    auto *dialog = new SupportUsDialog(this);
+    dialog->show();
 }
 
-void AppWindow::on_actionManual_triggered()
+void AppWindow::on_actionManual_triggered() // NOLINT: method can be made static
 {
-    QDesktopServices::openUrl(QUrl(
-        tr("https://github.com/cpeditor/cpeditor/blob/%1/doc/MANUAL.md").arg(GIT_COMMIT_HASH), QUrl::TolerantMode));
+    QDesktopServices::openUrl(Util::websiteLink("docs"));
 }
 
-void AppWindow::on_actionReportIssues_triggered()
+void AppWindow::on_actionReportIssues_triggered() // NOLINT: method can be made static
 {
-    QDesktopServices::openUrl(QUrl("https://github.com/cpeditor/cpeditor/issues", QUrl::TolerantMode));
+    QDesktopServices::openUrl(QUrl("https://github.com/cpeditor/cpeditor/issues"));
 }
 
 void AppWindow::on_actionAbout_triggered()
@@ -596,7 +598,7 @@ void AppWindow::on_actionAbout_triggered()
            "programming, unlike other editors/IDEs which are mainly for developers. It helps you focus on "
            "your algorithm and automates the compilation, executing and testing. It even fetches test "
            "cases for you from different platforms and submits solutions to Codeforces!</p>"
-           "<p>Copyright (C) 2019-2020 Ashar Khan &lt;ashar786khan@gmail.com&gt;</p>"
+           "<p>Copyright (C) 2019-2021 Ashar Khan &lt;ashar786khan@gmail.com&gt;</p>"
            "<p>This is free software; see the source for copying conditions. There is NO warranty; not "
            "even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. The source code for CP Editor is "
            "available at <a href=\"https://github.com/cpeditor/cpeditor\"> "
@@ -626,6 +628,10 @@ void AppWindow::on_actionBuildInfo_triggered()
                            .arg("Windows")
 #elif defined(Q_OS_MACOS)
                            .arg("macOS")
+#elif defined(Q_OS_FREEBSD)
+                           .arg("FreeBSD")
+#elif defined(Q_OS_UNIX)
+                           .arg("UNIX")
 #else
                            .arg("Unknown")
 #endif
@@ -679,7 +685,7 @@ void AppWindow::on_actionSaveAll_triggered()
 {
     for (int t = 0; t < ui->tabWidget->count(); ++t)
     {
-        auto tmp = windowAt(t);
+        auto *tmp = windowAt(t);
         if (!tmp->save(true, tr("Save All")))
             break;
     }
@@ -791,7 +797,7 @@ void AppWindow::on_actionSettings_triggered()
 
 /************************** SLOTS *********************************/
 
-#define FROMJSON(x) auto x = json[#x]
+#define FROMJSON(x) auto x = json[#x] // NOLINT: macro argument should be enclosed in parentheses
 
 void AppWindow::onReceivedMessage(quint32 instanceId, QByteArray message)
 {
@@ -861,7 +867,7 @@ void AppWindow::onTabChanged(int index)
     disconnect(activeSplitterMoveConnection);
     disconnect(activeRightSplitterMoveConnection);
 
-    auto tmp = windowAt(index);
+    auto *tmp = windowAt(index);
 
     reAttachLanguageServer(tmp);
 
@@ -882,9 +888,9 @@ void AppWindow::onTabChanged(int index)
     tmp->getRightSplitter()->restoreState(SettingsHelper::getRightSplitterSize());
 
     activeSplitterMoveConnection =
-        connect(tmp->getSplitter(), SIGNAL(splitterMoved(int, int)), this, SLOT(onSplitterMoved(int, int)));
+        connect(tmp->getSplitter(), &QSplitter::splitterMoved, this, &AppWindow::onSplitterMoved);
     activeRightSplitterMoveConnection =
-        connect(tmp->getRightSplitter(), SIGNAL(splitterMoved(int, int)), this, SLOT(onRightSplitterMoved(int, int)));
+        connect(tmp->getRightSplitter(), &QSplitter::splitterMoved, this, &AppWindow::onRightSplitterMoved);
 }
 
 void AppWindow::onEditorFileChanged()
@@ -972,7 +978,7 @@ void AppWindow::onEditorLanguageChanged(MainWindow *window)
 
 void AppWindow::onLSPTimerElapsedCpp()
 {
-    auto tab = currentWindow();
+    auto *tab = currentWindow();
     if (tab == nullptr)
         return;
 
@@ -984,7 +990,7 @@ void AppWindow::onLSPTimerElapsedCpp()
 
 void AppWindow::onLSPTimerElapsedJava()
 {
-    auto tab = currentWindow();
+    auto *tab = currentWindow();
     if (tab == nullptr)
         return;
 
@@ -996,7 +1002,7 @@ void AppWindow::onLSPTimerElapsedJava()
 
 void AppWindow::onLSPTimerElapsedPython()
 {
-    auto tab = currentWindow();
+    auto *tab = currentWindow();
     if (tab == nullptr)
         return;
 
@@ -1012,11 +1018,15 @@ void AppWindow::onSettingsApplied(const QString &pagePath)
 
     for (int i = 0; i < ui->tabWidget->count(); ++i)
     {
-        windowAt(i)->applySettings(pagePath, i == ui->tabWidget->currentIndex());
+        windowAt(i)->applySettings(pagePath);
         onEditorTextChanged(windowAt(i));
     }
 
-    auto pageChanged = [pagePath](const QString &page) { return pagePath.isEmpty() || pagePath == page; };
+    auto pageChanged = [this, pagePath](const QString &page) {
+        if (!preferencesWindow->pathExists(page))
+            LOG_DEV("Unknown path: " << page);
+        return pagePath.isEmpty() || pagePath == page;
+    };
 
     if (pageChanged("Key Bindings"))
         maybeSetHotkeys();
@@ -1029,10 +1039,14 @@ void AppWindow::onSettingsApplied(const QString &pagePath)
             server->updatePort(0);
     }
 
-    if (pageChanged("Appearance"))
+    if (pageChanged("Appearance/General"))
     {
         setWindowOpacity(SettingsHelper::getOpacity() / 100.0);
         Core::StyleManager::setStyle(SettingsHelper::getUIStyle());
+    }
+
+    if (pageChanged("Appearance/Font"))
+    {
         if (SettingsHelper::isUseCustomApplicationFont())
             qApp->setFont(SettingsHelper::getCustomApplicationFont());
         else
@@ -1067,6 +1081,8 @@ void AppWindow::onSettingsApplied(const QString &pagePath)
     {
         DefaultPathManager::fromVariantList(SettingsHelper::getDefaultPathNamesAndPaths());
     }
+
+    SettingsManager::saveSettings(QString());
 }
 
 void AppWindow::onIncomingCompanionRequest(const Extensions::CompanionData &data)
@@ -1121,16 +1137,51 @@ void AppWindow::onViewModeToggle()
     }
 }
 
-void AppWindow::onSplitterMoved(int _, int __)
+void AppWindow::onSplitterMoved()
 {
-    auto splitter = currentWindow()->getSplitter();
+    auto *splitter = currentWindow()->getSplitter();
     SettingsHelper::setSplitterSize(splitter->saveState());
 }
 
-void AppWindow::onRightSplitterMoved(int _, int __)
+void AppWindow::onRightSplitterMoved()
 {
-    auto splitter = currentWindow()->getRightSplitter();
+    auto *splitter = currentWindow()->getRightSplitter();
     SettingsHelper::setRightSplitterSize(splitter->saveState());
+}
+
+void AppWindow::openTab(const QString &path)
+{
+    LOG_INFO("OpenTab Path is " << path);
+    if (!path.isEmpty())
+    {
+        auto fileInfo = QFileInfo(path);
+        for (int t = 0; t < ui->tabWidget->count(); t++)
+        {
+            auto tPath = qobject_cast<MainWindow *>(ui->tabWidget->widget(t))->getFilePath();
+            if (path == tPath || (fileInfo.exists() && fileInfo == QFileInfo(tPath)))
+            {
+                ui->tabWidget->setCurrentIndex(t);
+                return;
+            }
+        }
+    }
+
+    auto *newWindow = new MainWindow(path, getNewUntitledIndex(), this);
+
+    QString lang = SettingsHelper::getDefaultLanguage();
+
+    auto suffix = QFileInfo(path).suffix();
+
+    if (Util::cppSuffix.contains(suffix))
+        lang = "C++";
+    else if (Util::javaSuffix.contains(suffix))
+        lang = "Java";
+    else if (Util::pythonSuffix.contains(suffix))
+        lang = "Python";
+
+    newWindow->setLanguage(lang);
+
+    openTab(newWindow);
 }
 
 /************************* ACTIONS ************************/
@@ -1159,7 +1210,7 @@ void AppWindow::on_actionRun_triggered()
 
 void AppWindow::on_actionFindReplace_triggered()
 {
-    auto tmp = currentWindow();
+    auto *tmp = currentWindow();
     if (tmp != nullptr)
         findReplaceDialog->showDialog(tmp->getEditor()->textCursor().selectedText());
 }
@@ -1168,7 +1219,7 @@ void AppWindow::on_actionFormatCode_triggered()
 {
     if (currentWindow() != nullptr)
     {
-        currentWindow()->formatSource();
+        currentWindow()->formatSource(true, true);
     }
 }
 
@@ -1191,7 +1242,7 @@ void AppWindow::on_actionKillProcesses_triggered()
 void AppWindow::on_actionUseSnippets_triggered()
 {
     LOG_INFO("Use snippets trigerred");
-    auto current = currentWindow();
+    auto *current = currentWindow();
     if (current != nullptr)
     {
         QString lang = current->getLanguage();
@@ -1204,7 +1255,7 @@ void AppWindow::on_actionUseSnippets_triggered()
         }
         else
         {
-            auto ok = new bool;
+            auto *ok = new bool;
             auto name = QInputDialog::getItem(this, tr("Use Snippets"), tr("Choose a snippet:"), names, 0, true, ok);
             if (*ok)
             {
@@ -1265,58 +1316,71 @@ void AppWindow::on_actionSplitMode_triggered()
     }
 }
 
+void AppWindow::on_actionFullScreen_toggled(bool checked)
+{
+    LOG_INFO(INFO_OF(checked));
+    auto state = windowState();
+    state.setFlag(Qt::WindowFullScreen, checked);
+    setWindowState(state);
+    if (checked && !SettingsHelper::isFullScreenDialogShown())
+    {
+        SettingsHelper::setFullScreenDialogShown(true);
+        QMessageBox::information(this, tr("How to exit full-screen"), tr("Press F11 key to exit full-screen mode."));
+    }
+}
+
 void AppWindow::on_actionIndent_triggered()
 {
-    auto tmp = currentWindow();
+    auto *tmp = currentWindow();
     if (tmp != nullptr)
         tmp->getEditor()->indent();
 }
 
 void AppWindow::on_actionUnindent_triggered()
 {
-    auto tmp = currentWindow();
+    auto *tmp = currentWindow();
     if (tmp != nullptr)
         tmp->getEditor()->unindent();
 }
 
 void AppWindow::on_actionSwapLineUp_triggered()
 {
-    auto tmp = currentWindow();
+    auto *tmp = currentWindow();
     if (tmp != nullptr)
         tmp->getEditor()->swapLineUp();
 }
 
 void AppWindow::on_actionSwapLineDown_triggered()
 {
-    auto tmp = currentWindow();
+    auto *tmp = currentWindow();
     if (tmp != nullptr)
         tmp->getEditor()->swapLineDown();
 }
 
 void AppWindow::on_actionDuplicateLine_triggered()
 {
-    auto tmp = currentWindow();
+    auto *tmp = currentWindow();
     if (tmp != nullptr)
         tmp->getEditor()->duplicate();
 }
 
 void AppWindow::on_actionDeleteLine_triggered()
 {
-    auto tmp = currentWindow();
+    auto *tmp = currentWindow();
     if (tmp != nullptr)
         tmp->getEditor()->deleteLine();
 }
 
 void AppWindow::on_actionToggleComment_triggered()
 {
-    auto tmp = currentWindow();
+    auto *tmp = currentWindow();
     if (tmp != nullptr)
         tmp->getEditor()->toggleComment();
 }
 
 void AppWindow::on_actionToggleBlockComment_triggered()
 {
-    auto tmp = currentWindow();
+    auto *tmp = currentWindow();
     if (tmp != nullptr)
         tmp->getEditor()->toggleBlockComment();
 }
@@ -1335,10 +1399,9 @@ void AppWindow::onTabContextMenuRequested(const QPoint &pos)
     {
         LOG_INFO(INFO_OF(index));
 
-        auto window = windowAt(index);
+        auto *window = windowAt(index);
 
-        if (tabMenu != nullptr)
-            delete tabMenu;
+        delete tabMenu;
         tabMenu = new QMenu();
 
         tabMenu->addAction(tr("Close"), [index, this] { closeTab(index); });
@@ -1407,7 +1470,8 @@ void AppWindow::onTabContextMenuRequested(const QPoint &pos)
                                [window] { QGuiApplication::clipboard()->setText(window->getProblemURL()); });
         }
         tabMenu->addAction(tr("Set Codeforces URL"), [window, this] {
-            QString contestId, problemCode;
+            QString contestId;
+            QString problemCode;
             Extensions::CFTool::parseCfUrl(window->getProblemURL(), contestId, problemCode);
             bool ok = false;
             contestId = QInputDialog::getText(this, tr("Set CF URL"), tr("Enter the contest ID:"), QLineEdit::Normal,
@@ -1489,7 +1553,7 @@ MainWindow *AppWindow::windowAt(int index)
     return qobject_cast<MainWindow *>(ui->tabWidget->widget(index));
 }
 
-void AppWindow::on_actionShowLogs_triggered()
+void AppWindow::on_actionShowLogs_triggered() // NOLINT: Method can be made static
 {
     Core::Log::revealInFileManager();
 }

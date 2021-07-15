@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Ashar Khan <ashar786khan@gmail.com>
+ * Copyright (C) 2019-2021 Ashar Khan <ashar786khan@gmail.com>
  *
  * This file is part of CP Editor.
  *
@@ -28,7 +28,7 @@ ShortcutItem::ShortcutItem(QWidget *parent) : QWidget(parent)
     layout->setContentsMargins(0, 0, 0, 0);
 
     edit = new QKeySequenceEdit(this);
-    connect(edit, SIGNAL(keySequenceChanged(const QKeySequence &)), this, SIGNAL(shortcutChanged()));
+    connect(edit, &QKeySequenceEdit::keySequenceChanged, this, &ShortcutItem::shortcutChanged);
     layout->addWidget(edit);
 
     clear = new QToolButton(this);

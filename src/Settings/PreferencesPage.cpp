@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Ashar Khan <ashar786khan@gmail.com>
+ * Copyright (C) 2019-2021 Ashar Khan <ashar786khan@gmail.com>
  *
  * This file is part of CP Editor.
  *
@@ -16,6 +16,7 @@
  */
 
 #include "Settings/PreferencesPage.hpp"
+#include "Settings/SettingsManager.hpp"
 #include "Settings/ValueWrapper.hpp"
 #include <QApplication>
 #include <QFormLayout>
@@ -29,12 +30,12 @@
 PreferencesPage::PreferencesPage(QWidget *parent) : QWidget(parent)
 {
     // construct widgets
-    mainLayout = new QVBoxLayout(this);
+    auto *mainLayout = new QVBoxLayout(this);
     titleLabel = new QLabel();
     scrollArea = new QScrollArea();
     scrollAreaWidget = new QWidget();
     settingsLayout = new QVBoxLayout(scrollAreaWidget);
-    buttonsLayout = new QHBoxLayout();
+    auto *buttonsLayout = new QHBoxLayout();
     defaultButton =
         new QPushButton(QApplication::style()->standardIcon(QStyle::SP_FileDialogDetailedView), tr("Default"));
     defaultButton->setShortcut({"Ctrl+D"});
@@ -65,9 +66,9 @@ PreferencesPage::PreferencesPage(QWidget *parent) : QWidget(parent)
     titleLabel->setFont(labelFont);
 
     // connect the signals and slots
-    connect(defaultButton, SIGNAL(clicked()), this, SLOT(loadDefault()));
-    connect(resetButton, SIGNAL(clicked()), this, SLOT(loadSettings()));
-    connect(applyButton, SIGNAL(clicked()), this, SLOT(applySettings()));
+    connect(defaultButton, &QPushButton::clicked, this, &PreferencesPage::loadDefault);
+    connect(resetButton, &QPushButton::clicked, this, &PreferencesPage::loadSettings);
+    connect(applyButton, &QPushButton::clicked, this, &PreferencesPage::applySettings);
 }
 
 bool PreferencesPage::aboutToExit()
@@ -102,9 +103,15 @@ QString PreferencesPage::path() const
     return m_path;
 }
 
-void PreferencesPage::setPath(const QString &path)
+QString PreferencesPage::trPath() const
+{
+    return m_trPath;
+}
+
+void PreferencesPage::setPath(const QString &path, const QString &trPath)
 {
     m_path = path;
+    m_trPath = trPath;
     emit pathChanged(m_path);
 }
 
@@ -139,9 +146,12 @@ void PreferencesPage::addItem(QLayoutItem *item)
     settingsLayout->addItem(item);
 }
 
-void PreferencesPage::registerWidget(ValueWidget *widget)
+void PreferencesPage::registerWidget(const QString &key, ValueWidget *widget) const
 {
-    QObject::connect(widget, &ValueWidget::valueChanged, this, &PreferencesPage::updateButtons);
+    // PreferencesPageTemplate::PreferencesPageTemplate uses Qt::DirectConnection
+    QObject::connect(widget, &ValueWidget::valueChanged, this, &PreferencesPage::updateButtons, Qt::QueuedConnection);
+
+    SettingsManager::setWidget(key, widget->coreWidget());
 }
 
 void PreferencesPage::loadDefault()

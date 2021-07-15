@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Ashar Khan <ashar786khan@gmail.com>
+ * Copyright (C) 2019-2021 Ashar Khan <ashar786khan@gmail.com>
  *
  * This file is part of CP Editor.
  *
@@ -31,6 +31,7 @@ void applySettingsToEditor(QCodeEditor *editor, const QString &language)
 {
     LOG_INFO("Applying settings to QCodeEditor");
 
+    editor->setCursorWidth(SettingsHelper::getCursorWidth());
     editor->setTabReplace(SettingsHelper::isReplaceTabs());
     editor->setTabReplaceSize(SettingsHelper::getTabWidth());
     editor->setAutoIndentation(SettingsHelper::isAutoIndent());
@@ -46,7 +47,7 @@ void applySettingsToEditor(QCodeEditor *editor, const QString &language)
     else
         editor->setWordWrapMode(QTextOption::NoWrap);
 
-    auto style = Extensions::EditorTheme::query(SettingsHelper::getEditorTheme());
+    auto *style = Extensions::EditorTheme::query(SettingsHelper::getEditorTheme());
     if (!style)
         style = Extensions::EditorTheme::query("Light");
     editor->setSyntaxStyle(style);
@@ -76,7 +77,7 @@ void applySettingsToEditor(QCodeEditor *editor, const QString &language)
 
     auto list = SettingsManager::get(language + "/Parentheses").toList();
 
-    for (auto var : list)
+    for (auto const &var : list)
     {
         auto li = var.toList();
         if (li.length() != 5)

@@ -57,7 +57,8 @@
       "avatar_url": "https://avatars1.githubusercontent.com/u/51178055?v=4",
       "profile": "http://sadykhzadeh.github.io",
       "contributions": [
-        "translation"
+        "translation",
+        "review"
       ]
     },
     {
@@ -67,7 +68,8 @@
       "profile": "http://izobretatelsoft.moy.su/",
       "contributions": [
         "translation",
-        "review"
+        "review",
+        "infra"
       ]
     },
     {
@@ -150,7 +152,8 @@
       "contributions": [
         "bug",
         "code",
-        "ideas"
+        "ideas",
+        "review"
       ]
     },
     {
@@ -160,6 +163,18 @@
       "profile": "https://chungzh.cc/",
       "contributions": [
         "code"
+      ]
+    },
+    {
+      "login": "swift-zym",
+      "name": "Yiming Zhang",
+      "avatar_url": "https://avatars.githubusercontent.com/u/61449077?v=4",
+      "profile": "https://183154.blog.luogu.org",
+      "contributions": [
+        "code",
+        "design",
+        "ideas",
+        "review"
       ]
     },
     {
@@ -426,10 +441,109 @@
       "contributions": [
         "bug"
       ]
+    },
+    {
+      "login": "ammardab3an",
+      "name": "AmmarDab3an",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/40296428?v=4",
+      "profile": "https://github.com/ammardab3an",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "AchintyaK20",
+      "name": "Achintya Kumar",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/56220374?v=4",
+      "profile": "https://github.com/AchintyaK20",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "nutzboi",
+      "name": "nutzboi",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/31652809?v=4",
+      "profile": "https://github.com/nutzboi",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "Gourav-raj",
+      "name": "GOURAV RAJ",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/50336197?v=4",
+      "profile": "https://github.com/Gourav-raj",
+      "contributions": [
+        "ideas"
+      ]
+    },
+    {
+      "login": "thebrave",
+      "name": "Jean Berniolles",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/2398126?v=4",
+      "profile": "https://github.com/thebrave",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "jaysampartak",
+      "name": "jaysampartak",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/40232849?v=4",
+      "profile": "https://github.com/jaysampartak",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "andreaemonti",
+      "name": "Andrea E. Monti",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/20700531?v=4",
+      "profile": "https://github.com/andreaemonti",
+      "contributions": [
+        "ideas"
+      ]
+    },
+    {
+      "login": "tiger2005",
+      "name": "tiger2005",
+      "avatar_url": "https://avatars.githubusercontent.com/u/41613797?v=4",
+      "profile": "https://github.com/tiger2005",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "tusqasi",
+      "name": "tusqasi",
+      "avatar_url": "https://avatars.githubusercontent.com/u/24749908?v=4",
+      "profile": "https://github.com/tusqasi",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "rbruno95",
+      "name": "Bruno",
+      "avatar_url": "https://avatars.githubusercontent.com/u/48922045?v=4",
+      "profile": "https://github.com/rbruno95",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "Mooos-MoSheng",
+      "name": "墨笙_Mooos",
+      "avatar_url": "https://avatars.githubusercontent.com/u/46639923?v=4",
+      "profile": "https://github.com/Mooos-MoSheng",
+      "contributions": [
+        "code",
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 6,
-  "badgeTemplate": "[![All Contributors](https://img.shields.io/badge/all_contributors-<%= contributors.length %>-orange.svg)](#contributors-sparkles)",
   "contributorTemplate": "\n      <a href=\"https://github.com/<%= contributor.login %>\"><img src=\"<%= contributor.avatar_url %>\" width=\"<%= options.imageSize %>px;\" alt=\"\"/></a><br /><a href=\"<%= contributor.profile %>\"><sub><b><%= contributor.name %></b></sub></a><br /><%= contributions %>\n    ",
   "projectName": "cpeditor",
   "projectOwner": "cpeditor",

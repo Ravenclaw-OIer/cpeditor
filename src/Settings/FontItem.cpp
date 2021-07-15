@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Ashar Khan <ashar786khan@gmail.com>
+ * Copyright (C) 2019-2021 Ashar Khan <ashar786khan@gmail.com>
  *
  * This file is part of CP Editor.
  *
@@ -16,17 +16,17 @@
  */
 
 #include "Settings/FontItem.hpp"
+#include "generated/SettingsHelper.hpp"
 #include <QFontDialog>
 #include <QVariant>
 
 FontItem::FontItem(QWidget *parent, const QVariant &param) : QPushButton(parent)
 {
     Q_ASSERT(parent != nullptr);
-    monospace = param.toBool();
-    connect(this, SIGNAL(clicked(bool)), this, SLOT(onButtonClicked()));
+    connect(this, &FontItem::clicked, this, &FontItem::onButtonClicked);
 }
 
-void FontItem::setFont(QFont newFont)
+void FontItem::setFont(QFont const &newFont)
 {
     if (newFont != font)
     {
@@ -46,9 +46,10 @@ QFont FontItem::getFont()
 
 void FontItem::onButtonClicked()
 {
-    bool ok;
+    bool ok = false;
     QFont newFont = QFontDialog::getFont(&ok, font, this, QString(),
-                                         monospace ? QFontDialog::MonospacedFonts : QFontDialog::FontDialogOption());
+                                         SettingsHelper::isShowOnlyMonospacedFont() ? QFontDialog::MonospacedFonts
+                                                                                    : QFontDialog::FontDialogOption());
     if (ok)
         setFont(newFont);
     parentWidget()->raise();

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Ashar Khan <ashar786khan@gmail.com>
+ * Copyright (C) 2019-2021 Ashar Khan <ashar786khan@gmail.com>
  *
  * This file is part of CP Editor.
  *
@@ -39,9 +39,6 @@ class DiffViewer : public QMainWindow
     void toLongForHtml();
 
   private:
-    QHBoxLayout *layout = nullptr;
-    QWidget *widget = nullptr;
-    QVBoxLayout *leftLayout = nullptr, *rightLayout = nullptr;
     QLabel *outputLabel = nullptr, *expectedLabel = nullptr;
     QTextEdit *outputEdit = nullptr, *expectedEdit = nullptr;
 };

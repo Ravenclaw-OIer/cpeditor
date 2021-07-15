@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Ashar Khan <ashar786khan@gmail.com>
+ * Copyright (C) 2019-2021 Ashar Khan <ashar786khan@gmail.com>
  *
  * This file is part of CP Editor.
  *
@@ -36,7 +36,7 @@ class SessionManager : public QObject
 
     void setAutoUpdateSession(bool shouldAutoUpdate);
 
-    void setAutoUpdateDuration(unsigned int duration);
+    void setAutoUpdateDuration(int duration);
 
     QString currentSessionText();
 

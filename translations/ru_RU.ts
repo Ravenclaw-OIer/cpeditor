@@ -20,16 +20,12 @@
         <translation>Открытие файлов</translation>
     </message>
     <message>
-        <source>https://github.com/cpeditor/cpeditor/blob/%1/doc/MANUAL.md</source>
-        <translation>https://github.com/cpeditor/cpeditor/blob/%1/doc/MANUAL_ru-RU.md</translation>
-    </message>
-    <message>
         <source>About CP Editor %1</source>
         <translation>О CP Editor %1</translation>
     </message>
     <message>
-        <source>&lt;p&gt;&lt;b&gt;CP Editor&lt;/b&gt; is a native Qt-based code editor. It&apos;s specially designed for competitive programming, unlike other editors/IDEs which are mainly for developers. It helps you focus on your algorithm and automates the compilation, executing and testing. It even fetches test cases for you from different platforms and submits solutions to Codeforces!&lt;/p&gt;&lt;p&gt;Copyright (C) 2019-2020 Ashar Khan &amp;lt;ashar786khan@gmail.com&amp;gt;&lt;/p&gt;&lt;p&gt;This is free software; see the source for copying conditions. There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. The source code for CP Editor is available at &lt;a href=&quot;https://github.com/cpeditor/cpeditor&quot;&gt; https://github.com/cpeditor/cpeditor&lt;/a&gt;.&lt;/p&gt;</source>
-        <translation>&lt;p&gt;&lt;b&gt;CP Editor&lt;/b&gt; - редактор кода, созданный на Qt. Дизайн CP Editor специально рассчитан на спортивное программирование, в отличии от других редакторов/IDE, который больше подходят разработчикам. Наш редакатор кода помогает сфокусироваться на построении алгоритма, автодополняя, запуская и тестируя его. Он также может использовать тест-кейсы разных платформ и отправлять решения на Codeforces!&lt;/p&gt;&lt;p&gt;Copyright (C) 2019-2020 Ashar Khan &amp;lt;ashar786khan@gmail.com&amp;gt;&lt;/p&gt;&lt;p&gt;Это свободно распространяемое программное обеспечение. Условия копирования приведены в исходных текстах. Без гарантии каких-либо качеств, включая коммерческую ценность и применимость для каких-либо целей. Исходный код CP Editor доступен на &lt;a href=&quot;https://github.com/cpeditor/cpeditor&quot;&gt; https://github.com/cpeditor/cpeditor&lt;/a&gt;.&lt;/p&gt;</translation>
+        <source>&lt;p&gt;&lt;b&gt;CP Editor&lt;/b&gt; is a native Qt-based code editor. It&apos;s specially designed for competitive programming, unlike other editors/IDEs which are mainly for developers. It helps you focus on your algorithm and automates the compilation, executing and testing. It even fetches test cases for you from different platforms and submits solutions to Codeforces!&lt;/p&gt;&lt;p&gt;Copyright (C) 2019-2021 Ashar Khan &amp;lt;ashar786khan@gmail.com&amp;gt;&lt;/p&gt;&lt;p&gt;This is free software; see the source for copying conditions. There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. The source code for CP Editor is available at &lt;a href=&quot;https://github.com/cpeditor/cpeditor&quot;&gt; https://github.com/cpeditor/cpeditor&lt;/a&gt;.&lt;/p&gt;</source>
+        <translation>&lt;p&gt;&lt;b&gt;CP Editor&lt;/b&gt; - редактор кода, созданный на Qt. Дизайн CP Editor специально рассчитан на спортивное программирование, в отличии от других редакторов/IDE, который больше подходят разработчикам. Наш редакатор кода помогает сфокусироваться на построении алгоритма, автодополняя, запуская и тестируя его. Он также может использовать тест-кейсы разных платформ и отправлять решения на Codeforces!&lt;/p&gt;&lt;p&gt;Copyright (C) 2019-2021 Ashar Khan &amp;lt;ashar786khan@gmail.com&amp;gt;&lt;/p&gt;&lt;p&gt;Это свободно распространяемое программное обеспечение. Условия копирования приведены в исходных текстах. Без гарантии каких-либо качеств, включая коммерческую ценность и применимость для каких-либо целей. Исходный код CP Editor доступен на &lt;a href=&quot;https://github.com/cpeditor/cpeditor&quot;&gt; https://github.com/cpeditor/cpeditor&lt;/a&gt;.&lt;/p&gt;</translation>
     </message>
     <message>
         <source>Open Files</source>
@@ -304,10 +300,6 @@
         <translation>О программе</translation>
     </message>
     <message>
-        <source>Support me</source>
-        <translation>Поддержи меня</translation>
-    </message>
-    <message>
         <source>Editor Mode</source>
         <translation>Режим настройщика</translation>
     </message>
@@ -467,16 +459,21 @@ Git commit hash: %3
         <source>Set Time Limit</source>
         <translation>Установить лими времени</translation>
     </message>
-</context>
-<context>
-    <name>AppearancePage</name>
     <message>
-        <source>Change Locale</source>
-        <translation>Изменить языковые параметры</translation>
+        <source>Full Screen</source>
+        <translation>Полный экран</translation>
     </message>
     <message>
-        <source>You need to restart the application to completely apply the locale change.</source>
-        <translation>Вам необходимо перезагрузить программу для полноценного применения изменений языковых параметров.</translation>
+        <source>Support us</source>
+        <translation>Поддержи нас</translation>
+    </message>
+    <message>
+        <source>How to exit full-screen</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Press F11 key to exit full-screen mode.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -627,8 +624,20 @@ Git commit hash: %3
         <translation>%1 из процессов при работе на тесткейсе #%2 содержит более чем %3 символов и превосходит лимит. Процесс убит. Вы можете изменить этот лимит в %4.</translation>
     </message>
     <message>
-        <source>Killed</source>
-        <translation>Убито</translation>
+        <source>The checker is killed</source>
+        <translation>Чекер убит</translation>
+    </message>
+    <message>
+        <source>Started compiling the checker</source>
+        <translation>Начата компиляция чекера</translation>
+    </message>
+    <message>
+        <source>The checker is compiled</source>
+        <translation>Чекер скомпилирован</translation>
+    </message>
+    <message>
+        <source>Failed to compile the checker: %1</source>
+        <translation>Ошибка компиляции символа: %1</translation>
     </message>
 </context>
 <context>
@@ -638,16 +647,16 @@ Git commit hash: %3
         <translation>Файл [%1] не существует</translation>
     </message>
     <message>
-        <source>The compile command for %1 is empty</source>
-        <translation>Команады компиляции для %1 пуста</translation>
-    </message>
-    <message>
         <source>Unsupported programming language &quot;%1&quot;</source>
         <translation>Неподдерживаемый язык программирования &quot;%1&quot;</translation>
     </message>
     <message>
-        <source>Failed to start compilation. Please check the compile command in the settings.</source>
-        <translation>Ошибка при старте компиляции. Пожалуйста, проверьте команды компиляции в настройках.</translation>
+        <source>Failed to start the compiler. Please check %1 or add the compiler in the PATH environment variable.</source>
+        <translation>Ошибка при старте компилятора. Пожалуйста, проверьте %1 или добавьте путь компилятора в переменную среды окружения PATH.</translation>
+    </message>
+    <message>
+        <source>%1 is empty</source>
+        <translation>%1 пуст</translation>
     </message>
 </context>
 <context>
@@ -674,6 +683,10 @@ Press any key to exit</source>
         <source>Failed to start detached execution. Please check your terminal emulator settings in %1.</source>
         <translation>Не удалось запустить отдельно. Пожалуйста, проверьте настройки вашего эмулятора терминала в %1.</translation>
     </message>
+    <message>
+        <source>Detached execution is not supported on your platform</source>
+        <translation>Отдельный запуск не поддерживается на вашей системе</translation>
+    </message>
 </context>
 <context>
     <name>Core::SessionManager</name>
@@ -698,7 +711,7 @@ Press any key to exit</source>
     </message>
     <message>
         <source>The problem code is 0, now use A automatically. If the actual problem code is not A, please set the problem code manually in the right-click menu of the current tab.</source>
-        <translation>Код задачи - 0, поэтому используется код A автоматический. Если код задачи не А, пожалуйста, установите код вручную в подменю (правая кнопка мыши) текущей вкладки.</translation>
+        <translation>Код задачи - 0, поэтому используется код A автоматически. Если код задачи не А, пожалуйста, установите код вручную в подменю (правая кнопка мыши) текущей вкладки.</translation>
     </message>
     <message>
         <source>Failed to get the version of CF Tool. Have you set the correct path to CF Tool in Preferences?</source>
@@ -730,11 +743,7 @@ Press any key to exit</source>
     </message>
 </context>
 <context>
-    <name>Extensions::ClangFormatter</name>
-    <message>
-        <source>Formatter/check</source>
-        <translation>Форматирование/Проверка</translation>
-    </message>
+    <name>Extensions::CodeFormatter</name>
     <message>
         <source>Formatter</source>
         <translation>Форматирование</translation>
@@ -748,20 +757,24 @@ Press any key to exit</source>
         <translation>Форматирование завершено</translation>
     </message>
     <message>
-        <source>The format process didn&apos;t finish in 2 seconds. This is probably because the clang-format binary is not found by CP Editor. You can set the path to clang-format at %1.</source>
-        <translation>Процесс форматировния не завершился за 2 секунды. Возможно исполняемый файл clang-format не найден CP Editor&apos;ом. Вы можете установить путь к clang-format в %1.</translation>
-    </message>
-    <message>
-        <source>The format command is: %1 %2</source>
-        <translation>Команды форматирования: %1 %2</translation>
-    </message>
-    <message>
         <source>Formatter[stdout]</source>
         <translation>Форматирование[stdout]</translation>
     </message>
     <message>
         <source>Formatter[stderr]</source>
         <translation>Форматирование[stderr]</translation>
+    </message>
+    <message>
+        <source>The format command [%1 %2] finished with exit code %3.</source>
+        <translation>Команда форматирования [%1 %2] завершилась с кодом %3.</translation>
+    </message>
+    <message>
+        <source>The format process didn&apos;t finish in 2 seconds. This is probably because the %1 program is not found by CP Editor. You can set the path to the program at %2.</source>
+        <translation>Процесс форматирования не завершился в течении 2 секунд. Возможно, что программа %1 не найдена CP Editor-ом. Вы можете установить путь программы в %2.</translation>
+    </message>
+    <message>
+        <source>The output of the format process is empty. Please ensure there is no in-place modification option in the formatting arguments.</source>
+        <translation>Выходные данные процесса форматирования пусты. Пожалуйста, убедитесь, что в аргументах форматирования отсутсвует опция самозамены на месте.</translation>
     </message>
 </context>
 <context>
@@ -783,25 +796,29 @@ Press any key to exit</source>
         <translation>Остановка Сервера</translation>
     </message>
     <message>
-        <source>Got a POST Request</source>
-        <translation>Получен POST Request</translation>
-    </message>
-    <message>
         <source>JSON parser reported errors:
 %1</source>
         <translation>JSON parser выдает ошибки:
 %1</translation>
     </message>
+    <message>
+        <source>The request received is not JSON</source>
+        <translation>Принятый запрос не является JSON&apos;ом</translation>
+    </message>
+    <message>
+        <source>A %1 request is received and ignored</source>
+        <translation>Запрос %1 был получен и проигнорирован</translation>
+    </message>
 </context>
 <context>
     <name>Extensions::LanguageServer</name>
     <message>
-        <source>Langauge Server [%1]</source>
-        <translation>Langauge Server [%1]</translation>
+        <source>Language Server [%1]</source>
+        <translation>Language Server [%1]</translation>
     </message>
     <message>
         <source>Language server sent an error. Please check log for details.</source>
-        <translation>Langauge server выдает ошибку. Пожалуйста, проверьте логи.</translation>
+        <translation>Language server выдает ошибку. Пожалуйста, проверьте логи.</translation>
     </message>
     <message>
         <source>Failed to start LSP Process. Have you set the path to the Language Server program at %1?</source>
@@ -957,10 +974,6 @@ p, li { white-space: pre-wrap; }
         <translation>Ошибка в сохранении временного файла. Решение не было отправлено.</translation>
     </message>
     <message>
-        <source>You will not be able to submit code to Codeforces because CF Tool is not installed or is not on SYSTEM PATH. You can set it manually in settings.</source>
-        <translation>Вы не можете отправить решение на Codeforces, потому что CF Tool не установлен или не добавлен в переменные окружения. Пожалуйста, установите его вручную в настройках.</translation>
-    </message>
-    <message>
         <source>Untitled-%1</source>
         <translation>Неизвестный-%1</translation>
     </message>
@@ -1045,14 +1058,6 @@ Do you want to reload it?</source>
     <message>
         <source>%1 characters selected</source>
         <translation>Выбрано %1 символов</translation>
-    </message>
-    <message>
-        <source>The compile command for %1 is invalid. Is the compiler in the system PATH?</source>
-        <translation>Команда компиляции %1 неверна. Добавлен ли компилятор в PATH?</translation>
-    </message>
-    <message>
-        <source>The run command for %1 is invalid. Is the runner in the system Path?</source>
-        <translation>Запускающая команда %1 неверна. Находится ли runner в Path?</translation>
     </message>
     <message>
         <source>Compilation has started</source>
@@ -1182,6 +1187,14 @@ Do you want to reload it?</source>
         <source>Custom time limit for this tab: (ms)</source>
         <translation>Нестандартный лимит времени для этой вкладки: (в мс)</translation>
     </message>
+    <message>
+        <source>You need to install CF Tool to submit your code to Codeforces. If already installed, you can add it in the PATH environment variable or check your settings at %1.</source>
+        <translation>Вам необходимо устанвоить CF Tool для отправки Вашего кода на Codeforces. Если он уже установлен, вы можете добавить его в переменную среды PATH или проверить Ваши настройки в %1.</translation>
+    </message>
+    <message>
+        <source>Failed to start compilation: %1</source>
+        <translation>Ошибка старта компиляции: %1</translation>
+    </message>
 </context>
 <context>
     <name>MessageLogger</name>
@@ -1294,12 +1307,16 @@ If it&apos;s partially checked, the global setting in Code Edit will be used.</s
         <translation>Команды запуска на Python</translation>
     </message>
     <message>
-        <source>Appearance</source>
-        <translation>Внешний вид</translation>
+        <source>You can read the &lt;a href=&quot;%1&quot;&gt;documentation&lt;/a&gt; or go through the settings for more information.</source>
+        <translation>Вы можете почитать &lt;a href=&quot;%1&quot;&gt;документация&lt;/a&gt; или просмотреть настройки для более подробной информации.</translation>
     </message>
     <message>
-        <source>You can read the &lt;a href=&quot;https://github.com/cpeditor/cpeditor/blob/%1/doc/MANUAL.md&quot;&gt;Manual&lt;/a&gt; or go through the settings for more information.</source>
-        <translation>Вы можете почитать &lt;a href=&quot;https://github.com/cpeditor/cpeditor/blob/%1/doc/MANUAL_ru-RU.md&quot;&gt;инструкцию&lt;/a&gt; или просмотреть настройки для более подробной информации.</translation>
+        <source>Appearance Settings</source>
+        <translation>Настройки внешнего вида</translation>
+    </message>
+    <message>
+        <source>Font Settings</source>
+        <translation>Настройки шрифтов</translation>
     </message>
 </context>
 <context>
@@ -1472,10 +1489,6 @@ If it&apos;s partially checked, the global setting in Code Edit will be used.</s
         <translation>Сохранении сессиии</translation>
     </message>
     <message>
-        <source>Empty Test Cases</source>
-        <translation>Пустые тесткейсы</translation>
-    </message>
-    <message>
         <source>Network Proxy</source>
         <translation>Прокси сети</translation>
     </message>
@@ -1491,6 +1504,22 @@ If it&apos;s partially checked, the global setting in Code Edit will be used.</s
         <source>Detached Execution</source>
         <translation>Отдельный запуск</translation>
     </message>
+    <message>
+        <source>Font</source>
+        <translation>Шрифт</translation>
+    </message>
+    <message>
+        <source>YAPF</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Code Formatting</source>
+        <translation>Форматирование кода</translation>
+    </message>
+    <message>
+        <source>Test Cases</source>
+        <translation type="unfinished">Тесткейсы</translation>
+    </message>
 </context>
 <context>
     <name>SettingsInfo</name>
@@ -1501,6 +1530,14 @@ If it&apos;s partially checked, the global setting in Code Edit will be used.</s
     <message>
         <source>The width of the tab character, or the number of spaces of an indent</source>
         <translation>Ширина символов вкладки или количество пробелов на конце</translation>
+    </message>
+    <message>
+        <source>Cursor Width</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The width of the cursor in pixels</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Editor Font</source>
@@ -1527,11 +1564,7 @@ If it&apos;s partially checked, the global setting in Code Edit will be used.</s
         <translation>Путь до исполняемых файлов Clang Format</translation>
     </message>
     <message>
-        <source>Style</source>
-        <translation>Стиль</translation>
-    </message>
-    <message>
-        <source>The Clang Format style options, which are often saved in a .clang-format configuration file.
+        <source>The Clang Format style options, which are usually saved in a .clang-format configuration file.
 You can learn about it at &lt;https://clang.llvm.org/docs/ClangFormatStyleOptions.html&gt;.</source>
         <translation>Опции Clang Format style, который обычно сохраняются в файле .clang-format.
 Больше информации на &lt;https://clang.llvm.org/docs/ClangFormatStyleOptions.html&gt;.</translation>
@@ -1616,7 +1649,7 @@ You can use &quot;${filename}&quot; for the complete file name,
     </message>
     <message>
         <source>The command to start a Python program. It should NOT include the path to the source file.</source>
-        <translation>Команда для запуска программы на Python. Она не должна включать путь к исходному файлу.</translation>
+        <translation>Команда для запуска программы на Python. Она НЕ должна включать путь к исходному файлу.</translation>
     </message>
     <message>
         <source>Editor Theme</source>
@@ -1759,12 +1792,8 @@ This can be overridden for each parenthesis in each language.</source>
         <translation>Сохранять тесткейса при нажатии на &quot;Сохранить&quot;</translation>
     </message>
     <message>
-        <source>Save the testcases on the disk when saving a file, and load the saved testcases when opening a file.</source>
+        <source>Save the test cases on the disk when saving a file, and load the saved test cases when opening a file.</source>
         <translation>Сохраните тесткейсы на диске при сохранении файла и загрузите сохраненные тескейсы при открытии файла.</translation>
-    </message>
-    <message>
-        <source>Maximized Window</source>
-        <translation>Развернуть окно</translation>
     </message>
     <message>
         <source>Check for updates on startup</source>
@@ -1787,7 +1816,7 @@ This can be overridden for each parenthesis in each language.</source>
         <translation>Включить Competitive Companion</translation>
     </message>
     <message>
-        <source>Receive data sent by Competitive Companion and load the example testcases.</source>
+        <source>Receive data sent by Competitive Companion and load the example test cases.</source>
         <translation>Получать данные с Competitive Companion и загружать примеры тесткейсов.</translation>
     </message>
     <message>
@@ -1905,10 +1934,6 @@ A source file won&apos;t be opened if it&apos;s too long.</source>
 Исходный файл не будет открыт, если он слишком длинный.</translation>
     </message>
     <message>
-        <source>Load Test Case Length Limit</source>
-        <translation>Лмимт длины загружаемых тесткейсов</translation>
-    </message>
-    <message>
         <source>Path to LSP executable</source>
         <translation>Путь до исполняемого файла LSP</translation>
     </message>
@@ -1929,19 +1954,19 @@ A source file won&apos;t be opened if it&apos;s too long.</source>
         <translation>Использовать функцию Linting с Language Server</translation>
     </message>
     <message>
-        <source>Show Error, Warning, Information and Hints in Code Editor for C++ Langauge</source>
+        <source>Show Error, Warning, Information and Hints in Code Editor for C++ Language</source>
         <translation>Показывать ошибки, предупреждения, информацию и подсказки в редакторе кода для языка C++</translation>
     </message>
     <message>
-        <source>Show Error, Warning, Information and Hints in Code Editor for Java Langauge</source>
+        <source>Show Error, Warning, Information and Hints in Code Editor for Java Language</source>
         <translation>Показывать ошибки, предупреждения, информацию и подсказки в редакторе кода для языка Java</translation>
     </message>
     <message>
-        <source>Show Error, Warning, Information and Hints in Code Editor for Python Langauge</source>
+        <source>Show Error, Warning, Information and Hints in Code Editor for Python Language</source>
         <translation>Показывать ошибки, предупреждения, информацию и подсказки в редакторе кода для языка Python</translation>
     </message>
     <message>
-        <source>Use auto complete with Language Server</source>
+        <source>Use auto-complete with Language Server</source>
         <translation>Используйте автозавершение с языковым сервером</translation>
     </message>
     <message>
@@ -1953,7 +1978,7 @@ A source file won&apos;t be opened if it&apos;s too long.</source>
         <translation>Задержка операции Linting в мс</translation>
     </message>
     <message>
-        <source>Delay in linting in miliseconds after last modification to code</source>
+        <source>Delay in linting in milliseconds after last modification to code</source>
         <translation>Задержка в операции Linting (мс) после модификации кода</translation>
     </message>
     <message>
@@ -2139,7 +2164,7 @@ from Competitive Companion again, the old file will be opened.</source>
         <translation>Проверить свой ответ на тестовых примерах с пустым выводом</translation>
     </message>
     <message>
-        <source>Check your answer even if your output or the expected the output is empty.</source>
+        <source>Check your answer even if your output or the expected output is empty.</source>
         <translation>Проверить свой ответ, даже если ваш вывод или ответ пуст.</translation>
     </message>
     <message>
@@ -2156,8 +2181,8 @@ from Competitive Companion again, the old file will be opened.</source>
     </message>
     <message>
         <source>After the last modification: the timer will be reset after a modification to the code.
-After the first modification: the timer will start after a modification, if at that time the timer is not running.
-Without modification: auto-save happens with an constant inverval no matter there are modifications or not.</source>
+After the first modification: the timer will start after a modification if at that time the timer is not running.
+Without modification: auto-save happens with a constant interval no matter there are modifications or not.</source>
         <translation>После последней модификации: таймер будет сброшен после модификации кода.
 После первой модификации: таймер запустится после модификации, если в это время таймер не работает.
 Без модификации: автоматическое сохранение происходит с постоянным интервалом независимо от того, есть модификации или нет.</translation>
@@ -2209,7 +2234,7 @@ kill the application with SIGKILL which could not be handled by the application.
         <translation>Включить прокси для проверки обновлений</translation>
     </message>
     <message>
-        <source>The host name of the proxy, e.g. 127.0.0.1</source>
+        <source>The hostname of the proxy, e.g. 127.0.0.1</source>
         <translation>Название хоста прокси, например 127.0.0.1</translation>
     </message>
     <message>
@@ -2357,16 +2382,8 @@ It is a list of &lt;default path name&gt;s, separated by commas, and can be empt
         <translation>Может быть перезаписан %1.</translation>
     </message>
     <message>
-        <source>Use Clang Format to format the code when auto-saving it.</source>
-        <translation>Использовать Clang Format для форматирования кода при его автоматическом сохранении.</translation>
-    </message>
-    <message>
         <source>Format code on manual save</source>
         <translation>Форматировать код при ручном сохранении</translation>
-    </message>
-    <message>
-        <source>Use Clang Format to format the code when saving it manually.</source>
-        <translation>Использовать Clang Format для форматирования кода при его ручном сохранении.</translation>
     </message>
     <message>
         <source>Format code on auto-save</source>
@@ -2405,12 +2422,6 @@ If the output is too long, it will be elided.</source>
 Если вывод очень большой, то он будет опущен.</translation>
     </message>
     <message>
-        <source>The maximum number of characters in a test case to be loaded.
-A loaded test case will be elided and read-only if it&apos;s too long.</source>
-        <translation>Максимальное число символов, в загруженном тесткейсе.
-Если тесткейс большой, то он будет опущен и досупен только для чтения.</translation>
-    </message>
-    <message>
         <source>Show toast messages for submission verdicts</source>
         <translation>Показывать всплывающие уведомления для вердиктов отправок</translation>
     </message>
@@ -2441,10 +2452,6 @@ Consult your terminal emulator for the suitable arguments.</source>
         <translation>Аргументы используемые для запуска определенной команды в эмуляторе терминала.
 Это &quot;-e&quot; для большинства эмуляторов терминала, включая konsole, xterm, xfce-terminal, но может быть &quot;--&quot; для gnome-terminal.
 Уточните аргументы, доступные для вашего эмулятора терминала.</translation>
-    </message>
-    <message>
-        <source>Head Comments</source>
-        <translation>Комментарии в шапке</translation>
     </message>
     <message>
         <source>Save Test Case To A File</source>
@@ -2480,7 +2487,7 @@ https://doc.qt.io/qt-5/qtime.html#toString</translation>
     </message>
     <message>
         <source>Add a line saying &quot;Powered By CP Editor&quot; in the head comments.
-This doesn&apos;t cost you anyting, but helps more people to know CP Editor.</source>
+This doesn&apos;t cost you anything, but helps more people to know CP Editor.</source>
         <translation>Добавить строку &quot;Powered By CP Editor&quot; в комментарии шапки
 Это ничего Вам не стоит, но помогает многим людям узнавать о CP Editor.</translation>
     </message>
@@ -2501,6 +2508,124 @@ The program will be killed if it doesn&apos;t terminate in the time limit.</sour
     <message>
         <source>Use the time limit parsed by Competitive Companion as the time limit of the corresponding tab.</source>
         <translation>Использовать лимит времени взятым Competitive Companion-ом как лимит времени соответствующей вкладки.</translation>
+    </message>
+    <message>
+        <source>Show Only Monospaced Font</source>
+        <translation>Показывать только моноширинный шрифт</translation>
+    </message>
+    <message>
+        <source>Change Locale</source>
+        <translation>Изменить язык</translation>
+    </message>
+    <message>
+        <source>You need to restart the application to completely apply the locale change.</source>
+        <translation>Вам необходимо перезагрузить программу для полноценного применения нового языка.</translation>
+    </message>
+    <message>
+        <source>Show only monospaced fonts when choosing a font</source>
+        <translation>Показывать только моноширинные шрифты при выборе</translation>
+    </message>
+    <message>
+        <source>Display Test Case Length Limit</source>
+        <translation>Показывать лимит длины тесткейса</translation>
+    </message>
+    <message>
+        <source>The maximum number of characters in a test case to be displayed.
+A test case will be elided and read-only if it&apos;s too long.</source>
+        <translation>Максимальное отображаемое число символов в тесткейсе.
+Если тесткейс будет слишком большой, он будет пропущен и доступен только для чтения.</translation>
+    </message>
+    <message>
+        <source>Clang Format Program</source>
+        <translation>Программа Clang Format</translation>
+    </message>
+    <message>
+        <source>Clang Format Arguments</source>
+        <translation>Аргументы Clang Format</translation>
+    </message>
+    <message>
+        <source>The arguments passed to clang-format. It should NOT contain &quot;-i&quot;.</source>
+        <translation>Аргументы, применяемы для Clang Format. Они НЕ должны содержать &quot;-i&quot;.</translation>
+    </message>
+    <message>
+        <source>Clang Format Style</source>
+        <translation>Стиль Clang Format</translation>
+    </message>
+    <message>
+        <source>YAPF Program</source>
+        <translation>Программа YAPF</translation>
+    </message>
+    <message>
+        <source>The program of YAPF. It could be `yapf` (which doesn&apos;t need arguments) or `python` (which needs `-m yapf` as the arguments).</source>
+        <translation>Программа для YAPF. Это может быть &quot;yapf&quot; (который не требует аргументы) или &quot;python&quot; (который требует аргумент &quot;-m yapf&quot;).</translation>
+    </message>
+    <message>
+        <source>YAPF Arguments</source>
+        <translation>Аргументы YAPF</translation>
+    </message>
+    <message>
+        <source>The arguments passed to the YAPF program. It should NOT contain &quot;-i&quot;.</source>
+        <translation>Аргументы, применяемы для программы YAPF. Они не должны содержать &quot;-i&quot;.</translation>
+    </message>
+    <message>
+        <source>YAPF Style</source>
+        <translation>Стиль YAPF</translation>
+    </message>
+    <message>
+        <source>The YAPF style options, which are usually saved in a .style.yapf or setup.conf configuration file.
+You can learn about it by running `yapf --style-help`.</source>
+        <translation>Параметры стиля YAPF, которые обычно сохраняются в конфигурационный файл .style.yapf or setup.conf.
+Вы можете узнать больше об этом запустив &quot;yapf --style-help&quot;.</translation>
+    </message>
+    <message>
+        <source>Format the code when saving it manually.</source>
+        <translation>Форматировать код, когда он сохраняется вручную.</translation>
+    </message>
+    <message>
+        <source>Format the code when auto-saving it.</source>
+        <translation>Форматировать код, когда он автоматически сохраняется.</translation>
+    </message>
+    <message>
+        <source>Content of the head comments</source>
+        <translation>Содержание заголовков комменатриев</translation>
+    </message>
+    <message>
+        <source>network-proxy</source>
+        <comment>the anchor of Enable Proxy on the corresponding page of https://cpeditor.org/docs/preferences</comment>
+        <translation>прокси сети</translation>
+    </message>
+    <message>
+        <source>network-proxy</source>
+        <comment>the anchor of Type on the corresponding page of https://cpeditor.org/docs/preferences</comment>
+        <translation>прокси сети</translation>
+    </message>
+    <message>
+        <source>network-proxy</source>
+        <comment>the anchor of Host Name on the corresponding page of https://cpeditor.org/docs/preferences</comment>
+        <translation>прокси сети</translation>
+    </message>
+    <message>
+        <source>network-proxy</source>
+        <comment>the anchor of Port on the corresponding page of https://cpeditor.org/docs/preferences</comment>
+        <translation>прокси сети</translation>
+    </message>
+    <message>
+        <source>network-proxy</source>
+        <comment>the anchor of User on the corresponding page of https://cpeditor.org/docs/preferences</comment>
+        <translation>прокси сети</translation>
+    </message>
+    <message>
+        <source>network-proxy</source>
+        <comment>the anchor of Password on the corresponding page of https://cpeditor.org/docs/preferences</comment>
+        <translation>прокси сети</translation>
+    </message>
+    <message>
+        <source>Auto Uncheck Accepted Testcases</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Automatically uncheck test cases when they get accepted.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2551,6 +2676,48 @@ The program will be killed if it doesn&apos;t terminate in the time limit.</sour
     <message>
         <source>Move the current row down (Ctrl+Shift+Down)</source>
         <translation>Переместите текущий ряд вниз (Ctrl+Shift+Down)</translation>
+    </message>
+</context>
+<context>
+    <name>SupportEntry</name>
+    <message>
+        <source>Donate</source>
+        <translation>Пожертвовать</translation>
+    </message>
+</context>
+<context>
+    <name>SupportUsDialog</name>
+    <message>
+        <source>Like CP Editor?</source>
+        <translation>Нравится CP Editor?</translation>
+    </message>
+    <message>
+        <source>Thank you for using CP Editor!</source>
+        <translation>Спасибо Вам за использование CP Editor!</translation>
+    </message>
+    <message>
+        <source>To support us, you can:</source>
+        <translation>Для того чтобы поддержать нас, Вы можете:</translation>
+    </message>
+    <message>
+        <source>Give us a star on GitHub</source>
+        <translation>Дать нам звезду на GitHub</translation>
+    </message>
+    <message>
+        <source>Share CP Editor with your friends</source>
+        <translation>Поделиться информацией о CP Editor cо своими друзьями</translation>
+    </message>
+    <message>
+        <source>Financially support us</source>
+        <translation>Поддержать нас финансово</translation>
+    </message>
+    <message>
+        <source>Provide some suggestions to help us do better</source>
+        <translation>Дать немного советов чтобы помочь нам быть лучше</translation>
+    </message>
+    <message>
+        <source>I&apos;m using @cpeditor_, an IDE specially designed for competitive programmers, which is awesome!</source>
+        <translation>Я использую @cpeditor_ — специальная IDE для спортивного программирования и она отлична!</translation>
     </message>
 </context>
 <context>
@@ -2759,20 +2926,20 @@ The program will be killed if it doesn&apos;t terminate in the time limit.</sour
         <translation>Ожидаемо</translation>
     </message>
     <message>
-        <source>Now the test case editor is read-only. You can set the length limit at %1.</source>
-        <translation>Сейчас тесткейсы доступны только для чтения. Вы можете установить лимит длины в %1.</translation>
-    </message>
-    <message>
-        <source>Only the first %1 characters are shown.</source>
-        <translation>Отображены только первые %1 символов.</translation>
-    </message>
-    <message>
         <source>Save to file</source>
         <translation>Сохранить в файл</translation>
     </message>
     <message>
         <source>Save test case to file</source>
         <translation>Сохранить тесткейс в файл</translation>
+    </message>
+    <message>
+        <source>Only the first %1 characters are shown. Now the test case editor is read-only. You can set the length limit at %2.</source>
+        <translation>Отображены только первые %1 символов. Сейчас тесткейсы доступны только для чтения. Вы можете установить лимит длины в %2.</translation>
+    </message>
+    <message>
+        <source>Copy Output to Expected</source>
+        <translation>Копировать вывод в ожидаемый</translation>
     </message>
 </context>
 <context>
@@ -2826,35 +2993,12 @@ The program will be killed if it doesn&apos;t terminate in the time limit.</sour
         <translation>Следующие файлы не загружаются, потому что они не совпадают:%1. Можно установить правила соответствия в %2.</translation>
     </message>
     <message>
-        <source>Remove Empty</source>
-        <translation>Удалить пустые</translation>
-    </message>
-    <message>
-        <source>Remove All</source>
-        <translation>Удалить всё</translation>
-    </message>
-    <message>
-        <source>Clear Testcases</source>
-        <translation>Очистить тесткейсы</translation>
-    </message>
-    <message>
         <source>Are you sure you want to delete all test cases?</source>
         <translation>Вы уверены удалить все тесткейсы?</translation>
     </message>
     <message>
-        <source>Hide AC</source>
-        <translation>Скрыть Полные решения</translation>
-    </message>
-    <message>
-        <source>Show All</source>
-        <translation>Показать всё</translation>
-    </message>
-    <message>
-        <source>Hide All</source>
-        <translation>Скрыть всё</translation>
-    </message>
-    <message>
         <source>Invert</source>
+        <extracomment>This action checks the checkboxes which were not checked, and unchecks the ones which were checked</extracomment>
         <translation>Инвертировать</translation>
     </message>
     <message>
@@ -2925,6 +3069,53 @@ The program will be killed if it doesn&apos;t terminate in the time limit.</sour
         <source>Unaccepted / Accepted / Total</source>
         <translation>Не принято / Принято / Всего</translation>
     </message>
+    <message>
+        <source>Check All</source>
+        <extracomment>Here &quot;Check&quot; means to check the checkbox</extracomment>
+        <translation>Отметить все</translation>
+    </message>
+    <message>
+        <source>Uncheck All</source>
+        <translation>Снять все отметки</translation>
+    </message>
+    <message>
+        <source>Uncheck Accepted</source>
+        <translation>Снять отметки с принятых</translation>
+    </message>
+    <message>
+        <source>Delete All</source>
+        <translation>Удалить все</translation>
+    </message>
+    <message>
+        <source>Delete Empty</source>
+        <translation>Удалить пустые</translation>
+    </message>
+    <message>
+        <source>Delete Checked</source>
+        <extracomment>Here &quot;checked&quot; means the checkbox is checked</extracomment>
+        <translation>Удалить отмеченные</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to delete all checked test cases?</source>
+        <translation>Вы действительно хотите удалить все отмеченные тест-кейсы?</translation>
+    </message>
+    <message>
+        <source>Copy Test Cases</source>
+        <translation>Копировать тест-кейсы</translation>
+    </message>
+    <message>
+        <source>Paste Test Cases</source>
+        <translation>Вставить тест-кейсы</translation>
+    </message>
+    <message>
+        <source>Copy Output to Expected</source>
+        <translation>Копировать вывод в ожидаемый</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to copy all checked output to their corresponding expected?</source>
+        <extracomment>Here &quot;checked&quot; means the checkbox is checked</extracomment>
+        <translation>Вы действительно хотите скопировать все отмеченные тест-кейсы в соответсвующие им ожидаемые?</translation>
+    </message>
 </context>
 <context>
     <name>Widgets::UpdatePresenter</name>
@@ -2972,8 +3163,8 @@ The program will be killed if it doesn&apos;t terminate in the time limit.</sour
         <translation>Загружается список релизов...</translation>
     </message>
     <message>
-        <source>Error: %1&lt;br /&gt;&lt;br /&gt;Updater failed to check for update. Please manually check for update at&lt;br /&gt;&lt;a href=&quot;https://cpeditor.github.io/download&quot;&gt;https://cpeditor.github.io/download&lt;/a&gt; or &lt;a href=&quot;https://github.com/cpeditor/cpeditor/releases&quot;&gt;https://github.com/cpeditor/cpeditor/releases&lt;/a&gt;.</source>
-        <translation>Ошибка: %1&lt;br /&gt;&lt;br /&gt;Произошла ошибка при проверке обновления. Пожалуйста, проверьте обновление вручную на &lt;br /&gt;&lt;a href=&quot;https://cpeditor.github.io/download&quot;&gt;https://cpeditor.github.io/download&lt;/a&gt; или &lt;a href=&quot;https://github.com/cpeditor/cpeditor/releases&quot;&gt;https://github.com/cpeditor/cpeditor/releases&lt;/a&gt;.</translation>
+        <source>Error: %1&lt;br /&gt;&lt;br /&gt;Updater failed to check for update. Please manually check for update at&lt;br /&gt;&lt;a href=&quot;https://cpeditor.org/download&quot;&gt;https://cpeditor.org/download&lt;/a&gt; or &lt;a href=&quot;https://github.com/cpeditor/cpeditor/releases&quot;&gt;https://github.com/cpeditor/cpeditor/releases&lt;/a&gt;.</source>
+        <translation>Ошибка: %1&lt;br /&gt;&lt;br /&gt;Произошла ошибка при проверке обновления. Пожалуйста, проверьте обновление вручную на &lt;br /&gt;&lt;a href=&quot;https://cpeditor.org/ru/download&quot;&gt;https://cpeditor.org/ru/download&lt;/a&gt; или &lt;a href=&quot;https://github.com/cpeditor/cpeditor/releases&quot;&gt;https://github.com/cpeditor/cpeditor/releases&lt;/a&gt;.</translation>
     </message>
     <message>
         <source>Close</source>

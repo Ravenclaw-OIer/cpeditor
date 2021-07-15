@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Ashar Khan <ashar786khan@gmail.com>
+ * Copyright (C) 2019-2021 Ashar Khan <ashar786khan@gmail.com>
  *
  * This file is part of CP Editor.
  *
@@ -31,7 +31,7 @@ class ParenthesisWidget : public QWidget
     Q_OBJECT
 
   public:
-    explicit ParenthesisWidget(const QString &language, QChar leftParenthesis, QChar rightParenthesis,
+    explicit ParenthesisWidget(QString language, QChar leftParenthesis, QChar rightParenthesis,
                                Qt::CheckState autoComplete = Qt::PartiallyChecked,
                                Qt::CheckState autoRemove = Qt::PartiallyChecked,
                                Qt::CheckState tabJumpOut = Qt::PartiallyChecked, QWidget *parent = nullptr);
@@ -67,10 +67,7 @@ class ParenthesisWidget : public QWidget
      *   - (stretch)
      */
 
-    QVBoxLayout *mainLayout = nullptr;
     QLabel *nameLabel = nullptr;
-    QHBoxLayout *stretchLayout = nullptr;
-    QVBoxLayout *checkBoxesLayout = nullptr;
     QCheckBox *autoCompleteCheckBox = nullptr;
     QCheckBox *autoRemoveCheckBox = nullptr;
     QCheckBox *tabJumpOutCheckBox = nullptr;
@@ -181,16 +178,10 @@ class ParenthesesPage : public PreferencesPage
 
     QSplitter *splitter = nullptr;
     QWidget *leftWidget = nullptr;
-    QVBoxLayout *leftLayout = nullptr;
     QListWidget *listWidget = nullptr;
-    QHBoxLayout *buttonsLayout = nullptr;
     QPushButton *addButton = nullptr;
     QPushButton *delButton = nullptr;
     QStackedWidget *stackedWidget = nullptr;
-    QWidget *noParenthesisWidget = nullptr;
-    QVBoxLayout *noParenthesisLayout = nullptr;
-    QHBoxLayout *noParenthesisStretchLayout = nullptr;
-    QLabel *noParenthesisLabel;
 
     QString lang;
 };

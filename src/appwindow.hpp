@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Ashar Khan <ashar786khan@gmail.com>
+ * Copyright (C) 2019-2021 Ashar Khan <ashar786khan@gmail.com>
  *
  * This file is part of CP Editor.
  *
@@ -58,16 +58,19 @@ class AppWindow : public QMainWindow
     Q_OBJECT
 
   public:
-    explicit AppWindow(bool noHotExit, QWidget *parent = nullptr);
     explicit AppWindow(int depth, bool cpp, bool java, bool python, bool noHotExit, const QStringList &paths,
                        QWidget *parent = nullptr);
     explicit AppWindow(bool cpp, bool java, bool python, bool noHotExit, int number, const QString &path,
                        QWidget *parent = nullptr);
     ~AppWindow() override;
 
+    PreferencesWindow *getPreferencesWindow() const;
+
+  protected:
     void closeEvent(QCloseEvent *event) override;
     void dropEvent(QDropEvent *event) override;
     void dragEnterEvent(QDragEnterEvent *event) override;
+    void changeEvent(QEvent *event) override;
 
   public slots:
     void onReceivedMessage(quint32 instanceId, QByteArray message);
@@ -78,7 +81,7 @@ class AppWindow : public QMainWindow
 
   private slots:
     // UI Slots
-    void on_actionSupportMe_triggered();
+    void on_actionSupportUs_triggered();
 
     void on_actionManual_triggered();
 
@@ -146,6 +149,8 @@ class AppWindow : public QMainWindow
 
     void on_actionSplitMode_triggered();
 
+    void on_actionFullScreen_toggled(bool checked);
+
     void on_actionIndent_triggered();
 
     void on_actionUnindent_triggered();
@@ -196,13 +201,15 @@ class AppWindow : public QMainWindow
 
     void onSettingsApplied(const QString &pagePath);
 
-    void onSplitterMoved(int, int);
+    void onSplitterMoved();
 
-    void onRightSplitterMoved(int, int);
+    void onRightSplitterMoved();
 
     void onIncomingCompanionRequest(const Extensions::CompanionData &);
 
     void onViewModeToggle();
+
+    void openTab(const QString &path);
 
   private:
     Ui::AppWindow *ui;
@@ -218,7 +225,7 @@ class AppWindow : public QMainWindow
     QMetaObject::Connection activeRightSplitterMoveConnection;
     Telemetry::UpdateChecker *updateChecker = nullptr;
     PreferencesWindow *preferencesWindow = nullptr;
-    Extensions::CompanionServer *server;
+    Extensions::CompanionServer *server = nullptr;
     FindReplaceDialog *findReplaceDialog = nullptr;
     QSystemTrayIcon *trayIcon = nullptr;
     QMenu *trayIconMenu = nullptr;
@@ -228,6 +235,9 @@ class AppWindow : public QMainWindow
     Extensions::LanguageServer *javaServer = nullptr;
     Extensions::LanguageServer *pythonServer = nullptr;
 
+    explicit AppWindow(bool noHotExit, QWidget *parent = nullptr);
+    void finishConstruction();
+
     void setConnections();
     void allocate();
     void applySettings();
@@ -236,7 +246,6 @@ class AppWindow : public QMainWindow
     void maybeSetHotkeys();
     bool closeTab(int index);
     void openTab(MainWindow *window);
-    void openTab(const QString &path);
     void openTab(const MainWindow::EditorStatus &status, bool duplicate = false);
     void openTabs(const QStringList &paths);
     void openPaths(const QStringList &paths, bool cpp = true, bool java = true, bool python = true, int depth = -1);

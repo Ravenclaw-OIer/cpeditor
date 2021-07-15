@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Ashar Khan <ashar786khan@gmail.com>
+ * Copyright (C) 2019-2021 Ashar Khan <ashar786khan@gmail.com>
  *
  * This file is part of CP Editor.
  *
@@ -38,11 +38,7 @@ class UpdatePresenter : public QDialog
 
   private:
     QLabel *hint = nullptr;
-    QVBoxLayout *mainLayout = nullptr;
-    QHBoxLayout *subLayout = nullptr;
     QTextEdit *textEdit = nullptr;
-    QPushButton *downloadButton = nullptr;
-    QPushButton *cancelButton = nullptr;
 
     QString downloadUrl;
 };
